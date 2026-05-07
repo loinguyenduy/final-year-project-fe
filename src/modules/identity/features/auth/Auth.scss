@@ -1,0 +1,118 @@
+.auth-layout-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0f2fe 0%, #f8fafc 100%);
+  padding: 2rem 1rem;
+
+  .auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+
+    .brand-icon {
+      background-color: #0d6efd; 
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin: 0 auto 1rem auto;
+      box-shadow: 0 4px 6px rgba(13, 110, 253, 0.2);
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 0.25rem;
+    }
+
+    p {
+      color: #64748b;
+      font-size: 14px;
+    }
+  }
+
+  .auth-card {
+    background: white;
+    width: 100%;
+    max-width: 450px; /* Tablet & PC sẽ bị giới hạn ở 450px, trên Mobile sẽ tự co lại 100% */
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    padding: 2.5rem 2rem;
+
+    @media (max-width: 576px) {
+      padding: 2rem 1.5rem; // Tràn viền bớt đi trên điện thoại
+    }
+  }
+
+  /* Định dạng chung cho Input và Nút bấm bên trong Card */
+  .form-control {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    &:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    }
+  }
+
+  .btn-primary {
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .social-btn {
+    border: 1px solid #cbd5e1;
+    background: white;
+    color: #334155;
+    font-weight: 500;
+    padding: 0.6rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+    width: 100%;
+
+    &:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+
+    img {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 1.5rem 0;
+    color: #94a3b8;
+    font-size: 12px;
+
+    &::before,
+    &::after {
+      content: "";
+      flex: 1;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    &::before {
+      margin-right: .5em;
+    }
+    &::after {
+      margin-left: .5em;
+    }
+  }
+}

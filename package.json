@@ -10,18 +10,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "@reduxjs/toolkit": "^2.5.1",
     "axios": "^1.16.0",
     "bootstrap": "^5.3.8",
-    "@popperjs/core": "^2.11.8",
+    "jwt-decode": "^4.0.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-icons": "^5.6.0",
     "react-redux": "^9.2.0",
-    "@reduxjs/toolkit": "^2.5.1",
     "react-router-dom": "^7.1.5",
     "react-toastify": "^11.1.0",
     "redux-persist": "^6.0.0",
-    "sweetalert2": "^11.26.24",
-    "sass": "^1.83.4"
+    "sass": "^1.83.4",
+    "sweetalert2": "^11.26.24"
   },
   "devDependencies": {
     "@types/react": "^19.0.8",
