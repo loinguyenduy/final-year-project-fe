@@ -1,16 +1,15 @@
 import axios from "axios";
-// Tạm thời comment store lại, chúng ta sẽ import nó ở bước thiết lập Redux sau
-// import store from "../../redux/store.js"; 
+import store from "../../redux/store.js";
+
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000/api/v1", // Đổi thành cổng Backend của bạn
+  baseURL: "http://localhost:5000/api/v1", 
   withCredentials: true, // BẮT BUỘC để gửi Cookie kèm theo request
 });
 
 // 1. REQUEST INTERCEPTOR: Gắn Access Token vào mọi Request
 axiosInstance.interceptors.request.use(
   function (config) {
-    // TODO: Bỏ comment khi đã setup Redux
     const token = store.getState().identity.token; 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -49,7 +48,6 @@ axiosInstance.interceptors.response.use(
           // Lấy token mới
           const newAccessToken = res.DT.access_token;
 
-          // TODO: Bỏ comment khi đã setup Redux để cập nhật Token mới vào Store
           store.dispatch(setCredentials({ token: newAccessToken, user: res.DT.user }));
 
           // Gắn token mới vào header của request đang bị lỗi và GỌI LẠI
@@ -57,7 +55,7 @@ axiosInstance.interceptors.response.use(
           return axiosInstance(originalRequest);
         } else {
           // Nếu refresh thất bại (Refresh Token cũng hết hạn) -> Đăng xuất
-          // store.dispatch(logout());
+          store.dispatch(logout());
           return Promise.reject(error.response.data);
         }
       } catch (refreshError) {
