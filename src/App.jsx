@@ -1,119 +1,94 @@
-import { useState } from 'react'
-import './App.css'
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+
+// Route Guards
+import GuestRoute from "./core/routes/GuestRoute";
+import PrivateRoute from "./core/routes/PrivateRoute";
+import RoleRoute from "./core/routes/RoleRoute";
+
+// Pages
+import LoginPage from "./modules/identity/features/auth/LoginPage";
+import RegisterPage from "./modules/identity/features/auth/RegisterPage";
+import CheckEmailPage from "./modules/identity/features/auth/CheckEmailPage";
+import VerifyEmailProcess from "./modules/identity/features/auth/VerifyEmailProcess";
+import SocialCallback from "./modules/identity/features/auth/SocialCallback";
+
+// Placeholder Components (Tạm thời để test Route)
+const HomePage = () => <h2>Trang chủ (Dành cho Customer/Khách)</h2>;
+const AdminDashboard = () => <h2>Trang Admin Dashboard</h2>;
+const HandymanDashboard = () => <h2>Trang Thợ Dashboard</h2>;
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      <BrowserRouter>
+        <Routes>
+          {/* CÁC ROUTE KHÁCH VÃNG LAI (GUEST) */}
+          <Route 
+            path="/login" 
+            element={
+              <GuestRoute>
+                <LoginPage />
+              </GuestRoute>
+            } 
+          />
+          <Route 
+            path="/register" 
+            element={
+              <GuestRoute>
+                <RegisterPage />
+              </GuestRoute>
+            } 
+          />
+          
+          {/* Trang hiển thị thông báo "Check your email" sau khi đăng ký */}
+          <Route path="/check-email" element={<CheckEmailPage />} />
+          
+          {/* Trang hứng Token từ email gửi về để gọi API Verify */}
+          <Route path="/verify-email" element={<VerifyEmailProcess />} />
+          
+          {/* Trang hứng callback từ các nền tảng xã hội */}
+          <Route path="/social-callback" element={<SocialCallback />} />
 
-      <div className="ticks"></div>
+          {/* CÁC ROUTE PUBLIC HOẶC DÀNH CHO CUSTOMER */}
+          <Route path="/" element={<HomePage />} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          {/* CÁC ROUTE PRIVATE THEO ROLE */}
+          <Route 
+            path="/admin/dashboard" 
+            element={
+              <RoleRoute allowedRoles={['ADMIN']}>
+                <AdminDashboard />
+              </RoleRoute>
+            } 
+          />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+          <Route 
+            path="/handyman/dashboard" 
+            element={
+              <RoleRoute allowedRoles={['HANDYMAN']}>
+                <HandymanDashboard />
+              </RoleRoute>
+            } 
+          />
+        </Routes>
+      </BrowserRouter>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
