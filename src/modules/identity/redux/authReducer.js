@@ -15,7 +15,7 @@ const INITIAL_STATE = {
     is_email_verified: false,
   },
   isAuthenticated: false,
-  token: "", // Lưu Access Token
+  token: "", 
 };
 
 const authReducer = (state = INITIAL_STATE, action) => {

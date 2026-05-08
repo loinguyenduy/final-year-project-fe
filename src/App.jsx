@@ -8,11 +8,11 @@ import PrivateRoute from "./core/routes/PrivateRoute";
 import RoleRoute from "./core/routes/RoleRoute";
 
 // Pages
-import LoginPage from "./modules/identity/features/auth/LoginPage";
-import RegisterPage from "./modules/identity/features/auth/RegisterPage";
-import CheckEmailPage from "./modules/identity/features/auth/CheckEmailPage";
-import VerifyEmailProcess from "./modules/identity/features/auth/VerifyEmailProcess";
-import SocialCallback from "./modules/identity/features/auth/SocialCallback";
+import LoginPage from "./modules/identity/features/auth/pages/LoginPage";
+import RegisterPage from "./modules/identity/features/auth/pages/RegisterPage";
+import CheckEmailPage from "./modules/identity/features/auth/pages/CheckEmailPage";
+import VerifyEmailProcess from "./modules/identity/features/auth/pages/VerifyEmailProcess";
+import SocialCallback from "./modules/identity/features/auth/pages/SocialCallback";
 
 // Placeholder Components (Tạm thời để test Route)
 const HomePage = () => <h2>Trang chủ (Dành cho Customer/Khách)</h2>;

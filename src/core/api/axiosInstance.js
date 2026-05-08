@@ -4,13 +4,13 @@ import store from "../../redux/store.js";
 
 const axiosInstance = axios.create({
   baseURL: "http://localhost:5000/api/v1", 
-  withCredentials: true, // BẮT BUỘC để gửi Cookie kèm theo request
+  withCredentials: true, // automatically send cookies (Refresh Token) in requests to the backend
 });
 
-// 1. REQUEST INTERCEPTOR: Gắn Access Token vào mọi Request
+// 1. REQUEST INTERCEPTOR: attach access token in header before sending request
 axiosInstance.interceptors.request.use(
   function (config) {
-    const token = store.getState().identity.token; 
+    const token = store.getState().identity.token; // get token from Redux state
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -21,40 +21,38 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// 2. RESPONSE INTERCEPTOR: Xử lý dữ liệu trả về và Auto Refresh Token
+// 2. RESPONSE INTERCEPTOR: handle data response and token refresh logic
 axiosInstance.interceptors.response.use(
   function (response) {
-    // Backend của chúng ta luôn trả về object có dạng { EM, EC, DT }
     return response && response.data ? response.data : response;
   },
   async function (error) {
     const originalRequest = error.config;
 
-    // NẾU LỖI 401 (Hết hạn Access Token) VÀ CHƯA TỪNG THỬ REFRESH
+    // Handle 401 errors - Unauthorized (token expired or invalid)
     if (error.response && error.response.status === 401 && !originalRequest._retry) {
       
-      // Bỏ qua nếu API đang gọi chính là login hoặc refresh (để tránh vòng lặp vô tận)
       if (originalRequest.url === "/auth/refresh" || originalRequest.url === "/auth/login") {
         return Promise.reject(error.response.data);
       }
 
       originalRequest._retry = true;
 
+      // Handle token refresh 
       try {
-        // Gọi API refresh token (vì có withCredentials nên nó sẽ tự gửi Cookie lên)
+        // Call API refresh token endpoint to get new access token 
         const res = await axiosInstance.post("/auth/refresh");
 
         if (res && res.EC === 0) {
-          // Lấy token mới
           const newAccessToken = res.DT.access_token;
 
+          // Update token in Redux store
           store.dispatch(setCredentials({ token: newAccessToken, user: res.DT.user }));
 
-          // Gắn token mới vào header của request đang bị lỗi và GỌI LẠI
+          // Attach new access token to original request and retry it
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return axiosInstance(originalRequest);
         } else {
-          // Nếu refresh thất bại (Refresh Token cũng hết hạn) -> Đăng xuất
           store.dispatch(logout());
           return Promise.reject(error.response.data);
         }
@@ -64,7 +62,6 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    // Bắt các lỗi khác (ví dụ 400, 403, 500) và trả về chuẩn { EM, EC } của Backend
     return error && error.response && error.response.data
       ? Promise.reject(error.response.data)
       : Promise.reject(error);

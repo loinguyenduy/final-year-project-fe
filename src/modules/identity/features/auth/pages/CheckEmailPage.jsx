@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import AuthLayout from './AuthLayout';
-import { resendVerifyEmailApi } from '../../services/authService';
-import { FaEnvelopeOpenText } from 'react-icons/fa'; // Icon phong bì
+import AuthLayout from '../components/AuthLayout';
+import { resendVerifyEmailApi } from '../../../services/authService';
+import { FaEnvelopeOpenText } from 'react-icons/fa'; 
+import '../styles/CheckEmail.scss';
 
 const CheckEmailPage = () => {
     const location = useLocation();
@@ -34,47 +35,33 @@ const CheckEmailPage = () => {
     return (
         <AuthLayout>
             <div className="text-center">
-                <div 
-                    style={{
-                        backgroundColor: '#e0f2fe',
-                        color: '#0d6efd',
-                        width: '70px',
-                        height: '70px',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '30px',
-                        margin: '0 auto 1.5rem auto'
-                    }}
-                >
+                <div className="mail-icon-wrapper">
                     <FaEnvelopeOpenText />
                 </div>
                 
-                <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e293b', marginBottom: '1rem' }}>
+                <h3 className="check-mail-title">
                     Check your email
                 </h3>
                 
-                <p style={{ color: '#64748b', fontSize: '15px', lineHeight: '1.5' }}>
+                <p className="email-sent-text">
                     We sent a verification link to <br />
-                    <strong style={{ color: '#1e293b' }}>{email}</strong>
+                    <strong className="email-highlight">{email}</strong>
                 </p>
 
-                <p style={{ color: '#64748b', fontSize: '14px', marginTop: '1.5rem', marginBottom: '2rem' }}>
+                <p className="instruction-text">
                     Click the link in the email to verify your account. If you don't see it, be sure to check your spam folder.
                 </p>
 
                 <button 
                     onClick={handleResendEmail} 
-                    className="btn w-100 mb-3" 
-                    style={{ border: '1px solid #cbd5e1', backgroundColor: 'white', fontWeight: 500 }}
+                    className="btn btn-resend w-100 mb-3" 
                     disabled={isLoading}
                 >
                     {isLoading ? "Sending..." : "Resend verification email"}
                 </button>
 
-                <div style={{ fontSize: '14px' }}>
-                    <Link to="/register" style={{ color: '#64748b', textDecoration: 'none', fontWeight: 500 }}>
+                <div className="back-link-wrapper">
+                    <Link to="/register" className="back-link">
                         &larr; Back to sign up
                     </Link>
                 </div>

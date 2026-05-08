@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
-import { doLoginSuccess } from '../../redux/authAction';
+import { doLoginSuccess } from '../../../redux/authAction';
 import { jwtDecode } from "jwt-decode";
 
 const SocialCallback = () => {

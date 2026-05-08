@@ -1,12 +1,12 @@
 import { createStore } from "redux";
 import { persistStore, persistReducer } from "redux-persist";
-import storage from "redux-persist/lib/storage"; // Dùng localStorage
+import storage from "redux-persist/lib/storage";
 import rootReducer from "./rootReducer";
 
 const persistConfig = {
-  key: "trusted_handyman_root", // Đổi key cho đúng dự án mới
+  key: "trusted_handyman_root", 
   storage,
-  whitelist: ["identity"], // Chỉ lưu state của module identity (chứa token & user info)
+  whitelist: ["identity"], 
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
