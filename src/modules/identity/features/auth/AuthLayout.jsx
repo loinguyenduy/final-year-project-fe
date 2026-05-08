@@ -14,7 +14,6 @@ const AuthLayout = ({ children }) => {
       </div>
 
       <div className="auth-card">
-        {/* Nội dung trang Login, Register, Verify sẽ được nhét vào đây */}
         {children} 
       </div>
     </div>

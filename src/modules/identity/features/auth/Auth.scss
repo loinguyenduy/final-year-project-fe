@@ -41,17 +41,16 @@
   .auth-card {
     background: white;
     width: 100%;
-    max-width: 450px; /* Tablet & PC sẽ bị giới hạn ở 450px, trên Mobile sẽ tự co lại 100% */
+    max-width: 450px; 
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     padding: 2.5rem 2rem;
 
     @media (max-width: 576px) {
-      padding: 2rem 1.5rem; // Tràn viền bớt đi trên điện thoại
+      padding: 2rem 1.5rem; 
     }
   }
 
-  /* Định dạng chung cho Input và Nút bấm bên trong Card */
   .form-control {
     padding: 0.75rem 1rem;
     border-radius: 8px;

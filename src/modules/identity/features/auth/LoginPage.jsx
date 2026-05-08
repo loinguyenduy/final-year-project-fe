@@ -18,7 +18,7 @@ const LoginPage = () => {
         e.preventDefault();
 
         if (!email || !password) {
-            toast.error("Vui lòng nhập đầy đủ Email và Mật khẩu!");
+            toast.error("Please fill in all fields.");
             return;
         }
 
@@ -32,17 +32,17 @@ const LoginPage = () => {
                 
                 // Kiểm tra chưa verify email
                 if (!res.DT.user.is_email_verified) {
-                     toast.warning("Tài khoản chưa xác thực. Vui lòng kiểm tra email!");
+                     toast.warning("Account not verified. Please check your email!");
                      // Có thể điều hướng họ ra trang chờ verify (nếu muốn)
                 } else {
-                     toast.success("Đăng nhập thành công!");
+                     toast.success("Login successful!");
                      navigate('/'); // Hoặc chuyển hướng dựa theo Role giống project cũ
                 }
             } else {
                 toast.error(res.EM);
             }
         } catch (error) {
-            toast.error(error?.EM || "Thông tin đăng nhập không hợp lệ.");
+            toast.error(error?.EM || "Invalid login information.");
         }
         setIsLoading(false);
     };
@@ -102,7 +102,6 @@ const LoginPage = () => {
             <div className="row gx-2">
                 <div className="col-6">
                     <button type="button" className="social-btn" onClick={() => handleSocialLogin('google')}>
-                        {/* Có thể dùng thẻ img logo google, ở đây mình mô phỏng chữ G */}
                         <span style={{color: '#ea4335', fontWeight: 'bold'}}>G</span> Google
                     </button>
                 </div>

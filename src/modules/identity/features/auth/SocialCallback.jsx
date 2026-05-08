@@ -1,17 +1,14 @@
-// src/modules/identity/features/auth/SocialCallback.jsx
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { doLoginSuccess } from '../../redux/authAction';
-import { jwtDecode } from "jwt-decode"; // Bạn cần chạy lệnh: npm install jwt-decode
+import { jwtDecode } from "jwt-decode";
 
 const SocialCallback = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
-    
 
     useEffect(() => {
         const token = searchParams.get('token');

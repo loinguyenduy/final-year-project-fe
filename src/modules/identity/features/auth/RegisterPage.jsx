@@ -18,17 +18,17 @@ const RegisterPage = () => {
         e.preventDefault();
 
         if (!fullName || !email || !password || !confirmPassword) {
-            toast.error("Vui lòng điền các trường bắt buộc!");
+            toast.error("Please fill in all required fields.");
             return;
         }
 
         if (password !== confirmPassword) {
-            toast.error("Mật khẩu xác nhận không khớp!");
+            toast.error("Confirm password does not match!");
             return;
         }
 
         if (password.length < 6) {
-            toast.error("Mật khẩu phải có ít nhất 6 ký tự.");
+            toast.error("Password must be at least 6 characters long.");
             return;
         }
 
@@ -37,14 +37,14 @@ const RegisterPage = () => {
             let res = await registerUserApi(email, password, fullName, phone);
             
             if (res && res.EC === 0) {
-                toast.success("Tạo tài khoản thành công!");
+                toast.success("Account created successfully!");
                 // Chuyển hướng sang trang thông báo check mail, truyền kèm email qua state
                 navigate('/check-email', { state: { email: email } });
             } else {
                 toast.error(res.EM);
             }
         } catch (error) {
-            toast.error(error?.EM || "Có lỗi xảy ra từ Server.");
+            toast.error(error?.EM || "An error occurred on the server.");
         }
         setIsLoading(false);
     };

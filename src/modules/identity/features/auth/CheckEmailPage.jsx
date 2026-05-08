@@ -7,14 +7,13 @@ import { FaEnvelopeOpenText } from 'react-icons/fa'; // Icon phong bì
 
 const CheckEmailPage = () => {
     const location = useLocation();
-    // Lấy email được truyền từ trang Register sang (nếu có)
     const email = location.state?.email || "your email"; 
     
     const [isLoading, setIsLoading] = useState(false);
 
     const handleResendEmail = async () => {
         if (email === "your email") {
-            toast.error("Không tìm thấy email. Vui lòng đăng nhập lại.");
+            toast.error("Email not found. Please go back and enter your email again.");
             return;
         }
 
@@ -22,12 +21,12 @@ const CheckEmailPage = () => {
         try {
             let res = await resendVerifyEmailApi(email);
             if (res && res.EC === 0) {
-                toast.success("Đã gửi lại email xác thực. Vui lòng kiểm tra hộp thư.");
+                toast.success("Verification email resent. Please check your inbox.");
             } else {
                 toast.error(res.EM);
             }
         } catch (error) {
-            toast.error("Có lỗi xảy ra khi gửi lại email.");
+            toast.error("An error occurred while resending the email.");
         }
         setIsLoading(false);
     };

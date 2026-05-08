@@ -15,7 +15,7 @@ const VerifyEmailProcess = () => {
     useEffect(() => {
         if (!token) {
             setStatus('error');
-            setMessage('Token không hợp lệ hoặc bị thiếu.');
+            setMessage('Invalid verification link. No token provided.');
             return;
         }
 
@@ -24,14 +24,14 @@ const VerifyEmailProcess = () => {
                 let res = await verifyEmailApi(token);
                 if (res && res.EC === 0) {
                     setStatus('success');
-                    setMessage('Tài khoản của bạn đã được xác thực thành công!');
+                    setMessage('Your account has been verified successfully!');
                 } else {
                     setStatus('error');
-                    setMessage(res.EM || 'Xác thực thất bại. Token có thể đã hết hạn.');
+                    setMessage(res.EM || 'Verification failed. The token may have expired.');
                 }
             } catch (error) {
                 setStatus('error');
-                setMessage(error?.EM || 'Lỗi kết nối đến máy chủ.');
+                setMessage(error?.EM || 'Error connecting to the server.');
             }
         };
 
@@ -44,17 +44,17 @@ const VerifyEmailProcess = () => {
                 {status === 'loading' && (
                     <>
                         <div className="spinner-border text-primary mb-3" role="status"></div>
-                        <h4>Đang xác thực...</h4>
+                        <h4>Verifying...</h4>
                     </>
                 )}
 
                 {status === 'success' && (
                     <>
                         <FaCheckCircle style={{ fontSize: '50px', color: '#198754', marginBottom: '1rem' }} />
-                        <h4 style={{ color: '#198754', fontWeight: 'bold' }}>Thành công!</h4>
+                        <h4 style={{ color: '#198754', fontWeight: 'bold' }}>Success!</h4>
                         <p style={{ color: '#64748b' }}>{message}</p>
                         <button className="btn btn-primary w-100 mt-3" onClick={() => navigate('/login')}>
-                            Đi tới Đăng nhập
+                            Go to Login
                         </button>
                     </>
                 )}
@@ -62,10 +62,10 @@ const VerifyEmailProcess = () => {
                 {status === 'error' && (
                     <>
                         <FaTimesCircle style={{ fontSize: '50px', color: '#dc3545', marginBottom: '1rem' }} />
-                        <h4 style={{ color: '#dc3545', fontWeight: 'bold' }}>Xác thực thất bại</h4>
+                        <h4 style={{ color: '#dc3545', fontWeight: 'bold' }}>Verification Failed</h4>
                         <p style={{ color: '#64748b' }}>{message}</p>
                         <button className="btn btn-outline-secondary w-100 mt-3" onClick={() => navigate('/login')}>
-                            Quay lại Đăng nhập
+                            Back to Login
                         </button>
                     </>
                 )}
