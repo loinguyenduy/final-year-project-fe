@@ -1,7 +1,6 @@
 import axios from '../../../core/api/axiosInstance';
 
 const loginUserApi = (email, password) => {
-
     return axios.post('/auth/login', { valueLogin: email, password });
 };
 

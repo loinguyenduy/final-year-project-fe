@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import AuthLayout from './AuthLayout';
-import { registerUserApi } from '../../services/authService';
+import AuthLayout from '../components/AuthLayout';
+import { registerUserApi } from '../../../services/authService';
+import '../styles/Auth.scss';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
@@ -15,36 +16,35 @@ const RegisterPage = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleRegister = async (e) => {
-        e.preventDefault();
+        e.preventDefault(); //to prevent page reload when submitting the form
 
         if (!fullName || !email || !password || !confirmPassword) {
-            toast.error("Vui lòng điền các trường bắt buộc!");
+            toast.error("Please fill in all required fields.");
             return;
         }
 
         if (password !== confirmPassword) {
-            toast.error("Mật khẩu xác nhận không khớp!");
+            toast.error("Confirm password does not match!");
             return;
         }
 
         if (password.length < 6) {
-            toast.error("Mật khẩu phải có ít nhất 6 ký tự.");
+            toast.error("Password must be at least 6 characters long.");
             return;
         }
-
         setIsLoading(true);
+
         try {
             let res = await registerUserApi(email, password, fullName, phone);
             
             if (res && res.EC === 0) {
-                toast.success("Tạo tài khoản thành công!");
-                // Chuyển hướng sang trang thông báo check mail, truyền kèm email qua state
+                toast.success("Account created successfully!");
                 navigate('/check-email', { state: { email: email } });
             } else {
                 toast.error(res.EM);
             }
         } catch (error) {
-            toast.error(error?.EM || "Có lỗi xảy ra từ Server.");
+            toast.error(error?.EM || "An error occurred on the server.");
         }
         setIsLoading(false);
     };
@@ -56,33 +56,29 @@ const RegisterPage = () => {
     return (
         <AuthLayout>
             <div className="text-center mb-4">
-                <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1e293b' }}>
-                    Create an account
-                </h3>
-                <p style={{ color: '#64748b', fontSize: '14px' }}>
-                    Enter your information below to register
-                </p>
+                <h3 className="auth-title">Create an account</h3>
+                <p className="auth-subtitle">Enter your information below to register</p>
             </div>
 
             <form onSubmit={handleRegister}>
                 <div className="mb-3">
-                    <label className="form-label" style={{ fontWeight: 500, fontSize: '14px' }}>Full Name</label>
+                    <label className="form-label custom-label">Full Name</label>
                     <input 
-                        type="text" className="form-control" placeholder="John Doe"
+                        type="text" className="form-control" placeholder="Duy Loi Nguyen"
                         value={fullName} onChange={(e) => setFullName(e.target.value)} required
                     />
                 </div>
 
                 <div className="mb-3">
-                    <label className="form-label" style={{ fontWeight: 500, fontSize: '14px' }}>Email</label>
+                    <label className="form-label custom-label">Email</label>
                     <input 
-                        type="email" className="form-control" placeholder="name@example.com"
+                        type="email" className="form-control" placeholder="name@gmail.com"
                         value={email} onChange={(e) => setEmail(e.target.value)} required
                     />
                 </div>
 
                 <div className="mb-3">
-                    <label className="form-label" style={{ fontWeight: 500, fontSize: '14px' }}>Phone (Optional)</label>
+                    <label className="form-label custom-label">Phone (Optional)</label>
                     <input 
                         type="text" className="form-control" placeholder="+1234567890"
                         value={phone} onChange={(e) => setPhone(e.target.value)}
@@ -90,7 +86,7 @@ const RegisterPage = () => {
                 </div>
                 
                 <div className="mb-3">
-                    <label className="form-label" style={{ fontWeight: 500, fontSize: '14px' }}>Password</label>
+                    <label className="form-label custom-label">Password</label>
                     <input 
                         type="password" className="form-control" placeholder="••••••••"
                         value={password} onChange={(e) => setPassword(e.target.value)} required
@@ -98,7 +94,7 @@ const RegisterPage = () => {
                 </div>
 
                 <div className="mb-4">
-                    <label className="form-label" style={{ fontWeight: 500, fontSize: '14px' }}>Confirm Password</label>
+                    <label className="form-label custom-label">Confirm Password</label>
                     <input 
                         type="password" className="form-control" placeholder="••••••••"
                         value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required
@@ -115,18 +111,18 @@ const RegisterPage = () => {
             <div className="row gx-2">
                 <div className="col-6">
                     <button type="button" className="social-btn" onClick={() => handleSocialLogin('google')}>
-                        <span style={{color: '#ea4335', fontWeight: 'bold'}}>G</span> Google
+                        <span className="icon-google">G</span> Google
                     </button>
                 </div>
                 <div className="col-6">
                     <button type="button" className="social-btn" onClick={() => handleSocialLogin('facebook')}>
-                        <span style={{color: '#1877f2', fontWeight: 'bold'}}>f</span> Facebook
+                        <span className="icon-facebook">f</span> Facebook
                     </button>
                 </div>
             </div>
 
-            <div className="text-center mt-4" style={{ fontSize: '14px', color: '#64748b' }}>
-                Already have an account? <Link to="/login" style={{ fontWeight: 500, textDecoration: 'none' }}>Log in</Link>
+            <div className="auth-footer">
+                Already have an account? <Link to="/login" className="auth-footer-link">Log in</Link>
             </div>
         </AuthLayout>
     );

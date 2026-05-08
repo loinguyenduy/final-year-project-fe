@@ -41,17 +41,16 @@
   .auth-card {
     background: white;
     width: 100%;
-    max-width: 450px; /* Tablet & PC sẽ bị giới hạn ở 450px, trên Mobile sẽ tự co lại 100% */
+    max-width: 450px; 
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     padding: 2.5rem 2rem;
 
     @media (max-width: 576px) {
-      padding: 2rem 1.5rem; // Tràn viền bớt đi trên điện thoại
+      padding: 2rem 1.5rem; 
     }
   }
 
-  /* Định dạng chung cho Input và Nút bấm bên trong Card */
   .form-control {
     padding: 0.75rem 1rem;
     border-radius: 8px;
@@ -115,4 +114,48 @@
       margin-left: .5em;
     }
   }
+}
+
+.auth-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+.auth-subtitle {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.custom-label {
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 0;
+}
+
+.forgot-link {
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.icon-google {
+  color: #ea4335;
+  font-weight: bold;
+}
+
+.icon-facebook {
+  color: #1877f2;
+  font-weight: bold;
+}
+
+.auth-footer {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.auth-footer-link {
+  font-weight: 500;
+  text-decoration: none;
 }

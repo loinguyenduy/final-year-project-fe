@@ -1,42 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import AuthLayout from './AuthLayout';
-import { verifyEmailApi } from '../../services/authService';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import AuthLayout from '../components/AuthLayout';
+import { verifyEmailApi } from '../../../services/authService';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import '../styles/VerifyEmail.scss';
 
 const VerifyEmailProcess = () => {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const token = searchParams.get('token');
 
-    const [status, setStatus] = useState('loading'); // loading, success, error
+    const [status, setStatus] = useState('loading');
     const [message, setMessage] = useState('');
 
     useEffect(() => {
         if (!token) {
             setStatus('error');
-            setMessage('Token không hợp lệ hoặc bị thiếu.');
+            setMessage('Invalid verification link. No token provided.');
             return;
         }
-
         const verifyToken = async () => {
             try {
                 let res = await verifyEmailApi(token);
                 if (res && res.EC === 0) {
                     setStatus('success');
-                    setMessage('Tài khoản của bạn đã được xác thực thành công!');
+                    setTimeout(() => navigate('/login'), 3000);
+                    setMessage('Your account has been verified successfully!');
                 } else {
                     setStatus('error');
-                    setMessage(res.EM || 'Xác thực thất bại. Token có thể đã hết hạn.');
+                    setMessage(res.EM || 'Verification failed. The token may have expired.');
                 }
             } catch (error) {
                 setStatus('error');
-                setMessage(error?.EM || 'Lỗi kết nối đến máy chủ.');
+                setMessage(error?.EM || 'Error connecting to the server.');
             }
         };
 
         verifyToken();
-    }, [token]);
+    }, [token, navigate]);
 
     return (
         <AuthLayout>
@@ -44,28 +45,28 @@ const VerifyEmailProcess = () => {
                 {status === 'loading' && (
                     <>
                         <div className="spinner-border text-primary mb-3" role="status"></div>
-                        <h4>Đang xác thực...</h4>
+                        <h4>Verifying...</h4>
                     </>
                 )}
 
                 {status === 'success' && (
                     <>
-                        <FaCheckCircle style={{ fontSize: '50px', color: '#198754', marginBottom: '1rem' }} />
-                        <h4 style={{ color: '#198754', fontWeight: 'bold' }}>Thành công!</h4>
-                        <p style={{ color: '#64748b' }}>{message}</p>
+                        <FaCheckCircle className="success-icon" />
+                        <h4 className="success-title">Success!</h4>
+                        <p className="message-text">{message}</p>
                         <button className="btn btn-primary w-100 mt-3" onClick={() => navigate('/login')}>
-                            Đi tới Đăng nhập
+                            Go to Login
                         </button>
                     </>
                 )}
 
                 {status === 'error' && (
                     <>
-                        <FaTimesCircle style={{ fontSize: '50px', color: '#dc3545', marginBottom: '1rem' }} />
-                        <h4 style={{ color: '#dc3545', fontWeight: 'bold' }}>Xác thực thất bại</h4>
-                        <p style={{ color: '#64748b' }}>{message}</p>
+                        <FaTimesCircle className="error-icon" />
+                        <h4 className="error-title">Verification Failed</h4>
+                        <p className="message-text">{message}</p>
                         <button className="btn btn-outline-secondary w-100 mt-3" onClick={() => navigate('/login')}>
-                            Quay lại Đăng nhập
+                            Back to Login
                         </button>
                     </>
                 )}

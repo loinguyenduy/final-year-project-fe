@@ -1,5 +1,5 @@
 import React from 'react';
-import './Auth.scss';
+import '../styles/Auth.scss'; 
 import { FaWrench } from 'react-icons/fa'; 
 
 const AuthLayout = ({ children }) => {
@@ -14,7 +14,6 @@ const AuthLayout = ({ children }) => {
       </div>
 
       <div className="auth-card">
-        {/* Nội dung trang Login, Register, Verify sẽ được nhét vào đây */}
         {children} 
       </div>
     </div>
