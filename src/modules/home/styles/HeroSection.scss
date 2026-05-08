@@ -1,0 +1,122 @@
+.hero-section {
+  padding: 6rem 0 5rem 0;
+  text-align: center;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    left: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(37,99,235,0.08) 0%, rgba(255,255,255,0) 70%);
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .badge-pill {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    background-color: #eff6ff;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border: 1px solid #bfdbfe;
+  }
+
+  .hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    letter-spacing: -1px;
+
+    .text-highlight {
+      color: #2563eb;
+    }
+
+    @media (max-width: 768px) {
+      font-size: 2.5rem;
+    }
+  }
+
+  .hero-subtitle {
+    font-size: 1.125rem;
+    color: #64748b;
+    max-width: 600px;
+    margin: 0 auto 2.5rem auto;
+    line-height: 1.6;
+  }
+
+  .cta-group {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+
+    @media (max-width: 576px) {
+      flex-direction: column;
+      padding: 0 1rem;
+    }
+
+    .btn-customer {
+      background-color: #2563eb;
+      color: white;
+      padding: 0.8rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      border: none;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: #1d4ed8;
+        transform: translateY(-2px);
+      }
+    }
+
+    .btn-handyman {
+      background-color: #ffffff;
+      color: #334155;
+      padding: 0.8rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      border: 1px solid #cbd5e1;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: #f8fafc;
+        border-color: #94a3b8;
+      }
+    }
+  }
+
+  .trust-badges {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+
+    .trust-badge-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 500;
+
+      svg {
+        color: #16a34a; 
+      }
+    }
+  }
+}

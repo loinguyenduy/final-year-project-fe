@@ -13,9 +13,10 @@ import RegisterPage from "./modules/identity/features/auth/pages/RegisterPage";
 import CheckEmailPage from "./modules/identity/features/auth/pages/CheckEmailPage";
 import VerifyEmailProcess from "./modules/identity/features/auth/pages/VerifyEmailProcess";
 import SocialCallback from "./modules/identity/features/auth/pages/SocialCallback";
+import MainLayout from "./core/layouts/MainLayout";
+import HomePage from "./modules/home/pages/HomePage";
 
 // Placeholder Components (Tạm thời để test Route)
-const HomePage = () => <h2>Trang chủ (Dành cho Customer/Khách)</h2>;
 const AdminDashboard = () => <h2>Trang Admin Dashboard</h2>;
 const HandymanDashboard = () => <h2>Trang Thợ Dashboard</h2>;
 
@@ -51,8 +52,11 @@ function App() {
           {/* Trang hứng callback từ các nền tảng xã hội */}
           <Route path="/social-callback" element={<SocialCallback />} />
 
-          {/* CÁC ROUTE PUBLIC HOẶC DÀNH CHO CUSTOMER */}
-          <Route path="/" element={<HomePage />} />
+            {/* CÁC ROUTE CÓ CHUNG MAIN LAYOUT KÈM HEADER/FOOTER */}
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<HomePage />} />
+            {/* Nếu có các trang khác như About, Contact... có thể đặt làm children ở đây */}
+          </Route>
 
           {/* CÁC ROUTE PRIVATE THEO ROLE */}
           <Route 
