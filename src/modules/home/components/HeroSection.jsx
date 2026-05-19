@@ -5,9 +5,7 @@ import { FaCheckCircle } from 'react-icons/fa';
 import '../styles/HeroSection.scss';
 
 const HeroSection = () => {
-    // Lấy thông tin user để hiển thị nút CTA phù hợp
     const { isAuthenticated, account } = useSelector(state => state.identity);
-
     return (
         <section className="hero-section">
             <div className="container">
@@ -29,11 +27,10 @@ const HeroSection = () => {
                 <div className="cta-group">
                     {!isAuthenticated ? (
                         <>
-                            <Link to="/register" className="btn btn-customer">Post a Job Now</Link>
-                            <Link to="/register" className="btn btn-handyman">Become a Professional</Link>
+                            <Link to="/register?role=CUSTOMER" className="btn btn-customer">Post a Job Now</Link>
+                            <Link to="/register?role=HANDYMAN" className="btn btn-handyman">Become a Professional</Link>
                         </>
                     ) : (
-                        // Nếu đã login, điều hướng dựa trên role
                         account?.role === 'HANDYMAN' ? (
                             <Link to="/handyman/dashboard" className="btn btn-customer">Find Jobs</Link>
                         ) : account?.role === 'ADMIN' ? (
