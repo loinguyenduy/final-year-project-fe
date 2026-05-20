@@ -16,9 +16,11 @@ import SocialCallback from "./modules/identity/features/auth/pages/SocialCallbac
 import MainLayout from "./core/layouts/MainLayout";
 import HomePage from "./modules/home/pages/HomePage";
 
-// Placeholder Components (Tạm thời để test Route)
-const AdminDashboard = () => <h2>Trang Admin Dashboard</h2>;
-const HandymanDashboard = () => <h2>Trang Thợ Dashboard</h2>;
+import CustomerLayout from "./modules/customer/features/dashboard/components/CustomerLayout"; 
+import CustomerDashboardPage from "./modules/customer/features/dashboard/pages/CustomerDashboardPage";
+
+
+
 
 function App() {
   return (
@@ -43,39 +45,20 @@ function App() {
             } 
           />
           
-          {/* Trang hiển thị thông báo "Check your email" sau khi đăng ký */}
           <Route path="/check-email" element={<CheckEmailPage />} />
-          
-          {/* Trang hứng Token từ email gửi về để gọi API Verify */}
           <Route path="/verify-email" element={<VerifyEmailProcess />} />
-          
-          {/* Trang hứng callback từ các nền tảng xã hội */}
           <Route path="/social-callback" element={<SocialCallback />} />
 
             {/* CÁC ROUTE CÓ CHUNG MAIN LAYOUT KÈM HEADER/FOOTER */}
           <Route path="/" element={<MainLayout />}>
             <Route index element={<HomePage />} />
-            {/* Nếu có các trang khác như About, Contact... có thể đặt làm children ở đây */}
           </Route>
 
-          {/* CÁC ROUTE PRIVATE THEO ROLE */}
-          <Route 
-            path="/admin/dashboard" 
-            element={
-              <RoleRoute allowedRoles={['ADMIN']}>
-                <AdminDashboard />
-              </RoleRoute>
-            } 
-          />
 
-          <Route 
-            path="/handyman/dashboard" 
-            element={
-              <RoleRoute allowedRoles={['HANDYMAN']}>
-                <HandymanDashboard />
-              </RoleRoute>
-            } 
-          />
+          {/* CÁC ROUTE PRIVATE THEO ROLE */}
+          <Route element={<RoleRoute allowedRoles={['CUSTOMER']}><CustomerLayout /> </RoleRoute>}>
+            <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
+          </Route>
         </Routes>
       </BrowserRouter>
 

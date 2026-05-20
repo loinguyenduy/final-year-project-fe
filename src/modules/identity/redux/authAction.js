@@ -1,6 +1,7 @@
 export const FETCH_USER_LOGIN_SUCCESS = "FETCH_USER_LOGIN_SUCCESS";
 export const USER_LOGOUT_SUCCESS = "USER_LOGOUT_SUCCESS";
 export const UPDATE_USER_INFO = "UPDATE_USER_INFO";
+export const FETCH_PROFILE_SUCCESS = "FETCH_PROFILE_SUCCESS";
 
 export const doLoginSuccess = (userInfo) => {
   return {
@@ -21,3 +22,8 @@ export const doUpdateUserInfo = (userData) => {
     payload: userData,
   };
 };
+
+export const doFetchProfileSuccess = (profileData) => ({
+  type: FETCH_PROFILE_SUCCESS,
+  payload: profileData,
+});

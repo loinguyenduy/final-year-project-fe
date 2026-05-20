@@ -20,10 +20,11 @@ const resendVerifyEmailApi = (email) => {
     return axios.post('/auth/resend-verification', { email });
 };
 
+
 export { 
     loginUserApi, 
     registerUserApi, 
     logoutUserApi, 
     verifyEmailApi, 
-    resendVerifyEmailApi 
+    resendVerifyEmailApi,
 };

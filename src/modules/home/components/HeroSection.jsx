@@ -36,7 +36,7 @@ const HeroSection = () => {
                         ) : account?.role === 'ADMIN' ? (
                             <Link to="/admin/dashboard" className="btn btn-customer">Admin Panel</Link>
                         ) : (
-                            <Link to="/dashboard" className="btn btn-customer">Post a New Job</Link>
+                            <Link to="/customer/dashboard" className="btn btn-customer">Post a New Job</Link>
                         )
                     )}
                 </div>

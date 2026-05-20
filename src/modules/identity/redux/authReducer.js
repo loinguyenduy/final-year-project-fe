@@ -2,6 +2,7 @@ import {
   FETCH_USER_LOGIN_SUCCESS,
   USER_LOGOUT_SUCCESS,
   UPDATE_USER_INFO,
+  FETCH_PROFILE_SUCCESS,
 } from "./authAction";
 
 const INITIAL_STATE = {
@@ -13,6 +14,8 @@ const INITIAL_STATE = {
     phone_number: "",
     avatar_url: "",
     is_email_verified: false,
+    kyc_status: "UNVERIFIED", 
+    wallets: [],
   },
   isAuthenticated: false,
   token: "", 
@@ -31,6 +34,7 @@ const authReducer = (state = INITIAL_STATE, action) => {
           phone_number: action.payload.user.phone_number || "",
           avatar_url: action.payload.user.avatar_url || "",
           is_email_verified: action.payload.user.is_email_verified,
+          kyc_status: action.payload.user.kyc_status || "UNVERIFIED",
         },
         isAuthenticated: true,
         token: action.payload.access_token,
@@ -50,6 +54,16 @@ const authReducer = (state = INITIAL_STATE, action) => {
           phone_number: action.payload.phone_number || state.account.phone_number,
           avatar_url: action.payload.avatar_url || state.account.avatar_url,
         },
+      };
+
+    case FETCH_PROFILE_SUCCESS:
+      return {
+        ...state,
+        account: {
+          ...state.account,
+          ...action.payload,
+          wallets: action.payload.Wallets || [], 
+        }
       };
 
     default:

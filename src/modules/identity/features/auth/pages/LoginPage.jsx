@@ -34,7 +34,14 @@ const LoginPage = () => {
                     toast.warning("Account not verified. Please check your email!");
                 } else {
                     toast.success("Login successful!");
-                    navigate('/'); 
+                    const userRole = res.DT.user.role;
+                    if (userRole === 'ADMIN') {
+                        navigate('/admin/dashboard');
+                    } else if (userRole === 'HANDYMAN') {
+                        navigate('/handyman/dashboard');
+                    } else {
+                        navigate('/customer/dashboard'); 
+                    }
                 }
             } else {
                 toast.error(res.EM);
