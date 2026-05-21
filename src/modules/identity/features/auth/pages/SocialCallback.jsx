@@ -31,7 +31,13 @@ const SocialCallback = () => {
 
                 dispatch(doLoginSuccess(payload));
                 toast.success("Login successful!");
-                navigate('/');
+                
+                const userRole = decodedUser.role?.toUpperCase();
+                if (userRole === 'CUSTOMER') {
+                    navigate('/customer/dashboard');
+                } else {
+                    navigate('/');
+                }
             } catch (err) {
                 toast.error("Invalid token received from server.");
                 navigate('/login');

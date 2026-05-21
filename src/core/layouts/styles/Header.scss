@@ -1,0 +1,63 @@
+.custom-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #f1f5f9;
+  padding: 1rem 0;
+  transition: all 0.3s ease;
+
+  .navbar-brand {
+    font-weight: 700;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .brand-icon {
+      background-color: #2563eb; 
+      color: #ffffff;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+  }
+
+  .nav-link {
+    color: #475569;
+    font-weight: 500;
+    font-size: 15px;
+    margin: 0 1rem;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #2563eb;
+    }
+  }
+
+  .btn-login {
+    color: #0f172a;
+    font-weight: 600;
+    text-decoration: none;
+    margin-right: 1.5rem;
+    font-size: 15px;
+
+    &:hover {
+      color: #2563eb;
+    }
+  }
+
+  .btn-signup {
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    background-color: #2563eb;
+    border: none;
+
+    &:hover {
+      background-color: #1d4ed8;
+    }
+  }
+}

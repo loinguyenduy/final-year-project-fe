@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import AuthLayout from '../components/AuthLayout';
 import { registerUserApi } from '../../../services/authService';
@@ -7,6 +7,9 @@ import '../styles/Auth.scss';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const roleParams = searchParams.get('role');
+    const assignedRole = (roleParams === 'HANDYMAN') ? 'HANDYMAN' : 'CUSTOMER';
 
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
@@ -35,7 +38,7 @@ const RegisterPage = () => {
         setIsLoading(true);
 
         try {
-            let res = await registerUserApi(email, password, fullName, phone);
+            let res = await registerUserApi(email, password, fullName, phone, assignedRole);
             
             if (res && res.EC === 0) {
                 toast.success("Account created successfully!");
@@ -56,8 +59,14 @@ const RegisterPage = () => {
     return (
         <AuthLayout>
             <div className="text-center mb-4">
-                <h3 className="auth-title">Create an account</h3>
-                <p className="auth-subtitle">Enter your information below to register</p>
+                <h3 className="auth-title">
+                    {assignedRole === 'HANDYMAN' ? 'Become a Professional' : 'Create an Account'}
+                    </h3>
+                <p className="auth-subtitle">
+                    {assignedRole === 'HANDYMAN' 
+                        ? 'Register your professional profile to start earning' 
+                        : 'Enter your information below to register'}
+                </p>
             </div>
 
             <form onSubmit={handleRegister}>

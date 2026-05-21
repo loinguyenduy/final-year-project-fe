@@ -4,8 +4,8 @@ const loginUserApi = (email, password) => {
     return axios.post('/auth/login', { valueLogin: email, password });
 };
 
-const registerUserApi = (email, password, full_name, phone_number) => {
-    return axios.post('/auth/register', { email, password, full_name, phone_number });
+const registerUserApi = (email, password, full_name, phone_number, role) => {
+    return axios.post('/auth/register', { email, password, full_name, phone_number, role });
 };
 
 const logoutUserApi = () => {
@@ -20,10 +20,11 @@ const resendVerifyEmailApi = (email) => {
     return axios.post('/auth/resend-verification', { email });
 };
 
+
 export { 
     loginUserApi, 
     registerUserApi, 
     logoutUserApi, 
     verifyEmailApi, 
-    resendVerifyEmailApi 
+    resendVerifyEmailApi,
 };
