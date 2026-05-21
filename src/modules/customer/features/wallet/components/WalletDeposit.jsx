@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { FaCreditCard, FaQrcode, FaCheckCircle } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import { topUpWalletApi } from '../../../services/walletService';
 
 const WalletDeposit = () => {
     const [activeTab, setActiveTab] = useState('deposit');
     const [amount, setAmount] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('vnpay');
+    const [isLoading, setIsLoading] = useState(false);
 
     const quickAmounts = [100000, 200000, 500000, 1000000];
 
@@ -22,6 +25,32 @@ const WalletDeposit = () => {
     const handleAmountChange = (e) => {
         const rawValue = e.target.value.replace(/[^0-9]/g, '');
         setAmount(rawValue);
+    };
+
+    const handleDeposit = async () => {
+        if (!amount || parseInt(amount) <= 0) {
+            toast.error('Please enter a valid amount');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const data = {
+                amount: parseInt(amount),
+                payment_method: paymentMethod.toUpperCase()
+            };
+            
+            const res = await topUpWalletApi(data);
+            if (res && res.EC === 0) {
+                window.location.href = res.DT;
+            } else {
+                toast.error(res.EM || 'Failed to initialize payment');
+                setIsLoading(false);
+            }
+        } catch (error) {
+            toast.error(error?.response?.data?.EM || 'An error occurred during payment initialization');
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -115,8 +144,12 @@ const WalletDeposit = () => {
                         </div>
                     </div>
 
-                    <button className="btn btn-primary w-100 fw-bold btn-deposit">
-                        Deposit Now
+                    <button 
+                        className="btn btn-primary w-100 fw-bold btn-deposit"
+                        onClick={handleDeposit}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Processing...' : 'Deposit Now'}
                     </button>
                 </div>
             )}

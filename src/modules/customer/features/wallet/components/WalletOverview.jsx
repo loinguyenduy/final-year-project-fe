@@ -1,7 +1,17 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { FaWallet, FaLock, FaHistory } from 'react-icons/fa';
 
 const WalletOverview = () => {
+    const { account } = useSelector(state => state.identity);
+    
+    const mainWallet = account?.wallets?.find(w => w.wallet_type === 'CUSTOMER_MAIN');
+    const balance = mainWallet ? mainWallet.balance : 0;
+    
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+    };
+
     return (
         <div className="wallet-overview mb-4">
             <div className="mb-4">
@@ -16,8 +26,8 @@ const WalletOverview = () => {
                         <div className="card-header-icon">
                             <FaWallet />
                             <span className="ms-2">Available Balance</span>
-                        </div>
-                        <h2 className="balance-amount mt-3 mb-2">2,400,000₫</h2>
+                        </div>      
+                        <h2 className="balance-amount mt-3 mb-2">{formatCurrency(balance)}</h2>
                         <span className="card-subtitle">Ready to use</span>
                     </div>
                 </div>
@@ -29,7 +39,7 @@ const WalletOverview = () => {
                             <FaLock />
                             <span className="ms-2 text-secondary">In Escrow</span>
                         </div>
-                        <h2 className="balance-amount mt-3 mb-2 text-dark">850,000₫</h2>
+                        <h2 className="balance-amount mt-3 mb-2 text-dark">850,000`₫</h2>
                         <span className="card-subtitle text-warning">JOB-0041 in progress</span>
                     </div>
                 </div>

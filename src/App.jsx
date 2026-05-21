@@ -20,6 +20,7 @@ import CustomerLayout from "./modules/customer/features/dashboard/components/Cus
 import CustomerDashboardPage from "./modules/customer/features/dashboard/pages/CustomerDashboardPage";
 import CustomerProfilePage from "./modules/customer/features/profile-kyc/pages/CustomerProfilePage";
 import CustomerWalletPage from "./modules/customer/features/wallet/pages/CustomerWalletPage";
+import PaymentResultPage from "./modules/customer/features/wallet/pages/PaymentResultPage";
 
 
 
@@ -50,6 +51,10 @@ function App() {
           <Route path="/check-email" element={<CheckEmailPage />} />
           <Route path="/verify-email" element={<VerifyEmailProcess />} />
           <Route path="/social-callback" element={<SocialCallback />} />
+          
+          <Route path="/payment-success" element={<PaymentResultPage />} />
+          <Route path="/payment-cancel" element={<PaymentResultPage />} />
+          <Route path="/vnpay-return" element={<PaymentResultPage />} />
 
             {/* CÁC ROUTE CÓ CHUNG MAIN LAYOUT KÈM HEADER/FOOTER */}
           <Route path="/" element={<MainLayout />}>
