@@ -19,6 +19,7 @@ import HomePage from "./modules/home/pages/HomePage";
 import CustomerLayout from "./modules/customer/features/dashboard/components/CustomerLayout"; 
 import CustomerDashboardPage from "./modules/customer/features/dashboard/pages/CustomerDashboardPage";
 import CustomerProfilePage from "./modules/customer/features/profile-kyc/pages/CustomerProfilePage";
+import CustomerWalletPage from "./modules/customer/features/wallet/pages/CustomerWalletPage";
 
 
 
@@ -60,6 +61,7 @@ function App() {
           <Route element={<RoleRoute allowedRoles={['CUSTOMER']}><CustomerLayout /> </RoleRoute>}>
             <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
             <Route path="/customer/profile" element={<CustomerProfilePage />} />
+            <Route path="/customer/wallet" element={<CustomerWalletPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

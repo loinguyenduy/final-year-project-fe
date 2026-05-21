@@ -1,0 +1,127 @@
+import React, { useState } from 'react';
+import { FaCreditCard, FaQrcode, FaCheckCircle } from 'react-icons/fa';
+
+const WalletDeposit = () => {
+    const [activeTab, setActiveTab] = useState('deposit');
+    const [amount, setAmount] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('vnpay');
+
+    const quickAmounts = [100000, 200000, 500000, 1000000];
+
+    const handleAmountSelect = (val) => {
+        setAmount(val.toString());
+    };
+
+    const formatCurrency = (val) => {
+        if (!val) return '';
+        const number = parseInt(val.replace(/[^0-9]/g, ''), 10);
+        if (isNaN(number)) return '';
+        return new Intl.NumberFormat('vi-VN').format(number);
+    };
+
+    const handleAmountChange = (e) => {
+        const rawValue = e.target.value.replace(/[^0-9]/g, '');
+        setAmount(rawValue);
+    };
+
+    return (
+        <div className="wallet-card form-card">
+            {/* Tabs */}
+            <div className="custom-tabs mb-4">
+                <button 
+                    className={`tab-btn ${activeTab === 'deposit' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('deposit')}
+                >
+                    Deposit
+                </button>
+                <button 
+                    className={`tab-btn ${activeTab === 'withdraw' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('withdraw')}
+                >
+                    Withdraw
+                </button>
+            </div>
+
+            {activeTab === 'withdraw' ? (
+                <div className="text-center py-5">
+                    <p className="text-muted">Withdrawal feature is coming soon.</p>
+                </div>
+            ) : (
+                <div className="deposit-form">
+                    {/* Amount Input */}
+                    <div className="form-group mb-4">
+                        <label className="fw-bold mb-2">Amount (VND)</label>
+                        <input 
+                            type="text" 
+                            className="form-control amount-input" 
+                            placeholder="Enter amount..."
+                            value={formatCurrency(amount)}
+                            onChange={handleAmountChange}
+                        />
+                        <div className="quick-amounts mt-3">
+                            {quickAmounts.map((amt) => (
+                                <button 
+                                    key={amt} 
+                                    className="quick-btn"
+                                    onClick={() => handleAmountSelect(amt)}
+                                >
+                                    {amt >= 1000000 ? `${amt / 1000000}m` : `${amt / 1000}k`}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Payment Methods */}
+                    <div className="form-group mb-4">
+                        <label className="fw-bold mb-2">Payment Method</label>
+                        <div className="payment-methods">
+                            {/* VNPay */}
+                            <div 
+                                className={`method-item ${paymentMethod === 'vnpay' ? 'selected' : ''}`}
+                                onClick={() => setPaymentMethod('vnpay')}
+                            >
+                                <div className="d-flex align-items-center">
+                                    <div className="method-icon bg-light text-primary">
+                                        <FaCreditCard />
+                                    </div>
+                                    <div className="ms-3">
+                                        <h6 className="m-0 fw-bold">VNPay</h6>
+                                        <small className="text-muted">Online Gateway</small>
+                                    </div>
+                                </div>
+                                <div className="radio-circle">
+                                    {paymentMethod === 'vnpay' && <div className="inner-circle" />}
+                                </div>
+                            </div>
+
+                            {/* PayOS */}
+                            <div 
+                                className={`method-item ${paymentMethod === 'payos' ? 'selected' : ''}`}
+                                onClick={() => setPaymentMethod('payos')}
+                            >
+                                <div className="d-flex align-items-center">
+                                    <div className="method-icon bg-light text-primary">
+                                        <FaQrcode />
+                                    </div>
+                                    <div className="ms-3">
+                                        <h6 className="m-0 fw-bold">PayOS</h6>
+                                        <small className="text-muted">Quick QR Transfer</small>
+                                    </div>
+                                </div>
+                                <div className="radio-circle">
+                                    {paymentMethod === 'payos' && <div className="inner-circle" />}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button className="btn btn-primary w-100 fw-bold btn-deposit">
+                        Deposit Now
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default WalletDeposit;
