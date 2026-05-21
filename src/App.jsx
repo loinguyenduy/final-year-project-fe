@@ -18,6 +18,7 @@ import HomePage from "./modules/home/pages/HomePage";
 
 import CustomerLayout from "./modules/customer/features/dashboard/components/CustomerLayout"; 
 import CustomerDashboardPage from "./modules/customer/features/dashboard/pages/CustomerDashboardPage";
+import CustomerProfilePage from "./modules/customer/features/profile-kyc/pages/CustomerProfilePage";
 
 
 
@@ -58,6 +59,7 @@ function App() {
           {/* CÁC ROUTE PRIVATE THEO ROLE */}
           <Route element={<RoleRoute allowedRoles={['CUSTOMER']}><CustomerLayout /> </RoleRoute>}>
             <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
+            <Route path="/customer/profile" element={<CustomerProfilePage />} />
           </Route>
         </Routes>
       </BrowserRouter>
