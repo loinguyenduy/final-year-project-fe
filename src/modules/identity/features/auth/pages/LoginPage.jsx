@@ -34,13 +34,11 @@ const LoginPage = () => {
                     toast.warning("Account not verified. Please check your email!");
                 } else {
                     toast.success("Login successful!");
-                    const userRole = res.DT.user.role;
-                    if (userRole === 'ADMIN') {
-                        navigate('/admin/dashboard');
-                    } else if (userRole === 'HANDYMAN') {
-                        navigate('/handyman/dashboard');
+                    const userRole = res.DT.user.role?.toUpperCase();
+                    if (userRole === 'CUSTOMER') {
+                        navigate('/customer/dashboard');
                     } else {
-                        navigate('/customer/dashboard'); 
+                        navigate('/');
                     }
                 }
             } else {

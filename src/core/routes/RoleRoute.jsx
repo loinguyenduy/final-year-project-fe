@@ -10,9 +10,12 @@ const RoleRoute = ({ children, allowedRoles }) => {
         return <Navigate to="/login" replace />;
     }
 
-    if (account && !allowedRoles.includes(account.role)) {
-        toast.error("You do not have permission to access this page.");
-        return <Navigate to="/" replace />;
+    if (account) {
+        const isAllowed = allowedRoles.map(r => r.toUpperCase()).includes(account.role?.toUpperCase());
+        if (!isAllowed) {
+            toast.error("You do not have permission to access this page.");
+            return <Navigate to="/" replace />;
+        }
     }
 
     return children;
