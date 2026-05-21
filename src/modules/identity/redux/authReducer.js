@@ -35,6 +35,7 @@ const authReducer = (state = INITIAL_STATE, action) => {
           avatar_url: action.payload.user.avatar_url || "",
           is_email_verified: action.payload.user.is_email_verified,
           kyc_status: action.payload.user.kyc_status || "UNVERIFIED",
+          wallets: action.payload.user.Wallets || [],
         },
         isAuthenticated: true,
         token: action.payload.access_token,

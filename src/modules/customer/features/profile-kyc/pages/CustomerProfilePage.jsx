@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { getUserProfileApi } from '../../../../identity/services/profileService';
+import {getUserProfileApi} from '../../../services/profileService';
 import { doFetchProfileSuccess } from '../../../../identity/redux/authAction';
 import ProfileDetails from '../components/ProfileDetails';
 import KycModal from '../components/KycModal';
