@@ -22,6 +22,7 @@ import CustomerProfilePage from "./modules/customer/features/profile-kyc/pages/C
 import CustomerWalletPage from "./modules/customer/features/wallet/pages/CustomerWalletPage";
 import PaymentResultPage from "./modules/customer/features/wallet/pages/PaymentResultPage";
 import HandymanLayout from "./modules/handyman/features/dashboard/components/HandymanLayout";
+import HandymanDashboardPage from "./modules/handyman/features/dashboard/pages/HandymanDashboardPage";
 
 
 function App() {
@@ -70,7 +71,7 @@ function App() {
           
           {/* HANDYMAN ROUTES */}
           <Route element={<RoleRoute allowedRoles={['HANDYMAN']}><HandymanLayout /></RoleRoute>}>
-            <Route path="/handyman/dashboard" element={<h1>Welcome to Handyman Dashboard</h1>} />
+            <Route path="/handyman/dashboard" element={<HandymanDashboardPage />} />
             <Route path="/handyman/profile" element={<h1>Profile & KYC Page</h1>} />
           </Route>
         </Routes>

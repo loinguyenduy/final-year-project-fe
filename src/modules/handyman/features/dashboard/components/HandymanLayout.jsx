@@ -57,20 +57,20 @@ const HandymanLayout = () => {
       name: "Overview",
       path: "/handyman/dashboard",
       icon: <FaThLarge />,
-      requiredLevel: "C0",
+      requiredLevel: "C1",
     },
     {
       name: "Find Jobs",
       path: "/handyman/find-jobs",
       icon: <FaBriefcase />,
       badge: 8,
-      requiredLevel: "C1",
+      requiredLevel: "C2",
     },
     {
       name: "My Jobs",
       path: "/handyman/my-jobs",
       icon: <FaBriefcase />,
-      requiredLevel: "C1",
+      requiredLevel: "C2",
     },
     {
       name: "Dual Wallet",
@@ -82,7 +82,7 @@ const HandymanLayout = () => {
       name: "Profile & KYC",
       path: "/handyman/profile",
       icon: <FaUserShield />,
-      requiredLevel: "C0",
+      requiredLevel: "C1",
     },
   ];
 
