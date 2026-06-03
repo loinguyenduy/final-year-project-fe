@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
 // Route Guards
@@ -21,8 +21,7 @@ import CustomerDashboardPage from "./modules/customer/features/dashboard/pages/C
 import CustomerProfilePage from "./modules/customer/features/profile-kyc/pages/CustomerProfilePage";
 import CustomerWalletPage from "./modules/customer/features/wallet/pages/CustomerWalletPage";
 import PaymentResultPage from "./modules/customer/features/wallet/pages/PaymentResultPage";
-
-
+import HandymanLayout from "./modules/handyman/features/dashboard/components/HandymanLayout";
 
 
 function App() {
@@ -67,6 +66,12 @@ function App() {
             <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
             <Route path="/customer/profile" element={<CustomerProfilePage />} />
             <Route path="/customer/wallet" element={<CustomerWalletPage />} />
+          </Route>
+          
+          {/* HANDYMAN ROUTES */}
+          <Route element={<RoleRoute allowedRoles={['HANDYMAN']}><HandymanLayout /></RoleRoute>}>
+            <Route path="/handyman/dashboard" element={<h1>Welcome to Handyman Dashboard</h1>} />
+            <Route path="/handyman/profile" element={<h1>Profile & KYC Page</h1>} />
           </Route>
         </Routes>
       </BrowserRouter>
