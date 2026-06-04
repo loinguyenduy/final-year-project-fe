@@ -24,7 +24,7 @@ import PaymentResultPage from "./core/features/payment/pages/PaymentResultPage";
 import HandymanLayout from "./modules/handyman/features/dashboard/components/HandymanLayout";
 import HandymanDashboardPage from "./modules/handyman/features/dashboard/pages/HandymanDashboardPage";
 import HandymanWalletPage from "./modules/handyman/features/wallet/pages/HandymanWalletPage";
-
+import HandymanProfilePage from "./modules/handyman/features/profile/pages/HandymanProfilePage";
 
 function App() {
   return (
@@ -73,8 +73,8 @@ function App() {
           {/* HANDYMAN ROUTES */}
           <Route element={<RoleRoute allowedRoles={['HANDYMAN']}><HandymanLayout /></RoleRoute>}>
             <Route path="/handyman/dashboard" element={<HandymanDashboardPage />} />
-            <Route path="/handyman/profile" element={<h1>Profile & KYC Page</h1>} />
             <Route path="/handyman/wallet" element={<HandymanWalletPage />} />
+            <Route path="/handyman/profile" element={<HandymanProfilePage />} />
           </Route>
         </Routes>
       </BrowserRouter>
