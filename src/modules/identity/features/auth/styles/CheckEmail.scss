@@ -1,0 +1,52 @@
+.mail-icon-wrapper {
+  background-color: #e0f2fe;
+  color: #0d6efd;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  margin: 0 auto 1.5rem auto;
+}
+
+.check-mail-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.email-sent-text {
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.email-highlight {
+  color: #1e293b;
+}
+
+.instruction-text {
+  color: #64748b;
+  font-size: 14px;
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.btn-resend {
+  border: 1px solid #cbd5e1;
+  background-color: white;
+  font-weight: 500;
+}
+
+.back-link-wrapper {
+  font-size: 14px;
+}
+
+.back-link {
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 500;
+}
