@@ -16,6 +16,8 @@ const INITIAL_STATE = {
     is_email_verified: false,
     kyc_status: "UNVERIFIED", 
     wallets: [],
+    auth_providers: [], 
+    kyc_requests: [],
     handyman_profile: {
       handyman_level: "C0",
       security_bond_status: "UNPAID",
@@ -42,6 +44,8 @@ const authReducer = (state = INITIAL_STATE, action) => {
           is_email_verified: action.payload.user.is_email_verified,
           kyc_status: action.payload.user.kyc_status || "UNVERIFIED",
           wallets: action.payload.user.Wallets || [],
+          auth_providers: action.payload.user.AuthProviders || action.payload.user.Auth_Providers || [],
+          kyc_requests: action.payload.user.KycDocuments || [],
           handyman_profile: action.payload.user.Handyman_Profile || INITIAL_STATE.account.handyman_profile
         },
         isAuthenticated: true,
@@ -71,6 +75,8 @@ const authReducer = (state = INITIAL_STATE, action) => {
           ...state.account,
           ...action.payload,
           wallets: action.payload.Wallets || [], 
+          auth_providers: action.payload.AuthProviders || action.payload.Auth_Providers || state.account.auth_providers,
+          kyc_requests: action.payload.KycDocuments || state.account.kyc_requests,
           handyman_profile: action.payload.Handyman_Profile || state.account.handyman_profile
         }
       };
