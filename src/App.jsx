@@ -30,6 +30,7 @@ import HandymanProfilePage from "./modules/handyman/features/profile/pages/Handy
 import AdminLayout from './modules/admin/layouts/AdminLayout';
 import AdminDashboardPage from './modules/admin/features/dashboard/pages/AdminDashboardPage';
 import AdminLoginPage from './modules/admin/features/login/pages/AdminLoginPage';
+import KycManagementPage from "./modules/admin/features/kyc/pages/KycManagementPage";
 
 function App() {
   return (
@@ -97,8 +98,9 @@ function App() {
         }>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="kyc" element={<KycManagementPage/>}/>
         </Route>
-        
+
         </Routes>
       </BrowserRouter>
 
