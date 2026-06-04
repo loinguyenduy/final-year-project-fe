@@ -13,6 +13,9 @@ const GuestRoute = ({ children }) => {
     if (role === "HANDYMAN") {
       return <Navigate to="/handyman/dashboard" replace />;
     }
+    if (role === "ADMIN") {
+      return <Navigate to="/admin/dashboard" replace />;
+    }
     return <Navigate to="/" replace />;
   }
 
