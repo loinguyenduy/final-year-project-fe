@@ -1,0 +1,231 @@
+.my-jobs-container {
+  padding: 16px 0;
+
+  .title-text {
+    font-size: 1.75rem;
+    color: #0f172a; // slate-900
+  }
+
+  .btn-add-job {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    border-radius: 8px;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+  }
+
+  .custom-tabs-container {
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 8px;
+
+    .custom-tabs {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      
+      .tab-btn {
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        color: #64748b;
+        padding: 8px 18px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+        white-space: nowrap;
+        transition: all 0.2s;
+
+        &:hover {
+          background-color: #f8fafc;
+          color: #334155;
+        }
+
+        &.active {
+          background-color: #2563eb;
+          color: #ffffff;
+          border-color: #2563eb;
+          box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+        }
+      }
+    }
+  }
+
+  .empty-jobs-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+
+    .empty-icon {
+      color: #94a3b8;
+    }
+
+    h5 {
+      color: #334155;
+    }
+  }
+
+  .job-item-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .card-top {
+      .job-meta {
+        font-size: 13px;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .job-code {
+          color: #64748b;
+        }
+      }
+
+      .status-badge {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+
+        &.status-bidding {
+          background-color: #fef9c3; // yellow-100
+          color: #ca8a04; // yellow-700
+        }
+
+        &.status-inprogress {
+          background-color: #eff6ff; // blue-50
+          color: #2563eb; // blue-600
+        }
+
+        &.status-warranty {
+          background-color: #e0f2fe; // sky-100
+          color: #0369a1; // sky-700
+        }
+
+        &.status-completed {
+          background-color: #dcfce7; // green-100
+          color: #15803d; // green-700
+        }
+
+        &.status-default {
+          background-color: #f1f5f9;
+          color: #475569;
+        }
+      }
+    }
+
+    .job-info {
+      .job-title {
+        font-size: 1.125rem;
+        margin: 0;
+        color: #1e293b;
+      }
+      .job-desc {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #64748b;
+      }
+    }
+
+    .job-details {
+      border-top: 1px dashed #f1f5f9;
+      padding-top: 16px;
+
+      .detail-item {
+        font-size: 13.5px;
+        color: #475569;
+
+        .detail-icon {
+          color: #94a3b8;
+          flex-shrink: 0;
+        }
+        
+        .detail-text {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+
+    .card-bottom {
+      border-top: 1px solid #f1f5f9;
+
+      .handyman-info {
+        .handyman-avatar {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          overflow: hidden;
+          background-color: #cbd5e1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+
+          .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .avatar-placeholder {
+            font-weight: 700;
+            font-size: 12px;
+            color: #475569;
+          }
+        }
+
+        .handyman-meta {
+          .handyman-name {
+            font-size: 13.5px;
+            color: #334155;
+          }
+          small {
+            font-size: 11px;
+            color: #16a34a;
+          }
+        }
+      }
+
+      .job-price {
+        .price-label {
+          font-size: 11px;
+          color: #94a3b8;
+        }
+        .price-val {
+          font-size: 16px;
+          color: #1e293b;
+        }
+      }
+    }
+  }
+
+  // Text utility helpers
+  .text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
