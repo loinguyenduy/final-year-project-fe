@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 const PaymentResultPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    
+    // Lấy thông tin user từ Redux để biết họ là CUSTOMER hay HANDYMAN
+    const { account } = useSelector(state => state.identity);
+    
     const [isSuccess, setIsSuccess] = useState(false);
     const [countdown, setCountdown] = useState(3);
 
@@ -33,7 +38,15 @@ const PaymentResultPage = () => {
             setCountdown((prev) => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    navigate('/customer/wallet');
+                    
+                    // LUỒNG ĐIỀU HƯỚNG DỰA TRÊN ROLE
+                    const role = account?.role?.toUpperCase();
+                    if (role === 'HANDYMAN') {
+                        navigate('/handyman/wallet');
+                    } else {
+                        navigate('/customer/wallet'); // Fallback mặc định về customer
+                    }
+                    
                     return 0;
                 }
                 return prev - 1;
@@ -41,7 +54,7 @@ const PaymentResultPage = () => {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [location, navigate]);
+    }, [location, navigate, account]);
 
     return (
         <div className="d-flex align-items-center justify-content-center vh-100 bg-light">

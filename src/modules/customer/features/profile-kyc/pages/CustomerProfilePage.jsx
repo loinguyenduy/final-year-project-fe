@@ -5,7 +5,7 @@ import { doFetchProfileSuccess } from '../../../../identity/redux/authAction';
 import ProfileDetails from '../components/ProfileDetails';
 import KycModal from '../components/KycModal';
 import { toast } from 'react-toastify';
-import '../styles/ProfileKyc.scss'; // Load CSS
+import '../styles/ProfileKyc.scss'; 
 
 const CustomerProfilePage = () => {
     const dispatch = useDispatch();
