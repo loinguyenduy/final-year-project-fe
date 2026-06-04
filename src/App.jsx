@@ -20,9 +20,10 @@ import CustomerLayout from "./modules/customer/features/dashboard/components/Cus
 import CustomerDashboardPage from "./modules/customer/features/dashboard/pages/CustomerDashboardPage";
 import CustomerProfilePage from "./modules/customer/features/profile-kyc/pages/CustomerProfilePage";
 import CustomerWalletPage from "./modules/customer/features/wallet/pages/CustomerWalletPage";
-import PaymentResultPage from "./modules/customer/features/wallet/pages/PaymentResultPage";
+import PaymentResultPage from "./core/features/payment/pages/PaymentResultPage";
 import HandymanLayout from "./modules/handyman/features/dashboard/components/HandymanLayout";
 import HandymanDashboardPage from "./modules/handyman/features/dashboard/pages/HandymanDashboardPage";
+import HandymanWalletPage from "./modules/handyman/features/wallet/pages/HandymanWalletPage";
 
 
 function App() {
@@ -73,6 +74,7 @@ function App() {
           <Route element={<RoleRoute allowedRoles={['HANDYMAN']}><HandymanLayout /></RoleRoute>}>
             <Route path="/handyman/dashboard" element={<HandymanDashboardPage />} />
             <Route path="/handyman/profile" element={<h1>Profile & KYC Page</h1>} />
+            <Route path="/handyman/wallet" element={<HandymanWalletPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
