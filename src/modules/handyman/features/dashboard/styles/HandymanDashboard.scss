@@ -144,4 +144,101 @@
       }
     }
   }
+
+  .bonding-block {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    border: 1px solid #e2e8f0;
+    max-width: 700px;
+    margin: 0 auto;
+
+    .header-section {
+      text-align: center;
+      margin-bottom: 2rem;
+
+      .shield-icon {
+        background: #fff7ed;
+        color: #ea580c;
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+      }
+      h4 { font-weight: 700; color: #0f172a; margin-bottom: 0.5rem; }
+      p { color: #64748b; font-size: 0.95rem; }
+    }
+
+    .amount-box {
+      border: 1px solid #fed7aa;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      background-color: #fffaf5;
+
+      .label { color: #ea580c; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; }
+      .amount { font-size: 2.5rem; font-weight: 800; color: #c2410c; margin-bottom: 1.5rem; }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        text-align: left;
+        background: #ffffff;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #ffedd5;
+
+        .info-item {
+          small { color: #64748b; display: block; margin-bottom: 0.2rem; }
+          strong { color: #0f172a; font-size: 0.9rem; }
+        }
+      }
+    }
+
+    .benefits-box {
+      background: #f0f9ff;
+      border: 1px solid #e0f2fe;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+
+      h6 { color: #0369a1; font-weight: 700; margin-bottom: 1rem; }
+      ul {
+        list-style: none;
+        padding: 0; margin: 0;
+        li {
+          display: flex; align-items: center; gap: 0.75rem;
+          color: #0284c7; margin-bottom: 0.75rem; font-weight: 500; font-size: 0.95rem;
+          &:last-child { margin-bottom: 0; }
+        }
+      }
+    }
+
+    .security-note {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      background: #f8fafc;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1.5rem;
+
+      .icon { color: #64748b; margin-top: 0.2rem; }
+      p { margin: 0; font-size: 0.85rem; color: #475569; line-height: 1.5; }
+    }
+  }
+
+  .c3-placeholder {
+    background: #ecfccb;
+    border: 1px dashed #ca8a04;
+    padding: 4rem;
+    text-align: center;
+    border-radius: 12px;
+    h3 { color: #854d0e; }
+  }
 }
