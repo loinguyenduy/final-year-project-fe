@@ -27,7 +27,7 @@ const CustomerWalletPage = () => {
     return (
         <div className="customer-wallet-container py-2">
             <WalletOverview />
-            
+
             <div className="row g-4">
                 <div className="col-lg-5">
                     <WalletDeposit />

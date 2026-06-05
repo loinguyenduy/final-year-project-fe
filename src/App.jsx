@@ -27,6 +27,7 @@ import HandymanLayout from "./modules/handyman/features/dashboard/components/Han
 import HandymanDashboardPage from "./modules/handyman/features/dashboard/pages/HandymanDashboardPage";
 import HandymanWalletPage from "./modules/handyman/features/wallet/pages/HandymanWalletPage";
 import HandymanProfilePage from "./modules/handyman/features/profile/pages/HandymanProfilePage";
+import HandymanFindJobPage from "./modules/handyman/features/jobs/pages/HandymanFindJobPage";
 
 function App() {
   return (
@@ -79,6 +80,7 @@ function App() {
             <Route path="/handyman/dashboard" element={<HandymanDashboardPage />} />
             <Route path="/handyman/wallet" element={<HandymanWalletPage />} />
             <Route path="/handyman/profile" element={<HandymanProfilePage />} />
+            <Route path="/handyman/find-jobs" element={<HandymanFindJobPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
