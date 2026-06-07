@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import { Navigate } from "react-router-dom";
 
 // Route Guards
 import GuestRoute from "./core/routes/GuestRoute";
@@ -27,6 +28,11 @@ import HandymanLayout from "./modules/handyman/features/dashboard/components/Han
 import HandymanDashboardPage from "./modules/handyman/features/dashboard/pages/HandymanDashboardPage";
 import HandymanWalletPage from "./modules/handyman/features/wallet/pages/HandymanWalletPage";
 import HandymanProfilePage from "./modules/handyman/features/profile/pages/HandymanProfilePage";
+
+import AdminLayout from './modules/admin/layouts/AdminLayout';
+import AdminDashboardPage from './modules/admin/features/dashboard/pages/AdminDashboardPage';
+import AdminLoginPage from './modules/admin/features/login/pages/AdminLoginPage';
+import KycManagementPage from "./modules/admin/features/kyc/pages/KycManagementPage";
 
 function App() {
   return (
@@ -80,6 +86,25 @@ function App() {
             <Route path="/handyman/wallet" element={<HandymanWalletPage />} />
             <Route path="/handyman/profile" element={<HandymanProfilePage />} />
           </Route>
+
+          {/* --- LUỒNG ADMIN --- */}
+        <Route path="/admin/login" element={
+            <GuestRoute>
+                <AdminLoginPage />
+            </GuestRoute>
+        } />
+
+        {/* Luồng quản trị nội bộ */}
+        <Route path="/admin" element={
+            <RoleRoute allowedRoles={['ADMIN']}>
+                <AdminLayout />
+            </RoleRoute>
+        }>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="kyc" element={<KycManagementPage/>}/>
+        </Route>
+
         </Routes>
       </BrowserRouter>
 
