@@ -68,8 +68,8 @@ const CustomerCreateJobPage = () => {
     };
 
     const removeImage = (index) => {
-        const updatedImages = images.filter((_, i) => i !== index);
-        const updatedPreviews = imagePreviews.filter((_, i) => i !== index);
+        const updatedImages = images.filter((update, i) => i !== index);
+        const updatedPreviews = imagePreviews.filter((update, i) => i !== index);
         
         // Revoke URL memory
         URL.revokeObjectURL(imagePreviews[index]);
@@ -212,7 +212,7 @@ const CustomerCreateJobPage = () => {
                             className="form-control scheduled-input"
                             value={scheduleTime}
                             onChange={(e) => setScheduleTime(e.target.value)}
-                            onKeyDown={(e) => e.preventDefault()} // Chặn nhập tay thủ công
+                            onKeyDown={(e) => e.preventDefault()} 
                             required
                         />
                         <small className="text-muted mt-1 d-block">
