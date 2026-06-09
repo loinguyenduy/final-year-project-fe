@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   FaFileAlt, FaCheckCircle, FaClock, FaExclamationTriangle, FaLock,
   FaStar, FaBriefcase, FaWallet, FaShieldAlt, FaCheckSquare,
-  FaMapMarkerAlt, FaBell, FaChevronRight, FaUser, FaSearchDollar // Import thêm icon cho phần dưới
+  FaMapMarkerAlt, FaBell, FaChevronRight, FaUser, FaSearchDollar 
 } from "react-icons/fa";
 import KycStepper from "../components/KycStepper";
 import HandymanKycModal from "../../kyc/components/HandymanKycModal";
@@ -260,7 +260,6 @@ const HandymanDashboardPage = () => {
     );
   };
 
-  // !!! ĐÂY LÀ KHỐI RETURN QUAN TRỌNG ĐÃ BỊ THIẾU !!!
   return (
     <div className="handyman-dashboard">
       {/* Ẩn Stepper nếu đã lên C3 */}
