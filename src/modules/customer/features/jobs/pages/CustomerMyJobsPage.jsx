@@ -229,6 +229,16 @@ const CustomerMyJobsPage = () => {
                                             )}
                                         </div>
                                     )}
+                                    
+                                    {/* Action Buttons */}
+                                    <div className="mt-3 text-end">
+                                        <button 
+                                            className="btn btn-outline-primary btn-sm px-4 fw-bold shadow-sm"
+                                            onClick={() => navigate(`/customer/my-jobs/${job.id}`)}
+                                        >
+                                            View Details
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         );

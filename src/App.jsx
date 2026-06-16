@@ -23,12 +23,14 @@ import CustomerProfilePage from "./modules/customer/features/profile-kyc/pages/C
 import CustomerWalletPage from "./modules/customer/features/wallet/pages/CustomerWalletPage";
 import CustomerCreateJobPage from "./modules/customer/features/jobs/pages/CustomerCreateJobPage";
 import CustomerMyJobsPage from "./modules/customer/features/jobs/pages/CustomerMyJobsPage";
+import CustomerJobDetailsPage from "./modules/customer/features/jobs/pages/CustomerJobDetailsPage";
 import PaymentResultPage from "./core/features/payment/pages/PaymentResultPage";
 import HandymanLayout from "./modules/handyman/features/dashboard/components/HandymanLayout";
 import HandymanDashboardPage from "./modules/handyman/features/dashboard/pages/HandymanDashboardPage";
 import HandymanWalletPage from "./modules/handyman/features/wallet/pages/HandymanWalletPage";
 import HandymanProfilePage from "./modules/handyman/features/profile/pages/HandymanProfilePage";
 import HandymanFindJobPage from "./modules/handyman/features/jobs/pages/HandymanFindJobPage";
+import HandymanJobDetailsPage from "./modules/handyman/features/jobs/pages/HandymanJobDetailsPage";
 
 import AdminLayout from './modules/admin/layouts/AdminLayout';
 import AdminDashboardPage from './modules/admin/features/dashboard/pages/AdminDashboardPage';
@@ -79,6 +81,7 @@ function App() {
             <Route path="/customer/wallet" element={<CustomerWalletPage />} />
             <Route path="/customer/ai-diagnosis" element={<CustomerCreateJobPage />} />
             <Route path="/customer/my-jobs" element={<CustomerMyJobsPage />} />
+            <Route path="/customer/my-jobs/:id" element={<CustomerJobDetailsPage />} />
           </Route>
           
           {/* HANDYMAN ROUTES */}
@@ -87,6 +90,7 @@ function App() {
             <Route path="/handyman/wallet" element={<HandymanWalletPage />} />
             <Route path="/handyman/profile" element={<HandymanProfilePage />} />
             <Route path="/handyman/find-jobs" element={<HandymanFindJobPage />} />
+            <Route path="/handyman/jobs/:id" element={<HandymanJobDetailsPage />} />
           </Route>
 
           {/* --- LUỒNG ADMIN --- */}
