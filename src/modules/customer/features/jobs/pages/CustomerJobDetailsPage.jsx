@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getJobDetailsApi } from '../../../services/jobService';
 import { toast } from 'react-toastify';
-import { FaMapMarkerAlt, FaCalendarAlt, FaMoneyBillWave, FaClock, FaTools, FaUser } from 'react-icons/fa';
+import { FaArrowLeft, FaCheck } from 'react-icons/fa';
+import '../styles/JobDetails.scss';
 
 const CustomerJobDetailsPage = () => {
     const { id } = useParams();
@@ -28,70 +29,186 @@ const CustomerJobDetailsPage = () => {
         fetchJob();
     }, [id]);
 
+    const formatCurrency = (val) => {
+        if (!val) return '';
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+    };
+
+    const formatDateTime = (dateStr) => {
+        if (!dateStr) return 'TBD';
+        return new Date(dateStr).toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    const getStatusClass = (status) => {
+        switch(status) {
+            case 'POSTED': return 'status-posted';
+            case 'BIDDING': return 'status-bidding';
+            case 'ACCEPTED': return 'status-accepted';
+            case 'EN_ROUTE': return 'status-enroute';
+            case 'ARRIVED': return 'status-arrived';
+            case 'IN_PROGRESS': return 'status-inprogress';
+            case 'WARRANTY': return 'status-warranty';
+            case 'CLOSED': return 'status-completed';
+            default: return 'status-default';
+        }
+    };
+
+    const getStatusText = (status) => {
+        switch(status) {
+            case 'POSTED': return 'Posted';
+            case 'BIDDING': return 'Bidding';
+            case 'ACCEPTED': return 'Accepted';
+            case 'EN_ROUTE': return 'En Route';
+            case 'ARRIVED': return 'Arrived';
+            case 'IN_PROGRESS': return 'In Progress';
+            case 'WARRANTY': return 'Warranty';
+            case 'CLOSED': return 'Completed';
+            default: return status;
+        }
+    };
+
     if (loading) return <div className="text-center p-5"><div className="spinner-border text-primary"></div></div>;
     if (!job) return <div className="text-center p-5 text-danger">Job not found</div>;
 
+    const steps = [
+        { status: 'POSTED', label: 'Posted' },
+        { status: 'BIDDING', label: 'Bidding' },
+        { status: 'ACCEPTED', label: 'Accepted' },
+        { status: 'EN_ROUTE', label: 'En Route' },
+        { status: 'ARRIVED', label: 'Arrived' },
+        { status: 'IN_PROGRESS', label: 'In Progress' },
+        { status: 'CLOSED', label: 'Completed' },
+        { status: 'WARRANTY', label: 'Warranty' }
+    ];
+
+    const currentStepIdx = steps.findIndex(s => s.status === job.current_status);
+    const jobCode = 'JOB-' + job.id.substring(0, 4).toUpperCase();
+    const bidCount = job.Bids ? job.Bids.length : 0;
+    const budgetDisplay = job.estimated_budget_min || job.estimated_budget_max 
+        ? `${job.estimated_budget_min ? formatCurrency(job.estimated_budget_min) : '0 đ'} - ${job.estimated_budget_max ? formatCurrency(job.estimated_budget_max) : 'Any'}` 
+        : 'TBD';
+    const agreedPriceDisplay = job.final_agreed_price ? formatCurrency(job.final_agreed_price) : 'Not agreed yet';
+
     return (
-        <div className="container py-4">
-            <button className="btn btn-outline-secondary mb-3" onClick={() => navigate(-1)}>&larr; Back</button>
-            <div className="card shadow-sm border-0">
-                <div className="card-header bg-white border-bottom pb-3 pt-4">
-                    <h4 className="mb-0 text-primary"><FaTools className="me-2" /> {job.Service?.name || 'Unknown Service'}</h4>
-                    <span className={`badge bg-${job.current_status === 'POSTED' ? 'warning text-dark' : 'success'} mt-2 fs-6`}>
-                        {job.current_status}
-                    </span>
-                </div>
-                <div className="card-body">
-                    <h5 className="fw-bold mb-3">Description</h5>
-                    <p className="text-muted bg-light p-3 rounded">{job.issue_description}</p>
-                    
-                    <div className="row mt-4">
-                        <div className="col-md-6 mb-3">
-                            <h6 className="fw-bold"><FaMapMarkerAlt className="text-danger me-2" /> Location</h6>
-                            <p className="text-muted">{job.service_address}</p>
-                        </div>
-                        <div className="col-md-6 mb-3">
-                            <h6 className="fw-bold"><FaCalendarAlt className="text-primary me-2" /> Schedule</h6>
-                            <p className="text-muted">{new Date(job.scheduled_at).toLocaleString()}</p>
-                        </div>
-                        <div className="col-md-6 mb-3">
-                            <h6 className="fw-bold"><FaMoneyBillWave className="text-success me-2" /> Budget Range</h6>
-                            <p className="text-muted">
-                                {job.estimated_budget_min ? `${Number(job.estimated_budget_min).toLocaleString()} đ` : '0 đ'} 
-                                 - 
-                                {job.estimated_budget_max ? `${Number(job.estimated_budget_max).toLocaleString()} đ` : 'Any'}
-                            </p>
-                        </div>
-                        <div className="col-md-6 mb-3">
-                            <h6 className="fw-bold"><FaClock className="text-warning me-2" /> Posted At</h6>
-                            <p className="text-muted">{new Date(job.createdAt).toLocaleString()}</p>
-                        </div>
-                    </div>
+        <div className="job-details-page-container">
+            <span className="back-link" onClick={() => navigate(-1)}>
+                <FaArrowLeft /> Back
+            </span>
 
-                    {job.images && job.images.length > 0 && (
-                        <div className="mt-4">
-                            <h6 className="fw-bold">Job Photos</h6>
-                            <div className="d-flex gap-2 flex-wrap mt-2">
-                                {job.images.map((img, i) => (
-                                    <img key={i} src={img} alt={`Job Image ${i}`} className="rounded shadow-sm" style={{width: 150, height: 150, objectFit: 'cover'}} />
-                                ))}
-                            </div>
-                        </div>
-                    )}
+            <div className="job-header-row">
+                <h2 className="job-title">{job.Service?.name || 'Unknown Service'}</h2>
+                <span className={`status-pill ${getStatusClass(job.current_status)}`}>
+                    {getStatusText(job.current_status)}
+                </span>
+            </div>
 
-                    {job.SelectedHandyman && (
-                        <div className="mt-4 p-3 bg-light rounded border border-info">
-                            <h6 className="fw-bold text-info"><FaUser className="me-2" /> Assigned Handyman</h6>
-                            <div className="d-flex align-items-center mt-2">
-                                <img src={job.SelectedHandyman.avatar_url || 'https://via.placeholder.com/50'} alt="Handyman" className="rounded-circle me-3" style={{width: 50, height: 50, objectFit: 'cover'}} />
-                                <div>
-                                    <p className="mb-0 fw-bold">{job.SelectedHandyman.full_name}</p>
-                                    <p className="mb-0 text-muted">{job.SelectedHandyman.phone_number}</p>
+            {/* PROGRESS CARD */}
+            <div className="progress-card">
+                <h4 className="card-title">Job Progress</h4>
+                <div className="progress-steps-container">
+                    {steps.map((step, idx) => {
+                        let stepClass = '';
+                        if (idx < currentStepIdx) {
+                            stepClass = 'completed';
+                        } else if (idx === currentStepIdx) {
+                            stepClass = 'active';
+                        }
+
+                        return (
+                            <div key={step.status} className={`step-item ${stepClass}`}>
+                                <div className="step-circle">
+                                    {idx < currentStepIdx ? <FaCheck /> : idx + 1}
                                 </div>
+                                <span className="step-label">{step.label}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* DETAILS CARD */}
+            <div className="details-card">
+                <h4 className="card-title">Job Details</h4>
+                <div className="details-grid">
+                    <div className="info-group">
+                        <span className="info-label">Job Code</span>
+                        <span className="info-value">{jobCode}</span>
+                    </div>
+                    <div className="info-group">
+                        <span className="info-label">Category</span>
+                        <span className="info-value">{job.Service?.name || 'General Repair'}</span>
+                    </div>
+                    <div className="info-group">
+                        <span className="info-label">Location</span>
+                        <span className="info-value">{job.service_address}</span>
+                    </div>
+                    <div className="info-group">
+                        <span className="info-label">Posted Date</span>
+                        <span className="info-value">{formatDateTime(job.createdAt)}</span>
+                    </div>
+                    <div className="info-group">
+                        <span className="info-label">Applied Handymen</span>
+                        <span className="info-value highlight">{bidCount} Handymen</span>
+                    </div>
+                    <div className="info-group">
+                        <span className="info-label">Budget Range</span>
+                        <span className="info-value">{budgetDisplay}</span>
+                    </div>
+                    <div className="info-group">
+                        <span className="info-label">Agreed Price</span>
+                        <span className="info-value">{agreedPriceDisplay}</span>
+                    </div>
+                    <div className="info-group">
+                        <span className="info-label">Deposit Status (10%)</span>
+                        <span className="info-value">
+                            {job.final_agreed_price ? 'Deposited' : 'Not Deposited'}
+                        </span>
+                    </div>
+                    <div className="info-group">
+                        <span className="info-label">Schedule Date</span>
+                        <span className="info-value">{formatDateTime(job.scheduled_at)}</span>
+                    </div>
+                </div>
+
+                <h5 className="section-title">Description</h5>
+                <div className="description-text">{job.issue_description}</div>
+
+                {job.images && job.images.length > 0 && (
+                    <>
+                        <h5 className="section-title">Job Photos</h5>
+                        <div className="photo-gallery">
+                            {job.images.map((img, i) => (
+                                <img key={i} src={img} alt={`Job Image ${i}`} className="gallery-img" onClick={() => window.open(img, '_blank')} />
+                            ))}
+                        </div>
+                    </>
+                )}
+
+                {job.SelectedHandyman && (
+                    <>
+                        <h5 className="section-title">Assigned Handyman</h5>
+                        <div className="handyman-card">
+                            {job.SelectedHandyman.avatar_url ? (
+                                <img src={job.SelectedHandyman.avatar_url} alt="Handyman" className="avatar" />
+                            ) : (
+                                <div className="placeholder-avatar">
+                                    {job.SelectedHandyman.full_name.charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                            <div className="user-details">
+                                <span className="name">{job.SelectedHandyman.full_name}</span>
+                                <span className="role-tag">Verified Handyman</span>
+                                <span className="phone">{job.SelectedHandyman.phone_number}</span>
                             </div>
                         </div>
-                    )}
-                </div>
+                    </>
+                )}
             </div>
         </div>
     );

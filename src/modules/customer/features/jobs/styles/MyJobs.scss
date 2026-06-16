@@ -106,9 +106,29 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
 
+        &.status-posted {
+          background-color: #f1f5f9; // slate-100
+          color: #475569; // slate-600
+        }
+
         &.status-bidding {
           background-color: #fef9c3; // yellow-100
           color: #ca8a04; // yellow-700
+        }
+
+        &.status-accepted {
+          background-color: #f3e8ff; // purple-100
+          color: #7e22ce; // purple-700
+        }
+
+        &.status-enroute {
+          background-color: #ffedd5; // orange-100
+          color: #c2410c; // orange-700
+        }
+
+        &.status-arrived {
+          background-color: #ecfdf5; // emerald-50
+          color: #047857; // emerald-700
         }
 
         &.status-inprogress {

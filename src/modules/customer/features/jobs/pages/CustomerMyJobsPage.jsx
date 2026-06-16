@@ -56,11 +56,15 @@ const CustomerMyJobsPage = () => {
     const getStatusDetails = (status) => {
         switch (status) {
             case 'POSTED':
+                return { text: 'Posted', className: 'status-posted' };
             case 'BIDDING':
                 return { text: 'Bidding', className: 'status-bidding' };
             case 'ACCEPTED':
+                return { text: 'Accepted', className: 'status-accepted' };
             case 'EN_ROUTE':
+                return { text: 'En Route', className: 'status-enroute' };
             case 'ARRIVED':
+                return { text: 'Arrived', className: 'status-arrived' };
             case 'IN_PROGRESS':
                 return { text: 'In Progress', className: 'status-inprogress' };
             case 'WARRANTY':
