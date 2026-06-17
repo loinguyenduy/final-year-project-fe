@@ -3,6 +3,7 @@ import {
   USER_LOGOUT_SUCCESS,
   UPDATE_USER_INFO,
   FETCH_PROFILE_SUCCESS,
+  UPDATE_ACCESS_TOKEN,
 } from "./authAction";
 
 const INITIAL_STATE = {
@@ -79,6 +80,12 @@ const authReducer = (state = INITIAL_STATE, action) => {
           kyc_requests: action.payload.KycDocuments || state.account.kyc_requests,
           handyman_profile: action.payload.Handyman_Profile || state.account.handyman_profile
         }
+      };
+
+    case UPDATE_ACCESS_TOKEN:
+      return {
+        ...state,
+        token: action.payload,
       };
 
     default:

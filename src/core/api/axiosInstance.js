@@ -1,5 +1,6 @@
 import axios from "axios";
 import store from "../../redux/store.js";
+import { doLogoutSuccess, doUpdateAccessToken } from "../../modules/identity/redux/authAction";
 
 
 const axiosInstance = axios.create({
@@ -21,6 +22,21 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
+
 // 2. RESPONSE INTERCEPTOR: handle data response and token refresh logic
 axiosInstance.interceptors.response.use(
   function (response) {
@@ -36,7 +52,21 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error.response.data);
       }
 
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return axiosInstance(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       // Handle token refresh 
       try {
@@ -47,18 +77,25 @@ axiosInstance.interceptors.response.use(
           const newAccessToken = res.DT.access_token;
 
           // Update token in Redux store
-          store.dispatch(setCredentials({ token: newAccessToken, user: res.DT.user }));
+          store.dispatch(doUpdateAccessToken(newAccessToken));
+
+          // Process queue
+          processQueue(null, newAccessToken);
 
           // Attach new access token to original request and retry it
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return axiosInstance(originalRequest);
         } else {
-          store.dispatch(logout());
-          return Promise.reject(error.response.data);
+          processQueue(error.response ? error.response.data : error, null);
+          store.dispatch(doLogoutSuccess());
+          return Promise.reject(error.response ? error.response.data : error);
         }
       } catch (refreshError) {
-        store.dispatch(logout());
+        processQueue(refreshError, null);
+        store.dispatch(doLogoutSuccess());
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
