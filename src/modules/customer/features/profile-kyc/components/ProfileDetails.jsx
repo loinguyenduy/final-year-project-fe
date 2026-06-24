@@ -1,15 +1,83 @@
-import React from 'react';
-import { FaShieldAlt, FaCheckCircle, FaExclamationTriangle, FaClock } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import { FaCheckCircle, FaExclamationTriangle, FaClock, FaGoogle, FaFacebook, FaLock } from 'react-icons/fa';
+import { updateUserAddressApi, getProvincesApi, getWardsByProvinceApi } from '../../../services/profileService';
 
-const ProfileDetails = ({ account, metrics, onOpenKycModal }) => {
+const BACKEND_URL = 'http://localhost:5000/api/v1';
+
+const ProfileDetails = ({ account, metrics, onOpenKycModal, onRefresh }) => {
+    const token = useSelector(state => state.identity.token);
     const userInitials = account?.full_name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
-    const authProviders = account?.Auth_Providers || account?.AuthProviders || [];
-    const isGoogleLinked = authProviders.some(p => p.provider === 'GOOGLE');
-    const isFacebookLinked = authProviders.some(p => p.provider === 'FACEBOOK');
+    const authProviders = account?.auth_providers || account?.Auth_Providers || account?.AuthProviders || [];
+    const isGoogleLinked = authProviders.some(p => p.provider?.toUpperCase() === 'GOOGLE');
+    const isFacebookLinked = authProviders.some(p => p.provider?.toUpperCase() === 'FACEBOOK');
+
+    const addresses = account?.User_Addresses || [];
+    const defaultAddress = addresses.find(a => a.is_default) || addresses[0];
+
+    const [editingAddress, setEditingAddress] = useState(false);
+    const [provinces, setProvinces] = useState([]);
+    const [wards, setWards] = useState([]);
+    const [selectedProvince, setSelectedProvince] = useState('');
+    const [selectedWard, setSelectedWard] = useState('');
+    const [detailAddress, setDetailAddress] = useState('');
+    const [addrLoading, setAddrLoading] = useState(false);
+
+    const startEditAddress = async () => {
+        if (provinces.length === 0) {
+            try {
+                const res = await getProvincesApi();
+                if (res && res.EC === 0) setProvinces(res.DT || []);
+                else { toast.error('Failed to load provinces.'); return; }
+            } catch { toast.error('Failed to load provinces.'); return; }
+        }
+        setSelectedProvince(defaultAddress?.province_code || '');
+        setSelectedWard(defaultAddress?.ward_code || '');
+        setDetailAddress(defaultAddress?.detail_address || '');
+        setEditingAddress(true);
+    };
+
+    useEffect(() => {
+        if (!selectedProvince) { setWards([]); return; }
+        getWardsByProvinceApi(selectedProvince)
+            .then(res => { if (res && res.EC === 0) setWards(res.DT || []); })
+            .catch(() => {});
+    }, [selectedProvince]);
+
+    const saveAddress = async () => {
+        if (!selectedProvince || !selectedWard || !detailAddress.trim()) {
+            toast.error('Please fill in Province, Ward and Street address.');
+            return;
+        }
+        setAddrLoading(true);
+        try {
+            const res = await updateUserAddressApi({
+                province_code: selectedProvince,
+                ward_code: selectedWard,
+                detail_address: detailAddress.trim()
+            });
+            if (res && res.EC === 0) {
+                toast.success('Address updated successfully.');
+                setEditingAddress(false);
+                onRefresh?.();
+            } else {
+                toast.error(res?.EM || 'Failed to update address.');
+            }
+        } catch { toast.error('Failed to update address.'); }
+        setAddrLoading(false);
+    };
+
+    const linkGoogle = () => {
+        window.location.href = `${BACKEND_URL}/auth/google/link?token=${token}`;
+    };
+    const linkFacebook = () => {
+        window.location.href = `${BACKEND_URL}/auth/facebook/link?token=${token}`;
+    };
 
     return (
         <div className="profile-kyc-container row g-4">
-            {/* Cột trái: Thẻ tóm tắt */}
+            {/* Left: summary card */}
             <div className="col-lg-4">
                 <div className="profile-card text-center">
                     <div className="avatar-large">{userInitials}</div>
@@ -40,11 +108,11 @@ const ProfileDetails = ({ account, metrics, onOpenKycModal }) => {
                 </div>
             </div>
 
-            {/* Cột phải: Chi tiết và KYC */}
+            {/* Right: details */}
             <div className="col-lg-8">
                 <div className="d-flex flex-column gap-4">
-                    
-                    {/* Hộp Thông tin cá nhân */}
+
+                    {/* Personal Information */}
                     <div className="profile-card">
                         <h6 className="fw-bold text-dark mb-4">Personal Information</h6>
                         <div className="row g-4">
@@ -58,16 +126,78 @@ const ProfileDetails = ({ account, metrics, onOpenKycModal }) => {
                             </div>
                             <div className="col-md-6 info-group">
                                 <div className="label">Phone Number</div>
-                                <div className="value">{account?.phone_number || 'Not provided'}</div>
+                                <div className="value d-flex align-items-center gap-2">
+                                    {account?.phone_number || 'Not provided'}
+                                    <FaLock className="text-muted" size={11} />
+                                </div>
                             </div>
                             <div className="col-md-6 info-group">
-                                <div className="label">Address</div>
-                                <div className="value">{account?.address || 'Not provided'}</div>
+                                <div className="label d-flex justify-content-between align-items-center">
+                                    <span>Address</span>
+                                    {!editingAddress && (
+                                        <button
+                                            className="btn btn-link btn-sm p-0 text-primary text-decoration-none"
+                                            style={{ fontSize: '12px' }}
+                                            onClick={startEditAddress}
+                                        >
+                                            Edit
+                                        </button>
+                                    )}
+                                </div>
+                                {!editingAddress ? (
+                                    <div className="value">{defaultAddress?.full_address || 'Not provided'}</div>
+                                ) : (
+                                    <div className="mt-2">
+                                        <select
+                                            className="form-select form-select-sm mb-2"
+                                            value={selectedProvince}
+                                            onChange={e => { setSelectedProvince(e.target.value); setSelectedWard(''); }}
+                                        >
+                                            <option value="">Select Province / City</option>
+                                            {provinces.map(p => (
+                                                <option key={p.province_code} value={p.province_code}>{p.name}</option>
+                                            ))}
+                                        </select>
+                                        <select
+                                            className="form-select form-select-sm mb-2"
+                                            value={selectedWard}
+                                            onChange={e => setSelectedWard(e.target.value)}
+                                            disabled={!selectedProvince}
+                                        >
+                                            <option value="">Select Ward</option>
+                                            {wards.map(w => (
+                                                <option key={w.ward_code} value={w.ward_code}>{w.name}</option>
+                                            ))}
+                                        </select>
+                                        <input
+                                            className="form-control form-control-sm mb-2"
+                                            placeholder="Street / House number"
+                                            value={detailAddress}
+                                            onChange={e => setDetailAddress(e.target.value)}
+                                        />
+                                        <div className="d-flex gap-2">
+                                            <button
+                                                className="btn btn-primary btn-sm"
+                                                onClick={saveAddress}
+                                                disabled={addrLoading}
+                                            >
+                                                {addrLoading ? 'Saving...' : 'Save'}
+                                            </button>
+                                            <button
+                                                className="btn btn-outline-secondary btn-sm"
+                                                onClick={() => setEditingAddress(false)}
+                                                disabled={addrLoading}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
 
-                    {/* Hộp Xác minh Danh tính KYC */}
+                    {/* KYC Verification */}
                     <div className="profile-card">
                         <div className="d-flex justify-content-between align-items-center mb-4">
                             <h6 className="fw-bold text-dark m-0">Identity Verification (KYC)</h6>
@@ -131,34 +261,31 @@ const ProfileDetails = ({ account, metrics, onOpenKycModal }) => {
                         )}
                     </div>
 
-                    {/* Hộp Bảo mật */}
+                    {/* Account Security */}
                     <div className="profile-card">
                         <h6 className="fw-bold text-dark mb-4">Account Security</h6>
-                        <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
-                            <span className="text-dark small">Two-Factor Auth (2FA)</span>
-                            <span className="text-success small fw-bold">Enabled</span>
-                        </div>
                         <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
                             <span className="text-dark small">Google Login</span>
                             {isGoogleLinked ? (
                                 <span className="text-success small fw-bold">Linked</span>
                             ) : (
-                                <span className="text-muted small fw-bold">Not Linked</span>
+                                <button className="btn btn-sm btn-outline-danger p-1 px-2" onClick={linkGoogle}>
+                                    <FaGoogle className="me-1" size={12} /> Link Google
+                                </button>
                             )}
                         </div>
-                        <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                        <div className="d-flex justify-content-between align-items-center">
                             <span className="text-dark small">Facebook Login</span>
                             {isFacebookLinked ? (
                                 <span className="text-success small fw-bold">Linked</span>
                             ) : (
-                                <span className="text-muted small fw-bold">Not Linked</span>
+                                <button className="btn btn-sm btn-outline-primary p-1 px-2" onClick={linkFacebook}>
+                                    <FaFacebook className="me-1" size={12} /> Link Facebook
+                                </button>
                             )}
                         </div>
-                        <div className="d-flex justify-content-between align-items-center">
-                            <span className="text-dark small">Password</span>
-                            <span className="text-primary small fw-bold" style={{ cursor: 'pointer' }}>Change Password</span>
-                        </div>
                     </div>
+
                 </div>
             </div>
         </div>

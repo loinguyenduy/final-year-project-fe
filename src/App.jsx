@@ -14,6 +14,7 @@ import RegisterPage from "./modules/identity/features/auth/pages/RegisterPage";
 import CheckEmailPage from "./modules/identity/features/auth/pages/CheckEmailPage";
 import VerifyEmailProcess from "./modules/identity/features/auth/pages/VerifyEmailProcess";
 import SocialCallback from "./modules/identity/features/auth/pages/SocialCallback";
+import SocialLinkCallback from "./modules/identity/features/auth/pages/SocialLinkCallback";
 import MainLayout from "./core/layouts/MainLayout";
 import HomePage from "./modules/home/pages/HomePage";
 
@@ -63,6 +64,7 @@ function App() {
           <Route path="/check-email" element={<CheckEmailPage />} />
           <Route path="/verify-email" element={<VerifyEmailProcess />} />
           <Route path="/social-callback" element={<SocialCallback />} />
+          <Route path="/social-link-callback" element={<SocialLinkCallback />} />
           
           <Route path="/payment-success" element={<PaymentResultPage />} />
           <Route path="/payment-cancel" element={<PaymentResultPage />} />
