@@ -16,4 +16,16 @@ const getCustomerJobsApi = () => {
     return axios.get('/matchmaking/jobs');
 };
 
-export { getServicesApi, postJobApi, getCustomerJobsApi };
+const getJobDetailsApi = (id) => {
+    return axios.get(`/matchmaking/jobs/${id}`);
+};
+
+const getProvincesApi = () => {
+    return axios.get('/matchmaking/provinces');
+};
+
+const getWardsApi = (province_code) => {
+    return axios.get(`/matchmaking/wards?province_code=${province_code}`);
+};
+
+export { getServicesApi, postJobApi, getCustomerJobsApi, getJobDetailsApi, getProvincesApi, getWardsApi };

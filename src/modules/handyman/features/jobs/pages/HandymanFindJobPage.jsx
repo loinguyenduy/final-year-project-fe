@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaClipboardList, FaFilter } from 'react-icons/fa';
 import { getAvailableJobsApi, getServicesApi } from '../../../services/jobService';
 import '../styles/FindJob.scss';
 
 const HandymanFindJobPage = () => {
+    const navigate = useNavigate();
     const [jobs, setJobs] = useState([]);
     const [services, setServices] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -164,7 +166,10 @@ const HandymanFindJobPage = () => {
 
                                     {/* Action Bottom */}
                                     <div className="card-bottom mt-auto d-flex justify-content-end border-top pt-3">
-                                        <button className="btn-view-job fw-semibold">
+                                        <button 
+                                            className="btn-view-job fw-semibold"
+                                            onClick={() => navigate(`/handyman/jobs/${job.id}`)}
+                                        >
                                             View Details
                                         </button>
                                     </div>

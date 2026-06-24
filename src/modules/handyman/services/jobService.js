@@ -17,4 +17,8 @@ const getServicesApi = () => {
     return axios.get('/matchmaking/services');
 };
 
-export { getAvailableJobsApi, getServicesApi };
+const getJobDetailsApi = (id) => {
+    return axios.get(`/matchmaking/jobs/${id}`);
+};
+
+export { getAvailableJobsApi, getServicesApi, getJobDetailsApi };

@@ -11,7 +11,6 @@ const KycManagementPage = () => {
     const [rejectReason, setRejectReason] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // Fetch dữ liệu khi mount
     useEffect(() => {
         loadPendingKyc();
     }, []);
