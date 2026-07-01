@@ -8,6 +8,7 @@ import {
 import {
   FaThLarge,
   FaBriefcase,
+  FaClipboardList,
   FaWallet,
   FaUserShield,
   FaSignOutAlt,
@@ -63,7 +64,12 @@ const HandymanLayout = () => {
       name: "Find Jobs",
       path: "/handyman/find-jobs",
       icon: <FaBriefcase />,
-      badge: 8,
+      requiredLevel: "C2",
+    },
+    {
+      name: "My Bids",
+      path: "/handyman/my-bids",
+      icon: <FaClipboardList />,
       requiredLevel: "C2",
     },
     {

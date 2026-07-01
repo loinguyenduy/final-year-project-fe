@@ -28,4 +28,8 @@ const getWardsApi = (province_code) => {
     return axios.get(`/matchmaking/wards?province_code=${province_code}`);
 };
 
-export { getServicesApi, postJobApi, getCustomerJobsApi, getJobDetailsApi, getProvincesApi, getWardsApi };
+const acceptBidApi = (jobId, bidId) => {
+    return axios.post(`/matchmaking/jobs/${jobId}/bids/${bidId}/accept`);
+};
+
+export { getServicesApi, postJobApi, getCustomerJobsApi, getJobDetailsApi, getProvincesApi, getWardsApi, acceptBidApi };

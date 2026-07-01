@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaClipboardList, FaSortAmountDown, FaArrowRight, FaStar, FaClock, FaLocationArrow } from 'react-icons/fa';
 import { getAvailableJobsApi, getServicesApi } from '../../../services/jobService';
+import { getCachedLocation, setCachedLocation } from '../../../../../core/utils/locationCache';
 import '../styles/FindJob.scss';
 
 const HandymanFindJobPage = () => {
@@ -18,13 +19,27 @@ const HandymanFindJobPage = () => {
     const [gpsEnabled, setGpsEnabled] = useState(false);
 
     useEffect(() => {
+        // Apply cached coords immediately (zero-latency for returning users)
+        const cached = getCachedLocation();
+        if (cached) {
+            setGpsCoords({ lat: cached.lat, long: cached.long });
+            setGpsEnabled(true);
+        }
+
+        // Always request fresh GPS in the background to keep the cache current
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
-                    setGpsCoords({ lat: pos.coords.latitude, long: pos.coords.longitude });
+                    const lat = pos.coords.latitude;
+                    const long = pos.coords.longitude;
+                    setGpsCoords({ lat, long });
                     setGpsEnabled(true);
+                    setCachedLocation(lat, long);
                 },
-                () => setGpsEnabled(false),
+                () => {
+                    // Only mark GPS as off if there were no cached coords to fall back on
+                    if (!cached) setGpsEnabled(false);
+                },
                 { timeout: 8000, enableHighAccuracy: false }
             );
         }
@@ -269,7 +284,12 @@ const HandymanFindJobPage = () => {
                                                 <div className="budget-value fw-bold">
                                                     {formatBudget(job.estimated_budget_min, job.estimated_budget_max)}
                                                 </div>
-                                                <div className="bidder-count">— bids</div>
+                                                <div className="bidder-count">
+                                                    {Number(job.active_bid_count) > 0
+                                                        ? `${job.active_bid_count} bid${Number(job.active_bid_count) > 1 ? 's' : ''}`
+                                                        : 'No bids yet'
+                                                    }
+                                                </div>
                                             </div>
                                             <button
                                                 className="btn btn-apply fw-semibold mt-3"

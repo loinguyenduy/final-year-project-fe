@@ -32,6 +32,7 @@ import HandymanWalletPage from "./modules/handyman/features/wallet/pages/Handyma
 import HandymanProfilePage from "./modules/handyman/features/profile/pages/HandymanProfilePage";
 import HandymanFindJobPage from "./modules/handyman/features/jobs/pages/HandymanFindJobPage";
 import HandymanJobDetailsPage from "./modules/handyman/features/jobs/pages/HandymanJobDetailsPage";
+import HandymanMyBidsPage from "./modules/handyman/features/jobs/pages/HandymanMyBidsPage";
 
 import AdminLayout from './modules/admin/layouts/AdminLayout';
 import AdminDashboardPage from './modules/admin/features/dashboard/pages/AdminDashboardPage';
@@ -93,6 +94,7 @@ function App() {
             <Route path="/handyman/profile" element={<HandymanProfilePage />} />
             <Route path="/handyman/find-jobs" element={<HandymanFindJobPage />} />
             <Route path="/handyman/jobs/:id" element={<HandymanJobDetailsPage />} />
+            <Route path="/handyman/my-bids" element={<HandymanMyBidsPage />} />
           </Route>
 
           {/* --- LUỒNG ADMIN --- */}

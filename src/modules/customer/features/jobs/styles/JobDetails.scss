@@ -374,6 +374,152 @@
   }
 }
 
+// ── Bids section ─────────────────────────────────────────────────────
+.bids-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+
+  .bids-card__header {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 16px;
+  }
+
+  .bids-count-badge {
+    display: inline-block;
+    background: #f97316;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 9999px;
+    vertical-align: middle;
+  }
+}
+
+.bids-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bid-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+
+  &:hover {
+    border-color: #f97316;
+    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.08);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  &__avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e8f0;
+    flex-shrink: 0;
+  }
+
+  &__avatar-placeholder {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background-color: #f97316;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  &__handyman-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  &__level-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    border: 1.5px solid;
+  }
+
+  &__price {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #f97316;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  &__details {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__detail-item {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  &__message {
+    font-size: 13.5px;
+    color: #475569;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin: 6px 0 0;
+    line-height: 1.55;
+  }
+
+  &__footer {
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  &__accept-btn {
+    background-color: #16a34a;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background-color 0.2s;
+
+    &:hover:not(:disabled) { background-color: #15803d; }
+    &:disabled { opacity: 0.6; }
+  }
+}
+
 @keyframes pulse-active {
   0% {
     box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4);
