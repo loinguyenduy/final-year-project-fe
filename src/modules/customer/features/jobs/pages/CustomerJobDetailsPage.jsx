@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getJobDetailsApi, acceptBidApi } from '../../../services/jobService';
 import ImageLightbox from '../../../../../core/components/ImageLightbox';
 import { toast } from 'react-toastify';
-import { FaArrowLeft, FaCheck, FaStar, FaClock, FaTag, FaCheckCircle } from 'react-icons/fa';
+import { FaArrowLeft, FaCheck, FaStar, FaCommentDots } from 'react-icons/fa';
 import '../styles/JobDetails.scss';
 
 const CustomerJobDetailsPage = () => {
@@ -82,9 +82,14 @@ const CustomerJobDetailsPage = () => {
         return map[status] || status;
     };
 
-    const getLevelColor = (level) => {
-        const map = { C0: '#94a3b8', C1: '#10b981', C2: '#3b82f6', C3: '#f59e0b' };
-        return map[level] || '#94a3b8';
+    const formatEta = (dateStr) => {
+        if (!dateStr) return null;
+        const d = new Date(dateStr);
+        const day = d.getDate().toString().padStart(2, '0');
+        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+        const hour = d.getHours().toString().padStart(2, '0');
+        const min = d.getMinutes().toString().padStart(2, '0');
+        return `${day}/${month} ${hour}:${min}`;
     };
 
     if (loading) return <div className="text-center p-5"><div className="spinner-border text-primary" /></div>;
@@ -148,10 +153,10 @@ const CustomerJobDetailsPage = () => {
                 <div className="bids-card">
                     <div className="bids-card__header">
                         <h4 className="card-title mb-0">
-                            Handymen Bidding
+                            Quotes from Handymen
                             <span className="bids-count-badge ms-2">{pendingBids.length}</span>
                         </h4>
-                        <p className="text-muted small mt-1 mb-0">Review each bid and select the handyman you want to hire.</p>
+                        <p className="text-muted small mt-1 mb-0">Review each quote and select the handyman you want to hire.</p>
                     </div>
 
                     {pendingBids.length === 0 ? (
@@ -166,10 +171,32 @@ const CustomerJobDetailsPage = () => {
                                 const rating = parseFloat(profile?.bayesian_score) || 0;
                                 const isAccepting = acceptingBidId === bid.id;
 
+                                const metaItems = [
+                                    rating > 0 && (
+                                        <span key="rating" className="bid-meta__rating">
+                                            <FaStar size={11} /> {rating.toFixed(1)}
+                                        </span>
+                                    ),
+                                    profile?.total_jobs_completed > 0 && (
+                                        <span key="jobs">{profile.total_jobs_completed} jobs</span>
+                                    ),
+                                    profile?.handyman_level && (
+                                        <span key="level" className={`bid-meta__level level-${profile.handyman_level.toLowerCase()}`}>
+                                            KYC {profile.handyman_level}
+                                        </span>
+                                    ),
+                                    bid.eta && (
+                                        <span key="eta">ETA: {formatEta(bid.eta)}</span>
+                                    ),
+                                    bid.estimated_duration_hours && (
+                                        <span key="dur">~{bid.estimated_duration_hours}h</span>
+                                    ),
+                                ].filter(Boolean);
+
                                 return (
                                     <div key={bid.id} className="bid-card">
-                                        {/* Handyman header */}
-                                        <div className="bid-card__header">
+                                        <div className="bid-card__main">
+                                            {/* Avatar */}
                                             {handyman?.avatar_url ? (
                                                 <img src={handyman.avatar_url} alt="Handyman" className="bid-card__avatar" />
                                             ) : (
@@ -177,72 +204,43 @@ const CustomerJobDetailsPage = () => {
                                                     {handyman?.full_name?.charAt(0).toUpperCase() || '?'}
                                                 </div>
                                             )}
-                                            <div className="bid-card__handyman-info">
-                                                <div className="d-flex align-items-center gap-2 flex-wrap">
-                                                    <span className="bid-card__name">{handyman?.full_name || 'Unknown'}</span>
-                                                    {profile?.handyman_level && (
-                                                        <span className="bid-card__level-badge"
-                                                            style={{ backgroundColor: getLevelColor(profile.handyman_level) + '1a', color: getLevelColor(profile.handyman_level), borderColor: getLevelColor(profile.handyman_level) + '4d' }}>
-                                                            {profile.handyman_level}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="d-flex align-items-center gap-3 mt-1">
-                                                    {rating > 0 ? (
-                                                        <span className="d-flex align-items-center gap-1 small" style={{ color: '#f59e0b' }}>
-                                                            <FaStar size={11} /> <strong>{rating.toFixed(1)}</strong>
-                                                        </span>
-                                                    ) : (
-                                                        <span className="small text-muted fst-italic">No rating</span>
-                                                    )}
-                                                    {profile?.total_jobs_completed > 0 && (
-                                                        <span className="small text-muted">
-                                                            <FaCheckCircle size={11} className="me-1 text-success" />
-                                                            {profile.total_jobs_completed} jobs done
-                                                        </span>
-                                                    )}
+
+                                            {/* Name + stats */}
+                                            <div className="bid-card__info">
+                                                <div className="bid-card__name">{handyman?.full_name || 'Unknown'}</div>
+                                                <div className="bid-card__meta">
+                                                    {metaItems.map((item, idx) => (
+                                                        <React.Fragment key={idx}>
+                                                            {idx > 0 && <span className="bid-meta__sep">•</span>}
+                                                            {item}
+                                                        </React.Fragment>
+                                                    ))}
                                                 </div>
                                             </div>
-                                            <div className="bid-card__price">
-                                                {formatCurrency(bid.proposed_price)}
+
+                                            {/* Price + hire button */}
+                                            <div className="bid-card__right">
+                                                <div className="bid-card__price">{formatCurrency(bid.proposed_price)}</div>
+                                                <button
+                                                    className="bid-card__accept-btn"
+                                                    onClick={() => handleAcceptBid(bid.id)}
+                                                    disabled={isAccepting}
+                                                >
+                                                    {isAccepting
+                                                        ? <><span className="spinner-border spinner-border-sm me-1" />Confirming...</>
+                                                        : 'Hire This Handyman'
+                                                    }
+                                                </button>
                                             </div>
                                         </div>
 
-                                        {/* Bid details */}
-                                        {(bid.eta || bid.estimated_duration_hours || bid.message) && (
-                                            <div className="bid-card__details">
-                                                {bid.eta && (
-                                                    <div className="bid-card__detail-item">
-                                                        <FaClock size={11} className="me-1 text-muted" />
-                                                        <span>Arrives: {formatDateTime(bid.eta)}</span>
-                                                    </div>
-                                                )}
-                                                {bid.estimated_duration_hours && (
-                                                    <div className="bid-card__detail-item">
-                                                        <FaTag size={11} className="me-1 text-muted" />
-                                                        <span>Duration: ~{bid.estimated_duration_hours}h</span>
-                                                    </div>
-                                                )}
-                                                {bid.message && (
-                                                    <p className="bid-card__message">{bid.message}</p>
-                                                )}
+                                        {/* Message quote */}
+                                        {bid.message && (
+                                            <div className="bid-card__message">
+                                                <FaCommentDots className="bid-card__message-icon" />
+                                                <span>{bid.message}</span>
                                             </div>
                                         )}
-
-                                        {/* Accept button */}
-                                        <div className="bid-card__footer">
-                                            <button
-                                                className="btn bid-card__accept-btn"
-                                                onClick={() => handleAcceptBid(bid.id)}
-                                                disabled={isAccepting}
-                                            >
-                                                {isAccepting
-                                                    ? <span className="spinner-border spinner-border-sm me-2" />
-                                                    : <FaCheck size={12} className="me-2" />
-                                                }
-                                                {isAccepting ? 'Confirming...' : 'Hire This Handyman'}
-                                            </button>
-                                        </div>
                                     </div>
                                 );
                             })}

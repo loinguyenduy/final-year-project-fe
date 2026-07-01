@@ -388,6 +388,12 @@
     padding-bottom: 16px;
   }
 
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
   .bids-count-badge {
     display: inline-block;
     background: #f97316;
@@ -403,29 +409,31 @@
 .bids-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .bid-card {
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e8ecf0;
   border-radius: 12px;
   padding: 16px 20px;
+  background: #fff;
   transition: box-shadow 0.2s, border-color 0.2s;
 
   &:hover {
-    border-color: #f97316;
-    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.08);
+    border-color: #bfdbfe;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.07);
   }
 
-  &__header {
+  // ── Main row: avatar | info | price+btn ──
+  &__main {
     display: flex;
     align-items: center;
     gap: 14px;
   }
 
   &__avatar {
-    width: 46px;
-    height: 46px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid #e2e8f0;
@@ -433,10 +441,10 @@
   }
 
   &__avatar-placeholder {
-    width: 46px;
-    height: 46px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    background-color: #f97316;
+    background: #f97316;
     color: white;
     display: flex;
     align-items: center;
@@ -446,7 +454,7 @@
     flex-shrink: 0;
   }
 
-  &__handyman-info {
+  &__info {
     flex: 1;
     min-width: 0;
   }
@@ -455,69 +463,104 @@
     font-size: 15px;
     font-weight: 700;
     color: #1e293b;
+    margin-bottom: 4px;
   }
 
-  &__level-badge {
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 9999px;
-    border: 1.5px solid;
+  &__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 12.5px;
+    color: #64748b;
+  }
+
+  &__right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
   }
 
   &__price {
     font-size: 1.15rem;
     font-weight: 800;
-    color: #f97316;
+    color: #1e293b;
     white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  &__details {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #f1f5f9;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  &__detail-item {
-    display: flex;
-    align-items: center;
-    font-size: 13px;
-    color: #64748b;
-  }
-
-  &__message {
-    font-size: 13.5px;
-    color: #475569;
-    background: #f8fafc;
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin: 6px 0 0;
-    line-height: 1.55;
-  }
-
-  &__footer {
-    margin-top: 14px;
-    display: flex;
-    justify-content: flex-end;
   }
 
   &__accept-btn {
-    background-color: #16a34a;
+    background: #2563eb;
     color: white;
     border: none;
     border-radius: 8px;
-    padding: 0.55rem 1.25rem;
-    font-size: 0.9rem;
+    padding: 8px 18px;
+    font-size: 13px;
     font-weight: 600;
-    transition: background-color 0.2s;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.2s;
 
-    &:hover:not(:disabled) { background-color: #15803d; }
-    &:disabled { opacity: 0.6; }
+    &:hover:not(:disabled) { background: #1d4ed8; }
+    &:disabled { opacity: 0.65; cursor: not-allowed; }
   }
+
+  // ── Message quote ──
+  &__message {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #e8ecf0;
+    font-size: 13.5px;
+    color: #475569;
+    line-height: 1.55;
+  }
+
+  &__message-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #94a3b8;
+    font-size: 13px;
+  }
+
+  // ── Mobile ──
+  @media (max-width: 576px) {
+    &__main { flex-wrap: wrap; }
+    &__right {
+      flex-direction: row;
+      width: 100%;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+}
+
+// ── Bid meta inline items ──
+.bid-meta__sep {
+  color: #cbd5e1;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.bid-meta__rating {
+  color: #f59e0b;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.bid-meta__level {
+  font-size: 12px;
+  font-weight: 600;
+
+  &.level-c0 { color: #64748b; }
+  &.level-c1 { color: #059669; }
+  &.level-c2 { color: #2563eb; }
+  &.level-c3 { color: #d97706; }
 }
 
 @keyframes pulse-active {
