@@ -1,0 +1,561 @@
+.customer-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  backdrop-filter: blur(4px);
+  padding: 28px;
+}
+
+.customer-modal-content {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  &.profile-modal {
+    max-width: 720px;
+  }
+
+  &.compare-modal {
+    max-width: 1120px;
+  }
+}
+
+.modal-header {
+  padding: 26px 32px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+
+  .modal-heading {
+    min-width: 0;
+  }
+
+  .modal-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    svg {
+      font-size: 12px;
+    }
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  p {
+    margin: 6px 0 0;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.45;
+    max-width: 620px;
+  }
+
+  .close-btn {
+    width: 34px;
+    height: 34px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #64748b;
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    flex-shrink: 0;
+
+    &:hover {
+      background: #fff1f2;
+      border-color: #fecdd3;
+      color: #ef4444;
+    }
+  }
+}
+
+.modal-body {
+  padding: 30px 32px 34px;
+}
+
+/* Compare Bids Modal Styles */
+.compare-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin: 2px;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+
+  th, td {
+    padding: 18px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #475569;
+    font-size: 14px;
+    text-align: left;
+    
+    &:not(:first-child) {
+      text-align: center;
+    }
+  }
+
+  td {
+    font-size: 15px;
+    color: #334155;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  .criteria-label {
+    font-weight: 600;
+    color: #64748b;
+    text-align: left;
+    width: 25%;
+    background-color: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+  }
+
+  .criteria-icon {
+    color: #94a3b8;
+    margin-right: 6px;
+    margin-bottom: 2px;
+  }
+
+  .handyman-col {
+    width: 25%;
+    border-right: 1px solid #e2e8f0;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    &.best-choice-col {
+      background-color: #fffbeb; // yellow-50
+      position: relative;
+    }
+  }
+
+  .best-choice-badge {
+    background: #fef08a; // yellow-200
+    color: #a16207; // yellow-700
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+    
+    svg {
+      color: #ca8a04;
+    }
+  }
+
+  .compare-avatar-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    .compare-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #e2e8f0;
+      
+      &.best {
+        border-color: #eab308;
+      }
+    }
+
+    .compare-avatar-placeholder {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #f97316;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 22px;
+
+      &.best {
+        border: 2px solid #eab308;
+      }
+    }
+
+    .compare-name {
+      font-weight: 700;
+      font-size: 15px;
+      color: #1e293b;
+    }
+  }
+
+  .compare-price {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1e293b;
+  }
+
+  .compare-match {
+    .match-bar-bg {
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      overflow: hidden;
+    }
+    
+    .match-bar-fill {
+      height: 100%;
+      background: #22c55e;
+      border-radius: 4px;
+    }
+
+    .match-text {
+      font-weight: 700;
+      color: #22c55e;
+      font-size: 14px;
+    }
+  }
+
+  .score-breakdown {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    text-align: left;
+
+    span {
+      display: block;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.35;
+      white-space: nowrap;
+    }
+  }
+
+  .compare-kyc {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid #bfdbfe;
+    color: #2563eb;
+    background: #eff6ff;
+
+    &.level-c3 {
+      border-color: #fcd34d;
+      color: #d97706;
+      background: #fffbeb;
+    }
+  }
+
+  .hire-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    width: 100%;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover:not(:disabled) { background: #1d4ed8; }
+    &:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    &.best {
+      background: #16a34a;
+      color: #ffffff;
+
+      &:hover:not(:disabled) { background: #15803d; }
+    }
+  }
+}
+
+/* Public Profile Modal Styles */
+.profile-header-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 28px;
+  
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f1f5f9;
+  }
+
+  .profile-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #cbd5e1;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 700;
+    border: 3px solid #f1f5f9;
+  }
+
+  .profile-title {
+    flex: 1;
+
+    h4 {
+      margin: 0 0 6px 0;
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .profile-meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        
+        &.rating {
+          background: #fffbeb;
+          color: #d97706;
+          border: 1px solid #fef08a;
+        }
+
+        &.kyc {
+          background: #eff6ff;
+          color: #2563eb;
+          border: 1px solid #bfdbfe;
+        }
+      }
+    }
+  }
+}
+
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+
+  .stat-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+  }
+}
+
+.profile-section {
+  margin-bottom: 28px;
+
+  h5 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px;
+  }
+
+  .bio-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #475569;
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #f1f5f9;
+  }
+
+  .skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .skill-tag {
+      background: #f1f5f9;
+      color: #475569;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #e2e8f0;
+      
+      img {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  .reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .review-item {
+      padding: 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+
+      .review-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+
+        .reviewer-info {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .reviewer-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+          }
+
+          .reviewer-name {
+            font-weight: 600;
+            font-size: 13px;
+            color: #334155;
+          }
+        }
+
+        .review-date {
+          font-size: 12px;
+          color: #94a3b8;
+        }
+      }
+
+      .review-stars {
+        color: #f59e0b;
+        font-size: 12px;
+        margin-bottom: 8px;
+        display: flex;
+        gap: 2px;
+      }
+
+      .review-comment {
+        font-size: 14px;
+        color: #475569;
+        line-height: 1.5;
+        margin: 0;
+      }
+      
+      .review-service {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #64748b;
+        background: #f1f5f9;
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .customer-modal-overlay {
+    padding: 14px;
+  }
+
+  .modal-header {
+    padding: 20px 20px 16px;
+  }
+
+  .modal-body {
+    padding: 22px 20px 26px;
+  }
+
+  .profile-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-header-section {
+    align-items: flex-start;
+  }
+}

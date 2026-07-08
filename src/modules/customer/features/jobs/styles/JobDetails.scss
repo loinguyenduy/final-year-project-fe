@@ -388,6 +388,24 @@
     padding-bottom: 16px;
   }
 
+  .bids-header-subtext {
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+
+    &__title {
+      font-weight: 700;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    p {
+      color: #64748b;
+    }
+  }
+
   .card-title {
     font-size: 16px;
     font-weight: 700;
@@ -573,4 +591,172 @@
   100% {
     box-shadow: 0 0 0 0 rgba(234, 88, 12, 0);
   }
+}
+
+// ── Bids Enhancements (Best Choice, Checkbox, Match Score) ──
+
+.bid-card-wrapper {
+  position: relative;
+  margin-bottom: 16px;
+
+  &.is-best-choice {
+    .bid-card {
+      border: 2px solid #eab308; // yellow-500
+      box-shadow: 0 4px 15px rgba(234, 179, 8, 0.15);
+      border-top-left-radius: 0; // for the badge
+    }
+  }
+}
+
+.best-choice-badge {
+  background-color: #eab308;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: -1px;
+  position: relative;
+  z-index: 2;
+
+  svg {
+    font-size: 12px;
+  }
+}
+
+.bid-card {
+  &.selected {
+    border-color: #3b82f6;
+    background-color: #f0fdf4; // green-50
+  }
+
+  &__main {
+    align-items: flex-start; // change from center to allow progress bar below name
+  }
+
+  &__checkbox {
+    display: flex;
+    align-items: center;
+    padding-top: 12px;
+    margin-right: 4px;
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #2563eb;
+    }
+  }
+
+  &__avatar-wrapper {
+    cursor: pointer;
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
+  &__info {
+    cursor: pointer;
+  }
+
+  &__name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+}
+
+.kyc-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+
+  &.level-c1 { color: #059669; background: #ecfdf5; border-color: #a7f3d0; }
+  &.level-c2 { color: #2563eb; background: #eff6ff; border-color: #bfdbfe; }
+  &.level-c3 { color: #d97706; background: #fffbeb; border-color: #fde68a; }
+}
+
+.match-score-text {
+  color: #16a34a; // green-600
+  font-weight: 700;
+}
+
+.match-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .match-progress-bar {
+    height: 6px;
+    background-color: #e2e8f0;
+    border-radius: 3px;
+    flex: 1;
+    max-width: 200px;
+    overflow: hidden;
+  }
+
+  .match-progress-fill {
+    height: 100%;
+    background-color: #3b82f6; // blue-500
+    border-radius: 3px;
+  }
+
+  .match-progress-label {
+    font-size: 12px;
+    color: #64748b;
+    white-space: nowrap;
+  }
+}
+
+.is-best-choice .match-progress-fill {
+  background-color: #22c55e; // green-500
+}
+
+// ── Floating Compare Bar ──
+
+.floating-compare-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  padding: 16px 24px;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  animation: slideUp 0.3s ease-out;
+
+  .compare-bar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+    
+    span {
+      font-size: 15px;
+      color: #334155;
+      
+      strong {
+        color: #2563eb;
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }

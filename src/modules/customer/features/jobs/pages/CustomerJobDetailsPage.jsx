@@ -3,8 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getJobDetailsApi, acceptBidApi } from '../../../services/jobService';
 import ImageLightbox from '../../../../../core/components/ImageLightbox';
 import { toast } from 'react-toastify';
-import { FaArrowLeft, FaCheck, FaStar, FaCommentDots } from 'react-icons/fa';
+import { FaArrowLeft, FaCheck, FaStar, FaCommentDots, FaBolt } from 'react-icons/fa';
 import '../styles/JobDetails.scss';
+import CompareBidsModal from '../components/CompareBidsModal';
+import PublicHandymanProfileModal from '../components/PublicHandymanProfileModal';
 
 const CustomerJobDetailsPage = () => {
     const { id } = useParams();
@@ -14,11 +16,16 @@ const CustomerJobDetailsPage = () => {
     const [lightboxSrc, setLightboxSrc] = useState(null);
     const [acceptingBidId, setAcceptingBidId] = useState(null);
 
+    const [selectedBids, setSelectedBids] = useState([]);
+    const [showCompareModal, setShowCompareModal] = useState(false);
+    const [profileModalHandymanId, setProfileModalHandymanId] = useState(null);
+
     const fetchJob = async () => {
         try {
             const res = await getJobDetailsApi(id);
             if (res && res.EC === 0) {
                 setJob(res.DT);
+                setSelectedBids([]); // Reset selections on refresh
             } else {
                 toast.error(res.EM || "Failed to load job details.");
             }
@@ -36,6 +43,7 @@ const CustomerJobDetailsPage = () => {
 
     const handleAcceptBid = async (bidId) => {
         setAcceptingBidId(bidId);
+        setShowCompareModal(false); // close modal if open
         try {
             const res = await acceptBidApi(id, bidId);
             if (res?.EC === 0) {
@@ -49,6 +57,20 @@ const CustomerJobDetailsPage = () => {
         } finally {
             setAcceptingBidId(null);
         }
+    };
+
+    const handleToggleSelectBid = (bidId) => {
+        setSelectedBids(prev => {
+            if (prev.includes(bidId)) {
+                return prev.filter(id => id !== bidId);
+            } else {
+                if (prev.length >= 3) {
+                    toast.warning("You can compare up to 3 handymen.");
+                    return prev;
+                }
+                return [...prev, bidId];
+            }
+        });
     };
 
     const formatCurrency = (val) => {
@@ -92,6 +114,13 @@ const CustomerJobDetailsPage = () => {
         return `${day}/${month} ${hour}:${min}`;
     };
 
+    const formatDuration = (hours) => {
+        if (!hours) return null;
+        const value = Number(hours);
+        if (Number.isNaN(value)) return null;
+        return `${value} ${value === 1 ? 'hour' : 'hours'}`;
+    };
+
     if (loading) return <div className="text-center p-5"><div className="spinner-border text-primary" /></div>;
     if (!job) return <div className="text-center p-5 text-danger">Job not found</div>;
 
@@ -111,12 +140,12 @@ const CustomerJobDetailsPage = () => {
     const activeBids = (job.Bids || []).filter(b => b.status !== 'WITHDRAWN');
     const pendingBids = activeBids.filter(b => b.status === 'PENDING');
     const budgetDisplay = job.estimated_budget_min || job.estimated_budget_max
-        ? `${job.estimated_budget_min ? formatCurrency(job.estimated_budget_min) : '0 đ'} - ${job.estimated_budget_max ? formatCurrency(job.estimated_budget_max) : 'Any'}`
+        ? `${job.estimated_budget_min ? formatCurrency(job.estimated_budget_min) : '0 VND'} - ${job.estimated_budget_max ? formatCurrency(job.estimated_budget_max) : 'Any'}`
         : 'TBD';
     const agreedPriceDisplay = job.final_agreed_price ? formatCurrency(job.final_agreed_price) : 'Not agreed yet';
 
     return (
-        <div className="job-details-page-container">
+        <div className="job-details-page-container pb-5">
             <span className="back-link" onClick={() => navigate(-1)}>
                 <FaArrowLeft /> Back
             </span>
@@ -148,109 +177,8 @@ const CustomerJobDetailsPage = () => {
                 </div>
             </div>
 
-            {/* BIDS LIST — shown when job is in BIDDING stage */}
-            {job.current_status === 'BIDDING' && (
-                <div className="bids-card">
-                    <div className="bids-card__header">
-                        <h4 className="card-title mb-0">
-                            Quotes from Handymen
-                            <span className="bids-count-badge ms-2">{pendingBids.length}</span>
-                        </h4>
-                        <p className="text-muted small mt-1 mb-0">Review each quote and select the handyman you want to hire.</p>
-                    </div>
-
-                    {pendingBids.length === 0 ? (
-                        <div className="text-center py-4 text-muted">
-                            <p className="mb-0">No bids received yet. Handymen will appear here once they apply.</p>
-                        </div>
-                    ) : (
-                        <div className="bids-list mt-3">
-                            {pendingBids.map((bid) => {
-                                const handyman = bid.User;
-                                const profile = handyman?.Handyman_Profile;
-                                const rating = parseFloat(profile?.bayesian_score) || 0;
-                                const isAccepting = acceptingBidId === bid.id;
-
-                                const metaItems = [
-                                    rating > 0 && (
-                                        <span key="rating" className="bid-meta__rating">
-                                            <FaStar size={11} /> {rating.toFixed(1)}
-                                        </span>
-                                    ),
-                                    profile?.total_jobs_completed > 0 && (
-                                        <span key="jobs">{profile.total_jobs_completed} jobs</span>
-                                    ),
-                                    profile?.handyman_level && (
-                                        <span key="level" className={`bid-meta__level level-${profile.handyman_level.toLowerCase()}`}>
-                                            KYC {profile.handyman_level}
-                                        </span>
-                                    ),
-                                    bid.eta && (
-                                        <span key="eta">ETA: {formatEta(bid.eta)}</span>
-                                    ),
-                                    bid.estimated_duration_hours && (
-                                        <span key="dur">~{bid.estimated_duration_hours}h</span>
-                                    ),
-                                ].filter(Boolean);
-
-                                return (
-                                    <div key={bid.id} className="bid-card">
-                                        <div className="bid-card__main">
-                                            {/* Avatar */}
-                                            {handyman?.avatar_url ? (
-                                                <img src={handyman.avatar_url} alt="Handyman" className="bid-card__avatar" />
-                                            ) : (
-                                                <div className="bid-card__avatar-placeholder">
-                                                    {handyman?.full_name?.charAt(0).toUpperCase() || '?'}
-                                                </div>
-                                            )}
-
-                                            {/* Name + stats */}
-                                            <div className="bid-card__info">
-                                                <div className="bid-card__name">{handyman?.full_name || 'Unknown'}</div>
-                                                <div className="bid-card__meta">
-                                                    {metaItems.map((item, idx) => (
-                                                        <React.Fragment key={idx}>
-                                                            {idx > 0 && <span className="bid-meta__sep">•</span>}
-                                                            {item}
-                                                        </React.Fragment>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Price + hire button */}
-                                            <div className="bid-card__right">
-                                                <div className="bid-card__price">{formatCurrency(bid.proposed_price)}</div>
-                                                <button
-                                                    className="bid-card__accept-btn"
-                                                    onClick={() => handleAcceptBid(bid.id)}
-                                                    disabled={isAccepting}
-                                                >
-                                                    {isAccepting
-                                                        ? <><span className="spinner-border spinner-border-sm me-1" />Confirming...</>
-                                                        : 'Hire This Handyman'
-                                                    }
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Message quote */}
-                                        {bid.message && (
-                                            <div className="bid-card__message">
-                                                <FaCommentDots className="bid-card__message-icon" />
-                                                <span>{bid.message}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* JOB DETAILS */}
-            <div className="details-card">
+            {/* JOB DETAILS (Moved up) */}
+            <div className="details-card mb-4">
                 <h4 className="card-title">Job Details</h4>
                 <div className="details-grid">
                     <div className="info-group">
@@ -306,7 +234,7 @@ const CustomerJobDetailsPage = () => {
                 {job.SelectedHandyman && (
                     <>
                         <h5 className="section-title">Assigned Handyman</h5>
-                        <div className="handyman-card">
+                        <div className="handyman-card" onClick={() => setProfileModalHandymanId(job.SelectedHandyman.id)} style={{cursor: 'pointer'}}>
                             {job.SelectedHandyman.avatar_url ? (
                                 <img src={job.SelectedHandyman.avatar_url} alt="Handyman" className="avatar" />
                             ) : (
@@ -323,7 +251,194 @@ const CustomerJobDetailsPage = () => {
                     </>
                 )}
             </div>
-        <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+
+            {/* BIDS LIST - shown when job is in BIDDING stage */}
+            {job.current_status === 'BIDDING' && (
+                <div className="bids-card">
+                    <div className="bids-card__header mb-3">
+                        <h4 className="card-title mb-0">
+                            Handyman Quotes
+                            <span className="bids-count-badge ms-2">{pendingBids.length}</span>
+                        </h4>
+                        <div className="bids-header-subtext mt-3 p-3">
+                            <div className="bids-header-subtext__title">
+                                <FaBolt color="#eab308" /> {pendingBids.length} quotes received - private bidding
+                            </div>
+                            <p className="small mt-1 mb-0">
+                                Select up to 3 handymen to compare price, reliability, experience, and timing side by side.
+                            </p>
+                        </div>
+                    </div>
+
+                    {pendingBids.length === 0 ? (
+                        <div className="text-center py-4 text-muted">
+                            <p className="mb-0">No bids received yet. Handymen will appear here once they apply.</p>
+                        </div>
+                    ) : (
+                        <div className="bids-list">
+                            {pendingBids.map((bid) => {
+                                const handyman = bid.User;
+                                const profile = handyman?.Handyman_Profile;
+                                const rating = parseFloat(profile?.bayesian_score) || 0;
+                                const isAccepting = acceptingBidId === bid.id;
+                                const isSelected = selectedBids.includes(bid.id);
+
+                                const metaItems = [
+                                    rating > 0 && (
+                                        <span key="rating" className="bid-meta__rating">
+                                            <FaStar size={11} /> {rating.toFixed(1)}
+                                        </span>
+                                    ),
+                                    profile?.total_jobs_completed > 0 && (
+                                        <span key="jobs">{profile.total_jobs_completed} jobs</span>
+                                    ),
+                                    bid.eta && (
+                                        <span key="eta">ETA: {formatEta(bid.eta)}</span>
+                                    ),
+                                    bid.estimated_duration_hours && (
+                                        <span key="duration">{formatDuration(bid.estimated_duration_hours)}</span>
+                                    ),
+                                ].filter(Boolean);
+
+                                return (
+                                    <div key={bid.id} className={`bid-card-wrapper ${bid.isBestChoice ? 'is-best-choice' : ''}`}>
+                                        {bid.isBestChoice && (
+                                            <div className="best-choice-badge">
+                                                <FaStar /> Recommended by Trusted Handyman
+                                            </div>
+                                        )}
+                                        <div className={`bid-card ${isSelected ? 'selected' : ''}`}>
+                                            <div className="bid-card__main">
+                                                <div className="bid-card__checkbox">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={isSelected}
+                                                        onChange={() => handleToggleSelectBid(bid.id)}
+                                                    />
+                                                </div>
+
+                                                {/* Avatar */}
+                                                <div 
+                                                    className="bid-card__avatar-wrapper"
+                                                    onClick={() => setProfileModalHandymanId(handyman.id)}
+                                                >
+                                                    {handyman?.avatar_url ? (
+                                                        <img src={handyman.avatar_url} alt="Handyman" className="bid-card__avatar" />
+                                                    ) : (
+                                                        <div className="bid-card__avatar-placeholder">
+                                                            {handyman?.full_name?.charAt(0).toUpperCase() || '?'}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Name + stats */}
+                                                <div className="bid-card__info" onClick={() => setProfileModalHandymanId(handyman.id)}>
+                                                    <div className="bid-card__name-row">
+                                                        <span className="bid-card__name">{handyman?.full_name || 'Unknown'}</span>
+                                                        {profile?.handyman_level && (
+                                                            <span className={`kyc-badge level-${profile.handyman_level.toLowerCase()}`}>
+                                                                {handyman?.kyc_status || 'UNVERIFIED'} / {profile.handyman_level}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="bid-card__meta">
+                                                        {metaItems.map((item, idx) => (
+                                                            <React.Fragment key={idx}>
+                                                                {idx > 0 && <span className="bid-meta__sep">•</span>}
+                                                                {item}
+                                                            </React.Fragment>
+                                                        ))}
+                                                        {bid.match_score && (
+                                                            <>
+                                                                <span className="bid-meta__sep">•</span>
+                                                                <span className="match-score-text">{bid.match_score}% match</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    {/* Match Progress Bar */}
+                                                    {bid.match_score && (
+                                                        <div className="match-progress-container mt-2">
+                                                            <div className="match-progress-bar">
+                                                                <div 
+                                                                    className="match-progress-fill" 
+                                                                    style={{ width: `${Math.min(bid.match_score, 100)}%` }} 
+                                                                />
+                                                            </div>
+                                                            <span className="match-progress-label">{bid.match_score}% match</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Price + hire button */}
+                                                <div className="bid-card__right">
+                                                    <div className="bid-card__price">{formatCurrency(bid.proposed_price)}</div>
+                                                    <button
+                                                        className="bid-card__accept-btn"
+                                                        onClick={() => handleAcceptBid(bid.id)}
+                                                        disabled={isAccepting}
+                                                    >
+                                                        {isAccepting
+                                                            ? <><span className="spinner-border spinner-border-sm me-1" />Confirming...</>
+                                                            : 'Hire'
+                                                        }
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Message quote */}
+                                            {bid.message && (
+                                                <div className="bid-card__message">
+                                                    <FaCommentDots className="bid-card__message-icon" />
+                                                    <span>{bid.message}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* FLOATING COMPARE BAR */}
+            {selectedBids.length > 0 && (
+                <div className="floating-compare-bar">
+                    <div className="compare-bar-content">
+                        <span><strong>{selectedBids.length}</strong> selected (max 3)</span>
+                        <div className="compare-actions">
+                            <button className="btn btn-outline-secondary me-2" onClick={() => setSelectedBids([])}>Clear</button>
+                            <button 
+                                className="btn btn-primary"
+                                onClick={() => setShowCompareModal(true)}
+                                disabled={selectedBids.length < 1}
+                            >
+                                Compare
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+            
+            {showCompareModal && (
+                <CompareBidsModal 
+                    jobId={id} 
+                    selectedBidIds={selectedBids} 
+                    onClose={() => setShowCompareModal(false)} 
+                    onAcceptBid={handleAcceptBid}
+                />
+            )}
+
+            {profileModalHandymanId && (
+                <PublicHandymanProfileModal 
+                    jobId={id} 
+                    handymanId={profileModalHandymanId} 
+                    onClose={() => setProfileModalHandymanId(null)} 
+                />
+            )}
         </div>
     );
 };

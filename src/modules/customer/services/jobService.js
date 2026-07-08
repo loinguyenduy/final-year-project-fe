@@ -32,4 +32,22 @@ const acceptBidApi = (jobId, bidId) => {
     return axios.post(`/matchmaking/jobs/${jobId}/bids/${bidId}/accept`);
 };
 
-export { getServicesApi, postJobApi, getCustomerJobsApi, getJobDetailsApi, getProvincesApi, getWardsApi, acceptBidApi };
+const getPublicHandymanProfileApi = (jobId, handymanId) => {
+    return axios.get(`/matchmaking/jobs/${jobId}/handymen/${handymanId}/public-profile`);
+};
+
+const compareBidsApi = (data) => {
+    return axios.post('/matchmaking/bids/compare', data);
+};
+
+export { 
+    getServicesApi, 
+    postJobApi, 
+    getCustomerJobsApi, 
+    getJobDetailsApi, 
+    getProvincesApi, 
+    getWardsApi, 
+    acceptBidApi,
+    getPublicHandymanProfileApi,
+    compareBidsApi
+};
