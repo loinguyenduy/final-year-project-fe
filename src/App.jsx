@@ -69,7 +69,6 @@ function App() {
           
           <Route path="/payment-success" element={<PaymentResultPage />} />
           <Route path="/payment-cancel" element={<PaymentResultPage />} />
-          <Route path="/vnpay-return" element={<PaymentResultPage />} />
 
             {/* CÁC ROUTE CÓ CHUNG MAIN LAYOUT KÈM HEADER/FOOTER */}
           <Route path="/" element={<MainLayout />}>

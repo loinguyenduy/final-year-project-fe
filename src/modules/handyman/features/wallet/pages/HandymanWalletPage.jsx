@@ -22,7 +22,6 @@ const HandymanWalletPage = () => {
     // --- STATE CHO FORM NẠP TIỀN ---
     const [amount, setAmount] = useState('');
     const [targetWallet, setTargetWallet] = useState('MAIN'); // 'MAIN' hoặc 'ESCROW'
-    const [paymentMethod, setPaymentMethod] = useState('PAYOS'); // 'PAYOS' hoặc 'VNPAY'
     const [isLoading, setIsLoading] = useState(false);
 
     // Xử lý khi đổi loại ví nạp
@@ -48,7 +47,7 @@ const HandymanWalletPage = () => {
         try {
             const payload = {
                 amount: Number(amount),
-                payment_method: paymentMethod,
+                payment_method: 'PAYOS',
                 target_wallet: targetWallet
             };
 
@@ -71,7 +70,7 @@ const HandymanWalletPage = () => {
     const mockTransactions = [
         { id: 1, type: 'BOND_LOCK', title: 'Security Bond (Escrow)', date: '01/01/2026 08:00', amount: -2000000 },
         { id: 2, type: 'JOB_FEE', title: 'System Fee (Job-0041)', date: '20/05/2026 14:30', amount: -85000 },
-        { id: 3, type: 'TOP_UP', title: 'Wallet Top-up (VNPay)', date: '15/05/2026 09:00', amount: 500000 },
+        { id: 3, type: 'TOP_UP', title: 'Wallet Top-up (PayOS)', date: '15/05/2026 09:00', amount: 500000 },
     ];
 
     return (
@@ -162,18 +161,11 @@ const HandymanWalletPage = () => {
                         <div className="mb-4">
                             <label className="form-label">Payment Method</label>
                             <div className="payment-methods">
-                                <label className={`method-option ${paymentMethod === 'PAYOS' ? 'selected' : ''}`}>
-                                    <input type="radio" name="payment" checked={paymentMethod === 'PAYOS'} onChange={() => setPaymentMethod('PAYOS')} />
+                                <label className="method-option selected">
+                                    <input type="radio" name="payment" checked readOnly />
                                     <div>
                                         <div className="method-name">PayOS</div>
                                         <div className="method-desc">Quick QR Transfer (No fees)</div>
-                                    </div>
-                                </label>
-                                <label className={`method-option ${paymentMethod === 'VNPAY' ? 'selected' : ''}`}>
-                                    <input type="radio" name="payment" checked={paymentMethod === 'VNPAY'} onChange={() => setPaymentMethod('VNPAY')} />
-                                    <div>
-                                        <div className="method-name">VNPay</div>
-                                        <div className="method-desc">ATM / Credit Card / E-wallet</div>
                                     </div>
                                 </label>
                             </div>

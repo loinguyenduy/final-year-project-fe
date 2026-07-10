@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import axiosInstance from '../../../api/axiosInstance';
 
 const PaymentResultPage = () => {
     const location = useLocation();
@@ -15,23 +16,19 @@ const PaymentResultPage = () => {
 
     useEffect(() => {
         const queryParams = new URLSearchParams(location.search);
-        let success = false;
-
-        // Check VNPay
-        const vnpResponseCode = queryParams.get('vnp_ResponseCode');
-        if (vnpResponseCode) {
-            success = vnpResponseCode === '00';
-        } else {
-            // Check PayOS
-            const cancelParam = queryParams.get('cancel');
-            if (location.pathname === '/payment-success' || cancelParam === 'false') {
-                success = true;
-            } else if (location.pathname === '/payment-cancel' || cancelParam === 'true') {
-                success = false;
-            }
-        }
+        const cancelParam = queryParams.get('cancel');
+        const success = location.pathname === '/payment-success' || cancelParam === 'false';
+        const callbackPath = success ? '/fintech/payos-return' : '/fintech/payos-cancel';
 
         setIsSuccess(success);
+
+        if (queryParams.get('orderCode') || queryParams.get('order_code')) {
+            axiosInstance
+                .get(`${callbackPath}${location.search}`)
+                .catch((error) => {
+                    console.error('Unable to sync PayOS callback:', error);
+                });
+        }
 
         // Redirect after countdown
         const timer = setInterval(() => {

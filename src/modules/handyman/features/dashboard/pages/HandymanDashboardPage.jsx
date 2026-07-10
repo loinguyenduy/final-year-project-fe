@@ -103,7 +103,7 @@ const HandymanDashboardPage = () => {
         <button className="btn btn-primary w-100 fw-bold py-3 fs-5" style={{ backgroundColor: "#ea580c", borderColor: "#ea580c" }} onClick={() => navigate("/handyman/wallet")}>
           $ Deposit 2,000,000 ₫ Now
         </button>
-        <div className="text-center mt-2 small text-muted">Secure payment via VNPay, PayOS</div>
+        <div className="text-center mt-2 small text-muted">Secure payment via PayOS</div>
         <div className="security-note">
           <FaLock className="icon" size={24} />
           <p>
