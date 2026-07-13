@@ -9,6 +9,7 @@ import CompareBidsModal from '../components/CompareBidsModal';
 import PublicHandymanProfileModal from '../components/PublicHandymanProfileModal';
 import HireConfirmModal from '../components/HireConfirmModal';
 import AcceptedJobView from '../../../../matchmaking/features/accepted/components/AcceptedJobView';
+import JobProgressTracker from '../../../../matchmaking/components/JobProgressTracker';
 
 const CustomerJobDetailsPage = () => {
     const { id } = useParams();
@@ -118,18 +119,7 @@ const CustomerJobDetailsPage = () => {
     if (loading) return <div className="text-center p-5"><div className="spinner-border text-primary" /></div>;
     if (!job) return <div className="text-center p-5 text-danger">Job not found</div>;
 
-    const steps = [
-        { status: 'POSTED', label: 'Posted' },
-        { status: 'BIDDING', label: 'Bidding' },
-        { status: 'ACCEPTED', label: 'Accepted' },
-        { status: 'EN_ROUTE', label: 'En Route' },
-        { status: 'ARRIVED', label: 'Arrived' },
-        { status: 'IN_PROGRESS', label: 'In Progress' },
-        { status: 'CLOSED', label: 'Completed' },
-        { status: 'WARRANTY', label: 'Warranty' }
-    ];
 
-    const currentStepIdx = steps.findIndex(s => s.status === job.current_status);
     const jobCode = 'JOB-' + job.id.substring(0, 4).toUpperCase();
     const activeBids = (job.Bids || []).filter(b => b.status !== 'WITHDRAWN');
     const pendingBids = activeBids.filter(b => b.status === 'PENDING');
@@ -158,21 +148,7 @@ const CustomerJobDetailsPage = () => {
             {/* PROGRESS */}
             <div className="progress-card">
                 <h4 className="card-title">Job Progress</h4>
-                <div className="progress-steps-container">
-                    {steps.map((step, idx) => {
-                        let stepClass = '';
-                        if (idx < currentStepIdx) stepClass = 'completed';
-                        else if (idx === currentStepIdx) stepClass = 'active';
-                        return (
-                            <div key={step.status} className={`step-item ${stepClass}`}>
-                                <div className="step-circle">
-                                    {idx < currentStepIdx ? <FaCheck /> : idx + 1}
-                                </div>
-                                <span className="step-label">{step.label}</span>
-                            </div>
-                        );
-                    })}
-                </div>
+                <JobProgressTracker currentStatus={job.current_status} />
             </div>
 
             {/* JOB DETAILS (Moved up) */}

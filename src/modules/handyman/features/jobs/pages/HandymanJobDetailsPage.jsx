@@ -247,6 +247,46 @@ const HandymanJobDetailsPage = () => {
 
         // Handyman has already submitted a bid
         if (myBid) {
+            if (myBid.status === 'WITHDRAWN') {
+                return (
+                    <div className="bid-panel bid-panel--withdrawn">
+                        <div className="bid-panel__icon-wrap mb-2 text-center">
+                            <FaTimesCircle size={32} className="text-secondary" />
+                        </div>
+                        <h6 className="bid-panel__title text-secondary text-center">Bid Withdrawn</h6>
+                        <p className="bid-panel__desc text-muted small text-center">
+                            You have withdrawn your bid for this job.
+                        </p>
+                    </div>
+                );
+            }
+            if (myBid.status === 'CANCELLED_BY_HANDYMAN') {
+                return (
+                    <div className="bid-panel bid-panel--cancelled">
+                        <div className="bid-panel__icon-wrap mb-2 text-center">
+                            <FaTimesCircle size={32} className="text-danger" />
+                        </div>
+                        <h6 className="bid-panel__title text-danger text-center">Withdrawn From Job</h6>
+                        <p className="bid-panel__desc text-muted small text-center">
+                            You cancelled this job after being selected. You are not allowed to bid on this job again.
+                        </p>
+                    </div>
+                );
+            }
+            if (myBid.status === 'CANCELLED_BY_CUSTOMER') {
+                return (
+                    <div className="bid-panel bid-panel--cancelled">
+                        <div className="bid-panel__icon-wrap mb-2 text-center">
+                            <FaTimesCircle size={32} className="text-danger" />
+                        </div>
+                        <h6 className="bid-panel__title text-danger text-center">Selection Cancelled</h6>
+                        <p className="bid-panel__desc text-muted small text-center">
+                            The customer cancelled your selection for this job. You are not allowed to bid on this job again.
+                        </p>
+                    </div>
+                );
+            }
+
             if (isEditing) {
                 return (
                     <div className="bid-panel">

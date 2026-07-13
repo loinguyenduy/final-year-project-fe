@@ -5,18 +5,8 @@ import { FaArrowLeft, FaCheck, FaPhoneAlt, FaStar, FaMapMarkerAlt, FaShieldAlt, 
 import { getAcceptedJobDetailsApi } from '../../../api/acceptedJobApi';
 import { CustomerCancellationModal, HandymanCancellationModal, StartMovingModal } from './AcceptedJobModals';
 import ImageLightbox from '../../../../../core/components/ImageLightbox';
+import JobProgressTracker from '../../../components/JobProgressTracker';
 import '../styles/AcceptedJob.scss';
-
-const STEPS = [
-    { status: 'POSTED', label: 'Posted' },
-    { status: 'BIDDING', label: 'Bidding' },
-    { status: 'ACCEPTED', label: 'Accepted' },
-    { status: 'EN_ROUTE', label: 'En Route' },
-    { status: 'ARRIVED', label: 'Arrived' },
-    { status: 'IN_PROGRESS', label: 'In Progress' },
-    { status: 'CLOSED', label: 'Completed' },
-    { status: 'WARRANTY', label: 'Warranty' }
-];
 
 const formatCurrency = (val) => {
     if (!val) return '';
@@ -91,7 +81,7 @@ const AcceptedJobView = ({ jobId, role }) => {
 
     const handleHandymanCancelSuccess = () => {
         setShowHandymanCancel(false);
-        navigate('/handyman/jobs/find');
+        navigate('/handyman/find-jobs');
     };
 
     const handleStartMovingSuccess = () => {
@@ -110,12 +100,11 @@ const AcceptedJobView = ({ jobId, role }) => {
 
     const { job, selected_bid, deposit, partner, allowed_actions } = details;
     const isCustomer = role === 'CUSTOMER';
-    const currentStepIdx = STEPS.findIndex(s => s.status === 'ACCEPTED');
 
     return (
         <div className="accepted-job-container">
             <div className="container" style={{ maxWidth: '960px' }}>
-                <button className="back-btn" onClick={() => navigate(isCustomer ? '/customer/my-jobs' : '/handyman/jobs/my-bids')}>
+                <button className="back-btn" onClick={() => navigate(isCustomer ? '/customer/my-jobs' : '/handyman/my-bids')}>
                     <FaArrowLeft /> Back to Jobs
                 </button>
 
@@ -136,27 +125,7 @@ const AcceptedJobView = ({ jobId, role }) => {
                             </p>
                             
                             {/* Progress Tracker */}
-                            <div className="progress-tracker">
-                                <div className="steps-container d-none d-md-flex">
-                                    {STEPS.map((step, idx) => {
-                                        let stepClass = '';
-                                        if (idx < currentStepIdx) stepClass = 'completed';
-                                        else if (idx === currentStepIdx) stepClass = 'active';
-                                        return (
-                                            <div key={step.status} className={`step-item ${stepClass}`}>
-                                                <div className="step-circle">
-                                                    {idx < currentStepIdx ? <FaCheck size={12} /> : idx + 1}
-                                                </div>
-                                                <span className="step-label">{step.label}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                {/* Mobile Progress (Simplified) */}
-                                <div className="d-flex d-md-none justify-content-center mt-3 small fw-medium text-primary bg-primary bg-opacity-10 py-2 rounded">
-                                    Stage {currentStepIdx + 1}/{STEPS.length} : {STEPS[currentStepIdx].label}
-                                </div>
-                            </div>
+                            <JobProgressTracker currentStatus="ACCEPTED" />
                         </div>
 
                         {/* Job Summary Accordion */}

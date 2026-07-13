@@ -256,8 +256,13 @@ export const StartMovingModal = ({ show, onHide, jobId, onSuccess }) => {
     const handleConfirm = () => {
         setGettingLocation(true);
         setSubmitting(true);
+        
+        let apiCalled = false;
 
         const callApi = async (payload) => {
+            if (apiCalled) return;
+            apiCalled = true;
+            
             try {
                 const res = await startMovingApi(jobId, payload);
                 if (res && res.EC === 0) {
@@ -277,14 +282,13 @@ export const StartMovingModal = ({ show, onHide, jobId, onSuccess }) => {
         if (navigator.geolocation) {
             // Setup timeout for GPS
             const timeoutId = setTimeout(() => {
-                // If it takes longer than 5 seconds, proceed without GPS
+                console.log("GPS timeout reached. Proceeding without coordinates.");
                 callApi({});
             }, 5000);
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     clearTimeout(timeoutId);
-                    if (!gettingLocation) return; // Prevent double call if timeout already fired
                     callApi({
                         gps_lat: position.coords.latitude,
                         gps_long: position.coords.longitude
@@ -292,12 +296,11 @@ export const StartMovingModal = ({ show, onHide, jobId, onSuccess }) => {
                 },
                 (error) => {
                     clearTimeout(timeoutId);
-                    if (!gettingLocation) return;
                     console.warn("Geolocation failed or denied:", error);
                     // Fallback to empty body
                     callApi({});
                 },
-                { enableHighAccuracy: true, timeout: 4500, maximumAge: 0 }
+                { enableHighAccuracy: false, timeout: 4500, maximumAge: 0 }
             );
         } else {
             callApi({});
