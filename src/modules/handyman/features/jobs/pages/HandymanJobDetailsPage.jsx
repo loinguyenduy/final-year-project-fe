@@ -10,6 +10,7 @@ import {
     FaCheckCircle, FaPaperPlane
 } from 'react-icons/fa';
 import '../styles/FindJob.scss';
+import AcceptedJobView from '../../../../matchmaking/features/accepted/components/AcceptedJobView';
 
 const STATUS_TEXT = {
     POSTED: 'Looking for Handyman',
@@ -190,6 +191,10 @@ const HandymanJobDetailsPage = () => {
         : job.estimated_budget_max ? formatCurrency(job.estimated_budget_max) : 'Negotiable';
     const avgRating = parseFloat(job.Customer?.avg_rating) || 0;
     const canSeePhone = !['POSTED', 'BIDDING'].includes(job.current_status);
+
+    if (job.current_status === 'ACCEPTED') {
+        return <AcceptedJobView jobId={id} role="HANDYMAN" />;
+    }
 
     // ── Right panel renderer ──────────────────────────────────────────────
 

@@ -32,6 +32,14 @@ const acceptBidApi = (jobId, bidId) => {
     return axios.post(`/matchmaking/jobs/${jobId}/bids/${bidId}/accept`);
 };
 
+const getDepositSummaryApi = (jobId, bidId) => {
+    return axios.get(`/matchmaking/jobs/${jobId}/bids/${bidId}/deposit-summary`);
+};
+
+const acceptBidWithWalletDepositApi = (jobId, bidId) => {
+    return axios.post(`/matchmaking/jobs/${jobId}/bids/${bidId}/accept-with-wallet-deposit`);
+};
+
 const getPublicHandymanProfileApi = (jobId, handymanId) => {
     return axios.get(`/matchmaking/jobs/${jobId}/handymen/${handymanId}/public-profile`);
 };
@@ -48,6 +56,8 @@ export {
     getProvincesApi, 
     getWardsApi, 
     acceptBidApi,
+    getDepositSummaryApi,
+    acceptBidWithWalletDepositApi,
     getPublicHandymanProfileApi,
     compareBidsApi
 };

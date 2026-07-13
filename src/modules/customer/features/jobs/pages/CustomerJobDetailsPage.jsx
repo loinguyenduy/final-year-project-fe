@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getJobDetailsApi, acceptBidApi } from '../../../services/jobService';
+import { getJobDetailsApi } from '../../../services/jobService';
 import ImageLightbox from '../../../../../core/components/ImageLightbox';
 import { toast } from 'react-toastify';
 import { FaArrowLeft, FaCheck, FaStar, FaCommentDots, FaBolt } from 'react-icons/fa';
 import '../styles/JobDetails.scss';
 import CompareBidsModal from '../components/CompareBidsModal';
 import PublicHandymanProfileModal from '../components/PublicHandymanProfileModal';
+import HireConfirmModal from '../components/HireConfirmModal';
+import AcceptedJobView from '../../../../matchmaking/features/accepted/components/AcceptedJobView';
 
 const CustomerJobDetailsPage = () => {
     const { id } = useParams();
@@ -14,7 +16,7 @@ const CustomerJobDetailsPage = () => {
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
     const [lightboxSrc, setLightboxSrc] = useState(null);
-    const [acceptingBidId, setAcceptingBidId] = useState(null);
+    const [selectedBidForConfirm, setSelectedBidForConfirm] = useState(null);
 
     const [selectedBids, setSelectedBids] = useState([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
@@ -41,22 +43,14 @@ const CustomerJobDetailsPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
-    const handleAcceptBid = async (bidId) => {
-        setAcceptingBidId(bidId);
+    const handleAcceptBid = (bidId) => {
         setShowCompareModal(false); // close modal if open
-        try {
-            const res = await acceptBidApi(id, bidId);
-            if (res?.EC === 0) {
-                toast.success("Bid accepted! The handyman has been confirmed.");
-                await fetchJob();
-            } else {
-                toast.error(res?.EM || "Failed to accept bid.");
-            }
-        } catch {
-            toast.error("Error accepting bid.");
-        } finally {
-            setAcceptingBidId(null);
-        }
+        const bidObj = job?.Bids?.find(b => b.id === bidId);
+        const handymanName = bidObj?.User?.full_name || 'Handyman';
+        setSelectedBidForConfirm({
+            bidId,
+            handymanName
+        });
     };
 
     const handleToggleSelectBid = (bidId) => {
@@ -143,6 +137,10 @@ const CustomerJobDetailsPage = () => {
         ? `${job.estimated_budget_min ? formatCurrency(job.estimated_budget_min) : '0 VND'} - ${job.estimated_budget_max ? formatCurrency(job.estimated_budget_max) : 'Any'}`
         : 'TBD';
     const agreedPriceDisplay = job.final_agreed_price ? formatCurrency(job.final_agreed_price) : 'Not agreed yet';
+
+    if (job.current_status === 'ACCEPTED') {
+        return <AcceptedJobView jobId={id} role="CUSTOMER" />;
+    }
 
     return (
         <div className="job-details-page-container pb-5">
@@ -280,7 +278,7 @@ const CustomerJobDetailsPage = () => {
                                 const handyman = bid.User;
                                 const profile = handyman?.Handyman_Profile;
                                 const rating = parseFloat(profile?.bayesian_score) || 0;
-                                const isAccepting = acceptingBidId === bid.id;
+                                const isAccepting = selectedBidForConfirm?.bidId === bid.id;
                                 const isSelected = selectedBids.includes(bid.id);
 
                                 const metaItems = [
@@ -437,6 +435,16 @@ const CustomerJobDetailsPage = () => {
                     jobId={id} 
                     handymanId={profileModalHandymanId} 
                     onClose={() => setProfileModalHandymanId(null)} 
+                />
+            )}
+
+            {selectedBidForConfirm && (
+                <HireConfirmModal
+                    jobId={id}
+                    bidId={selectedBidForConfirm.bidId}
+                    handymanName={selectedBidForConfirm.handymanName}
+                    onClose={() => setSelectedBidForConfirm(null)}
+                    onSuccess={fetchJob}
                 />
             )}
         </div>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { FaQrcode } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { topUpWalletApi } from '../../../services/walletService';
@@ -7,6 +8,15 @@ const WalletDeposit = () => {
     const [activeTab, setActiveTab] = useState('deposit');
     const [amount, setAmount] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const amtParam = params.get('amount');
+        if (amtParam) {
+            setAmount(amtParam);
+        }
+    }, [location]);
 
     const quickAmounts = [100000, 200000, 500000, 1000000];
 
@@ -16,7 +26,9 @@ const WalletDeposit = () => {
 
     const formatCurrency = (val) => {
         if (!val) return '';
-        const number = parseInt(val.replace(/[^0-9]/g, ''), 10);
+        // If it's already a number, convert to string
+        const strVal = val.toString();
+        const number = parseInt(strVal.replace(/[^0-9]/g, ''), 10);
         if (isNaN(number)) return '';
         return new Intl.NumberFormat('vi-VN').format(number);
     };
