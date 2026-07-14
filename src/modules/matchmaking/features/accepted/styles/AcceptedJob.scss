@@ -325,6 +325,9 @@
 
         .actions {
             display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
             gap: 0.5rem;
 
             .btn-icon {
@@ -342,6 +345,25 @@
 
                 &:hover {
                     background-color: #f1f5f9;
+                }
+            }
+        }
+
+        @media (max-width: 767px) {
+            align-items: flex-start;
+            flex-wrap: wrap;
+
+            .details {
+                min-width: calc(100% - 72px);
+            }
+
+            .actions {
+                width: 100%;
+                justify-content: stretch;
+
+                > button,
+                .accepted-chat-launcher {
+                    flex: 1 1 140px;
                 }
             }
         }
@@ -587,4 +609,3 @@
     }
   }
 }
-

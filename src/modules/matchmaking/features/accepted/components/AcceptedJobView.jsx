@@ -6,6 +6,7 @@ import { getAcceptedJobDetailsApi } from '../../../api/acceptedJobApi';
 import { CustomerCancellationModal, HandymanCancellationModal, StartMovingModal } from './AcceptedJobModals';
 import ImageLightbox from '../../../../../core/components/ImageLightbox';
 import JobProgressTracker from '../../../components/JobProgressTracker';
+import AcceptedJobChat from '../../../../chat/components/AcceptedJobChat';
 import '../styles/AcceptedJob.scss';
 
 const formatCurrency = (val) => {
@@ -100,6 +101,7 @@ const AcceptedJobView = ({ jobId, role }) => {
 
     const { job, selected_bid, deposit, partner, allowed_actions } = details;
     const isCustomer = role === 'CUSTOMER';
+    const jobCode = `JOB-${job.id.substring(0, 4).toUpperCase()}`;
 
     return (
         <div className="accepted-job-container">
@@ -132,7 +134,7 @@ const AcceptedJobView = ({ jobId, role }) => {
                         <div className="card-panel job-summary">
                             <div className="summary-header">
                                 <div className="job-info">
-                                    <div className="job-code">JOB-{job.id.substring(0, 4).toUpperCase()}</div>
+                                    <div className="job-code">{jobCode}</div>
                                     <h3 className="service-name">{job.service?.name || 'General Service'}</h3>
                                 </div>
                                 <div className="job-price">{formatCurrency(selected_bid.proposed_price)}</div>
@@ -218,6 +220,14 @@ const AcceptedJobView = ({ jobId, role }) => {
                                     </div>
                                 </div>
                                 <div className="actions">
+                                    <AcceptedJobChat
+                                        key={jobId}
+                                        jobId={jobId}
+                                        jobCode={jobCode}
+                                        partner={partner}
+                                        role={role}
+                                        onRefreshJob={() => navigate(0)}
+                                    />
                                     <button className="btn-icon" onClick={() => {
                                         navigator.clipboard.writeText(partner.phone_number);
                                         toast.success('Phone number copied!');
