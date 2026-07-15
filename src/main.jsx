@@ -5,6 +5,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import store, { persistor } from "./redux/store.js";
 import App from "./App.jsx";
 import "bootstrap/dist/css/bootstrap.min.css"; 
+import "leaflet/dist/leaflet.css";
 import "react-toastify/dist/ReactToastify.css";
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 

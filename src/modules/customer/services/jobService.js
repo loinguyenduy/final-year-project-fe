@@ -28,6 +28,14 @@ const getWardsApi = (province_code) => {
     return axios.get(`/matchmaking/wards?province_code=${province_code}`);
 };
 
+const geocodeAddressApi = (data) => {
+    return axios.post('/matchmaking/locations/geocode', data);
+};
+
+const reverseGeocodeApi = (gps_lat, gps_long) => {
+    return axios.post('/matchmaking/locations/reverse-geocode', { gps_lat, gps_long });
+};
+
 const acceptBidApi = (jobId, bidId) => {
     return axios.post(`/matchmaking/jobs/${jobId}/bids/${bidId}/accept`);
 };
@@ -55,6 +63,8 @@ export {
     getJobDetailsApi, 
     getProvincesApi, 
     getWardsApi, 
+    geocodeAddressApi,
+    reverseGeocodeApi,
     acceptBidApi,
     getDepositSummaryApi,
     acceptBidWithWalletDepositApi,
