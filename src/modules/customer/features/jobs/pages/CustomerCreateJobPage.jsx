@@ -159,6 +159,34 @@ const CustomerCreateJobPage = () => {
         clearLocationState();
     };
 
+    const resolveCurrentGpsAddress = async (latitude, longitude, requestId) => {
+        setIsResolvingLocation(true);
+        try {
+            const res = await reverseGeocodeApi(latitude, longitude);
+            if (requestId !== locationRequestRef.current || addressOptionRef.current !== 3) return;
+
+            if (res?.EC === 0 && res.DT?.service_address) {
+                setResolvedAddress(res.DT.service_address);
+                setLocationError('');
+            } else {
+                setResolvedAddress('');
+                setLocationError('GPS was found, but the approximate address could not be loaded. You can still confirm the pin.');
+            }
+        } catch (error) {
+            if (requestId !== locationRequestRef.current || addressOptionRef.current !== 3) return;
+            setResolvedAddress('');
+            setLocationError(
+                error?.EM
+                    ? `GPS was found, but the approximate address could not be loaded: ${error.EM}`
+                    : 'GPS was found, but the approximate address could not be loaded. You can still confirm the pin.'
+            );
+        } finally {
+            if (requestId === locationRequestRef.current && addressOptionRef.current === 3) {
+                setIsResolvingLocation(false);
+            }
+        }
+    };
+
     const handleGetLocation = () => {
         if (addressOptionRef.current !== 3) return;
         if (!navigator.geolocation) {
@@ -184,6 +212,11 @@ const CustomerCreateJobPage = () => {
                 setShowMap(true);
                 setIsFetchingGps(false);
                 toast.success('Location retrieved. Please verify the pin on the map.');
+                void resolveCurrentGpsAddress(
+                    position.coords.latitude,
+                    position.coords.longitude,
+                    requestId
+                );
             },
             (error) => {
                 if (requestId !== locationRequestRef.current || addressOptionRef.current !== 3) return;
@@ -263,11 +296,13 @@ const CustomerCreateJobPage = () => {
     };
 
     const handleMapLocationChange = ({ latitude, longitude }) => {
+        locationRequestRef.current += 1;
         setGpsLat(latitude);
         setGpsLong(longitude);
         setLocationSource(LOCATION_SOURCES.MANUAL_MAP_PIN);
         setLocationConfirmed(false);
         setLocationError('');
+        setIsResolvingLocation(false);
         setShowMap(true);
         if (addressOption === 3) setResolvedAddress('');
     };
@@ -661,8 +696,14 @@ const CustomerCreateJobPage = () => {
                                                     {gpsAccuracy !== null && (
                                                         <small className="d-block text-muted">GPS accuracy: approximately ±{Math.round(gpsAccuracy)} m</small>
                                                     )}
-                                                    {resolvedAddress && <small className="d-block text-muted mt-1">Map result: {resolvedAddress}</small>}
-                                                    <small className="d-block text-muted mt-1">Final source: {locationSource}</small>
+                                                    {isResolvingLocation && addressOption === 3 && (
+                                                        <small className="d-block text-muted mt-1">Resolving approximate address...</small>
+                                                    )}
+                                                    {resolvedAddress && (
+                                                        <small className="d-block text-muted mt-1">
+                                                            {addressOption === 3 ? 'Approximate address' : 'Map result'}: {resolvedAddress}
+                                                        </small>
+                                                    )}
                                                 </div>
                                                 {locationConfirmed ? (
                                                     <span className="badge bg-success location-confirmed-badge">
