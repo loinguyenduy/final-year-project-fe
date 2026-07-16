@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Job progress stepper regression</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 48px;
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: Arial, sans-serif;
+    }
+    main { display: grid; gap: 28px; max-width: 1344px; margin: 0 auto; }
+    section {
+      padding: 24px;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      background: #fff;
+    }
+    h1 { margin: 0; font-size: 26px; }
+    h2 { margin: 0 0 20px; font-size: 18px; }
+    p { margin: 8px 0 0; color: #64748b; }
+    .stepper {
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --completed: #22c55e;
+      --completed-dark: #15803d;
+      --border: #cbd5e1;
+      --muted: #94a3b8;
+      width: 100%;
+      container-type: inline-size;
+    }
+    .list {
+      display: grid;
+      grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .item { min-width: 0; color: var(--muted); text-align: center; }
+    .track {
+      position: relative;
+      display: flex;
+      height: 30px;
+      align-items: center;
+      justify-content: center;
+    }
+    .connector {
+      position: absolute;
+      z-index: 0;
+      top: 50%;
+      right: 50%;
+      left: -50%;
+      height: 2px;
+      background: #e2e8f0;
+      transform: translateY(-50%);
+    }
+    .connector.completed { background: var(--completed); }
+    .circle {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      width: 30px;
+      height: 30px;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 700;
+    }
+    .label {
+      display: block;
+      max-width: 100%;
+      margin-top: 8px;
+      padding: 0 4px;
+      color: inherit;
+      font-size: .75rem;
+      font-weight: 600;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+    }
+    .item.completed { color: var(--completed-dark); }
+    .item.completed .circle {
+      border-color: var(--completed);
+      background: var(--completed);
+      color: #fff;
+    }
+    .item.current { color: var(--accent); }
+    .item.current .circle {
+      border-color: var(--accent);
+      background: #fff;
+      color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .item.current .label { font-weight: 700; }
+    .compact {
+      display: none;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+    .compact-head, .compact-neighbours {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: #64748b;
+      font-size: .8rem;
+      font-weight: 700;
+    }
+    .compact-head strong { color: var(--accent); font-size: .95rem; }
+    .bar { height: 6px; overflow: hidden; border-radius: 999px; background: #e2e8f0; }
+    .bar span { display: block; width: 50%; height: 100%; background: var(--accent); }
+    .compact-neighbours { font-size: .75rem; }
+    @container (max-width: 67.999rem) {
+      .after .list { display: none; }
+      .after .compact { display: grid; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Shared JobProgressStepper visual regression</h1>
+      <p>Baseline visual tokens are unchanged; the current component expands the stage model and switches to compact mode below 1088 px.</p>
+    </header>
+
+    <section>
+      <h2>Before — approved 8-stage visual</h2>
+      <nav class="stepper" style="--columns: 8">
+        <ol class="list">
+          <li class="item completed"><div class="track"><span class="circle">✓</span></div><span class="label">Posted</span></li>
+          <li class="item completed"><div class="track"><span class="connector completed"></span><span class="circle">✓</span></div><span class="label">Bidding</span></li>
+          <li class="item completed"><div class="track"><span class="connector completed"></span><span class="circle">✓</span></div><span class="label">Accepted</span></li>
+          <li class="item completed"><div class="track"><span class="connector completed"></span><span class="circle">✓</span></div><span class="label">En route</span></li>
+          <li class="item current"><div class="track"><span class="connector completed"></span><span class="circle">5</span></div><span class="label">Arrived</span></li>
+          <li class="item"><div class="track"><span class="connector"></span><span class="circle">6</span></div><span class="label">In progress</span></li>
+          <li class="item"><div class="track"><span class="connector"></span><span class="circle">7</span></div><span class="label">Completed</span></li>
+          <li class="item"><div class="track"><span class="connector"></span><span class="circle">8</span></div><span class="label">Warranty</span></li>
+        </ol>
+      </nav>
+    </section>
+
+    <section>
+      <h2>After — canonical 10-stage model</h2>
+      <nav class="stepper after" style="--columns: 10">
+        <ol class="list">
+          <li class="item completed"><div class="track"><span class="circle">✓</span></div><span class="label">Posted</span></li>
+          <li class="item completed"><div class="track"><span class="connector completed"></span><span class="circle">✓</span></div><span class="label">Bidding</span></li>
+          <li class="item completed"><div class="track"><span class="connector completed"></span><span class="circle">✓</span></div><span class="label">Accepted</span></li>
+          <li class="item completed"><div class="track"><span class="connector completed"></span><span class="circle">✓</span></div><span class="label">En route</span></li>
+          <li class="item current"><div class="track"><span class="connector completed"></span><span class="circle">5</span></div><span class="label">Arrived</span></li>
+          <li class="item"><div class="track"><span class="connector"></span><span class="circle">6</span></div><span class="label">Quote pending</span></li>
+          <li class="item"><div class="track"><span class="connector"></span><span class="circle">7</span></div><span class="label">Payment pending</span></li>
+          <li class="item"><div class="track"><span class="connector"></span><span class="circle">8</span></div><span class="label">In progress</span></li>
+          <li class="item"><div class="track"><span class="connector"></span><span class="circle">9</span></div><span class="label">Warranty</span></li>
+          <li class="item"><div class="track"><span class="connector"></span><span class="circle">10</span></div><span class="label">Completed</span></li>
+        </ol>
+        <div class="compact">
+          <div class="compact-head"><span>Stage 5 of 10</span><strong>Arrived</strong></div>
+          <div class="bar"><span></span></div>
+          <div class="compact-neighbours"><span>Previous: En route</span><span>Next: Quote pending</span></div>
+        </div>
+      </nav>
+    </section>
+  </main>
+</body>
+</html>

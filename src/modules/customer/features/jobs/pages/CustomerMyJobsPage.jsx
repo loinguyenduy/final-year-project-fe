@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaCalendarAlt, FaMapMarkerAlt, FaUserCheck, FaDollarSign, FaInfoCircle, FaClipboardList, FaPlus } from 'react-icons/fa';
 import { getCustomerJobsApi } from '../../../services/jobService';
+import { getJobDetailsPath } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 import '../styles/MyJobs.scss';
 
 const CustomerMyJobsPage = () => {
@@ -38,8 +39,18 @@ const CustomerMyJobsPage = () => {
         if (activeTab === 'ALL') {
             setFilteredJobs(jobs);
         } else if (activeTab === 'ACTIVE') {
-            // Active includes POSTED, BIDDING, ACCEPTED, EN_ROUTE, ARRIVED, IN_PROGRESS
-            const activeStatuses = ['POSTED', 'BIDDING', 'ACCEPTED', 'EN_ROUTE', 'ARRIVED', 'IN_PROGRESS'];
+            const activeStatuses = [
+                'POSTED',
+                'BIDDING',
+                'PENDING_DEPOSIT',
+                'ACCEPTED',
+                'EN_ROUTE',
+                'ARRIVED',
+                'CANCELLATION_REVIEW',
+                'QUOTE_PENDING',
+                'PAYMENT_PENDING',
+                'IN_PROGRESS',
+            ];
             setFilteredJobs(jobs.filter(job => activeStatuses.includes(job.current_status)));
         } else if (activeTab === 'WARRANTY') {
             setFilteredJobs(jobs.filter(job => job.current_status === 'WARRANTY'));
@@ -59,20 +70,30 @@ const CustomerMyJobsPage = () => {
                 return { text: 'Posted', className: 'status-posted' };
             case 'BIDDING':
                 return { text: 'Bidding', className: 'status-bidding' };
+            case 'PENDING_DEPOSIT':
+                return { text: 'Deposit Pending', className: 'status-bidding' };
             case 'ACCEPTED':
                 return { text: 'Accepted', className: 'status-accepted' };
             case 'EN_ROUTE':
                 return { text: 'En Route', className: 'status-enroute' };
             case 'ARRIVED':
                 return { text: 'Arrived', className: 'status-arrived' };
+            case 'CANCELLATION_REVIEW':
+                return { text: 'Cancellation Review', className: 'status-default' };
+            case 'QUOTE_PENDING':
+                return { text: 'Quote Pending', className: 'status-default' };
+            case 'PAYMENT_PENDING':
+                return { text: 'Payment Pending', className: 'status-default' };
             case 'IN_PROGRESS':
                 return { text: 'In Progress', className: 'status-inprogress' };
+            case 'CANCELLED':
+                return { text: 'Cancelled', className: 'status-default' };
             case 'WARRANTY':
                 return { text: 'In Warranty', className: 'status-warranty' };
             case 'CLOSED':
                 return { text: 'Completed', className: 'status-completed' };
             default:
-                return { text: status, className: 'status-default' };
+                return { text: 'Status Updated', className: 'status-default' };
         }
     };
 
@@ -114,7 +135,18 @@ const CustomerMyJobsPage = () => {
                         className={`tab-btn ${activeTab === 'ACTIVE' ? 'active' : ''}`}
                         onClick={() => setActiveTab('ACTIVE')}
                     >
-                        Active ({jobs.filter(j => ['POSTED', 'BIDDING', 'ACCEPTED', 'EN_ROUTE', 'ARRIVED', 'IN_PROGRESS'].includes(j.current_status)).length})
+                        Active ({jobs.filter(j => [
+                            'POSTED',
+                            'BIDDING',
+                            'PENDING_DEPOSIT',
+                            'ACCEPTED',
+                            'EN_ROUTE',
+                            'ARRIVED',
+                            'CANCELLATION_REVIEW',
+                            'QUOTE_PENDING',
+                            'PAYMENT_PENDING',
+                            'IN_PROGRESS',
+                        ].includes(j.current_status)).length})
                     </button>
                     <button 
                         className={`tab-btn ${activeTab === 'WARRANTY' ? 'active' : ''}`}
@@ -238,7 +270,11 @@ const CustomerMyJobsPage = () => {
                                     <div className="mt-3 text-end">
                                         <button 
                                             className="btn btn-outline-primary btn-sm px-4 fw-bold shadow-sm"
-                                            onClick={() => navigate(`/customer/my-jobs/${job.id}`)}
+                                            onClick={() => navigate(getJobDetailsPath({
+                                                jobId: job.id,
+                                                status: job.current_status,
+                                                role: 'CUSTOMER',
+                                            }))}
                                         >
                                             View Details
                                         </button>

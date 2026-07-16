@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaClipboardList, FaSortAmountDown, FaArrowRight, FaStar, FaClock, FaLocationArrow } from 'react-icons/fa';
 import { getAvailableJobsApi, getServicesApi } from '../../../services/jobService';
 import { getCachedLocation, setCachedLocation } from '../../../../../core/utils/locationCache';
+import { getJobDetailsPath } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 import '../styles/FindJob.scss';
 
 const HandymanFindJobPage = () => {
@@ -293,7 +294,11 @@ const HandymanFindJobPage = () => {
                                             </div>
                                             <button
                                                 className="btn btn-apply fw-semibold mt-3"
-                                                onClick={() => navigate(`/handyman/jobs/${job.id}`)}
+                                                onClick={() => navigate(getJobDetailsPath({
+                                                    jobId: job.id,
+                                                    status: job.current_status,
+                                                    role: 'HANDYMAN',
+                                                }))}
                                             >
                                                 View Details <FaArrowRight className="ms-1" size={13} />
                                             </button>

@@ -32,7 +32,9 @@ import HandymanWalletPage from "./modules/handyman/features/wallet/pages/Handyma
 import HandymanProfilePage from "./modules/handyman/features/profile/pages/HandymanProfilePage";
 import HandymanFindJobPage from "./modules/handyman/features/jobs/pages/HandymanFindJobPage";
 import HandymanJobDetailsPage from "./modules/handyman/features/jobs/pages/HandymanJobDetailsPage";
-import HandymanMyBidsPage from "./modules/handyman/features/jobs/pages/HandymanMyBidsPage";
+import HandymanMyJobsPage from "./modules/handyman/features/jobs/pages/HandymanMyJobsPage";
+import LifecycleWorkspaceLayout from "./modules/matchmaking/features/job-lifecycle/layouts/LifecycleWorkspaceLayout";
+import JobLifecyclePage from "./modules/matchmaking/features/job-lifecycle/pages/JobLifecyclePage";
 
 import AdminLayout from './modules/admin/layouts/AdminLayout';
 import AdminDashboardPage from './modules/admin/features/dashboard/pages/AdminDashboardPage';
@@ -77,6 +79,17 @@ function App() {
 
 
           {/* CÁC ROUTE PRIVATE THEO ROLE */}
+          <Route
+            path="/jobs/:jobId/lifecycle"
+            element={
+              <RoleRoute allowedRoles={['CUSTOMER', 'HANDYMAN']}>
+                <LifecycleWorkspaceLayout />
+              </RoleRoute>
+            }
+          >
+            <Route index element={<JobLifecyclePage />} />
+          </Route>
+
           <Route element={<RoleRoute allowedRoles={['CUSTOMER']}><CustomerLayout /> </RoleRoute>}>
             <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
             <Route path="/customer/profile" element={<CustomerProfilePage />} />
@@ -93,7 +106,8 @@ function App() {
             <Route path="/handyman/profile" element={<HandymanProfilePage />} />
             <Route path="/handyman/find-jobs" element={<HandymanFindJobPage />} />
             <Route path="/handyman/jobs/:id" element={<HandymanJobDetailsPage />} />
-            <Route path="/handyman/my-bids" element={<HandymanMyBidsPage />} />
+            <Route path="/handyman/my-jobs" element={<HandymanMyJobsPage />} />
+            <Route path="/handyman/my-bids" element={<Navigate to="/handyman/my-jobs" replace />} />
           </Route>
 
           {/* --- LUỒNG ADMIN --- */}

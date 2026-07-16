@@ -10,7 +10,7 @@ import {
   CHAT_EVENTS,
   MESSAGE_DELIVERY_STATES,
 } from '../constants/chat.constants';
-import { createChatSocket, emitWithAcknowledgement } from '../socket/chatSocket';
+import { acquireChatSocket, emitWithAcknowledgement } from '../socket/chatSocket';
 import {
   compareMessagePosition,
   createClientMessageId,
@@ -682,20 +682,23 @@ const useJobChat = ({ jobId, currentUserId, accessToken, isOpen }) => {
 
     let disposed = false;
     let socket = null;
+    let socketHandle = null;
+    let handlers = null;
 
     const startSocket = async () => {
       dispatch({
         type: 'CONNECTION_STATE',
         connectionState: CHAT_CONNECTION_STATES.CONNECTING,
       });
-      socket = await createChatSocket(accessToken);
+      socketHandle = await acquireChatSocket(accessToken);
+      socket = socketHandle.socket;
       if (disposed) {
-        socket.disconnect();
+        socketHandle.release();
         return;
       }
       socketRef.current = socket;
 
-      socket.on('connect', async () => {
+      const handleConnect = async () => {
         if (disposed) return;
         dispatch({
           type: 'CONNECTION_STATE',
@@ -705,25 +708,25 @@ const useJobChat = ({ jobId, currentUserId, accessToken, isOpen }) => {
         if (joined && stateRef.current.historyLoaded) {
           await fetchLatestHistory(conversationId, { reset: false });
         }
-      });
+      };
 
-      socket.on('disconnect', () => {
+      const handleDisconnect = () => {
         if (disposed) return;
         dispatch({
           type: 'CONNECTION_STATE',
           connectionState: CHAT_CONNECTION_STATES.DISCONNECTED,
         });
-      });
+      };
 
-      socket.io.on('reconnect_attempt', () => {
+      const handleReconnectAttempt = () => {
         if (disposed) return;
         dispatch({
           type: 'CONNECTION_STATE',
           connectionState: CHAT_CONNECTION_STATES.RECONNECTING,
         });
-      });
+      };
 
-      socket.on('connect_error', (error) => {
+      const handleConnectError = (error) => {
         if (disposed) return;
         const envelope = error?.data || error;
         if (!applyAccessError(envelope)) {
@@ -733,18 +736,18 @@ const useJobChat = ({ jobId, currentUserId, accessToken, isOpen }) => {
           });
           dispatch({ type: 'GENERAL_ERROR', message: getFriendlyChatError(envelope) });
         }
-      });
+      };
 
-      socket.on(CHAT_EVENTS.NEW_MESSAGE, (message) => {
+      const handleNewMessage = (message) => {
         if (disposed || message.conversation_id !== conversationId) return;
         const incrementUnread = message.sender_id !== currentUserId
           && (!isOpenRef.current
             || document.visibilityState !== 'visible'
             || !atBottomRef.current);
         dispatch({ type: 'MESSAGE_RECEIVED', message, incrementUnread });
-      });
+      };
 
-      socket.on(CHAT_EVENTS.READ_UPDATED, (payload) => {
+      const handleReadUpdated = (payload) => {
         if (disposed || payload.conversation_id !== conversationId) return;
         if (payload.user_id === currentUserId) {
           dispatch({
@@ -760,9 +763,9 @@ const useJobChat = ({ jobId, currentUserId, accessToken, isOpen }) => {
           lastReadMessageId: payload.last_read_message_id,
           readAt: payload.read_at,
         });
-      });
+      };
 
-      socket.on(CHAT_EVENTS.CLOSED, (payload) => {
+      const handleClosed = (payload) => {
         if (disposed || payload.conversation_id !== conversationId) return;
         dispatch({
           type: 'ACCESS_CLOSED',
@@ -773,14 +776,38 @@ const useJobChat = ({ jobId, currentUserId, accessToken, isOpen }) => {
             message: 'This conversation has been closed.',
           },
         });
-      });
+      };
 
-      socket.on(CHAT_EVENTS.ERROR, (envelope) => {
+      const handleSocketError = (envelope) => {
         if (disposed || applyAccessError(envelope)) return;
         dispatch({ type: 'GENERAL_ERROR', message: getFriendlyChatError(envelope) });
-      });
+      };
 
-      socket.connect();
+      handlers = {
+        handleClosed,
+        handleConnect,
+        handleConnectError,
+        handleDisconnect,
+        handleNewMessage,
+        handleReadUpdated,
+        handleReconnectAttempt,
+        handleSocketError,
+      };
+
+      socket.on('connect', handleConnect);
+      socket.on('disconnect', handleDisconnect);
+      socket.on('connect_error', handleConnectError);
+      socket.io.on('reconnect_attempt', handleReconnectAttempt);
+      socket.on(CHAT_EVENTS.NEW_MESSAGE, handleNewMessage);
+      socket.on(CHAT_EVENTS.READ_UPDATED, handleReadUpdated);
+      socket.on(CHAT_EVENTS.CLOSED, handleClosed);
+      socket.on(CHAT_EVENTS.ERROR, handleSocketError);
+
+      if (socket.connected) {
+        await handleConnect();
+      } else {
+        socket.connect();
+      }
     };
 
     void startSocket().catch((error) => {
@@ -797,9 +824,17 @@ const useJobChat = ({ jobId, currentUserId, accessToken, isOpen }) => {
       if (socket?.connected) {
         socket.emit(CHAT_EVENTS.LEAVE, { conversation_id: conversationId }, () => {});
       }
-      socket?.removeAllListeners();
-      socket?.io?.removeAllListeners();
-      socket?.disconnect();
+      if (socket && handlers) {
+        socket.off('connect', handlers.handleConnect);
+        socket.off('disconnect', handlers.handleDisconnect);
+        socket.off('connect_error', handlers.handleConnectError);
+        socket.io.off('reconnect_attempt', handlers.handleReconnectAttempt);
+        socket.off(CHAT_EVENTS.NEW_MESSAGE, handlers.handleNewMessage);
+        socket.off(CHAT_EVENTS.READ_UPDATED, handlers.handleReadUpdated);
+        socket.off(CHAT_EVENTS.CLOSED, handlers.handleClosed);
+        socket.off(CHAT_EVENTS.ERROR, handlers.handleSocketError);
+      }
+      socketHandle?.release();
       if (socketRef.current === socket) socketRef.current = null;
     };
   }, [

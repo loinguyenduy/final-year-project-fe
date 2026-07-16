@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Navigate, useParams, useNavigate } from 'react-router-dom';
 import { getCachedLocation } from '../../../../../core/utils/locationCache';
 import { getJobDetailsApi, submitBidApi, updateBidApi, withdrawBidApi } from '../../../services/jobService';
 import ImageLightbox from '../../../../../core/components/ImageLightbox';
@@ -10,7 +10,10 @@ import {
     FaCheckCircle, FaPaperPlane
 } from 'react-icons/fa';
 import '../styles/FindJob.scss';
-import AcceptedJobView from '../../../../matchmaking/features/accepted/components/AcceptedJobView';
+import {
+    getLifecycleWorkspacePath,
+    isLifecycleWorkspaceStatus,
+} from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 
 const STATUS_TEXT = {
     POSTED: 'Looking for Handyman',
@@ -192,8 +195,8 @@ const HandymanJobDetailsPage = () => {
     const avgRating = parseFloat(job.Customer?.avg_rating) || 0;
     const canSeePhone = !['POSTED', 'BIDDING'].includes(job.current_status);
 
-    if (job.current_status === 'ACCEPTED') {
-        return <AcceptedJobView jobId={id} role="HANDYMAN" />;
+    if (isLifecycleWorkspaceStatus(job.current_status)) {
+        return <Navigate to={getLifecycleWorkspacePath(id)} replace />;
     }
 
     // ── Right panel renderer ──────────────────────────────────────────────
@@ -424,7 +427,7 @@ const HandymanJobDetailsPage = () => {
                                     <span className="small fw-medium" style={{ color: '#64748b' }}>{job.Service?.name || 'General Service'}</span>
                                 </div>
                                 <span className={`job-status-badge ${STATUS_BADGE_CLASS[job.current_status] || ''}`}>
-                                    {STATUS_TEXT[job.current_status] || job.current_status}
+                                    {STATUS_TEXT[job.current_status] || 'Status Updated'}
                                 </span>
                             </div>
 

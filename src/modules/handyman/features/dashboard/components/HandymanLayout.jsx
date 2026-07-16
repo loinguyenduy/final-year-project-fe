@@ -24,6 +24,7 @@ const HandymanLayout = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const { account } = useSelector((state) => state.identity);
+  const isLifecycleWorkspace = /^\/jobs\/[^/]+\/lifecycle$/.test(location.pathname);
 
   // Fetch latest profile when layout mounts
   useEffect(() => {
@@ -67,15 +68,9 @@ const HandymanLayout = () => {
       requiredLevel: "C2",
     },
     {
-      name: "My Bids",
-      path: "/handyman/my-bids",
-      icon: <FaClipboardList />,
-      requiredLevel: "C2",
-    },
-    {
       name: "My Jobs",
       path: "/handyman/my-jobs",
-      icon: <FaBriefcase />,
+      icon: <FaClipboardList />,
       requiredLevel: "C2",
     },
     {
@@ -136,7 +131,8 @@ const HandymanLayout = () => {
 
           <div className="menu-nav">
             {sideMenu.map((menu, index) => {
-              const isActive = location.pathname === menu.path;
+              const isActive = location.pathname === menu.path
+                || (isLifecycleWorkspace && menu.path === '/handyman/my-jobs');
               const isLocked = levelWeights[menu.requiredLevel] > currentWeight;
 
               return (
@@ -144,6 +140,8 @@ const HandymanLayout = () => {
                   key={index}
                   onClick={() => handleNavigation(menu)}
                   className={`menu-btn ${isActive && !isLocked ? "active" : ""} ${isLocked ? "locked" : ""}`}
+                  aria-label={menu.name}
+                  title={menu.name}
                 >
                   <div className="menu-content">
                     {/* Hiển thị ổ khóa nếu bị khóa */}
@@ -164,7 +162,7 @@ const HandymanLayout = () => {
         </div>
 
         <div className="logout-section">
-          <button onClick={handleLogout} className="btn-logout">
+          <button onClick={handleLogout} className="btn-logout" aria-label="Log out" title="Log out">
             <FaSignOutAlt />
             <span>Log out</span>
           </button>
@@ -175,11 +173,12 @@ const HandymanLayout = () => {
       <div className="main-content">
         <div className="topbar">
           <h5 className="page-title">
-            {sideMenu.find((m) => m.path === location.pathname)?.name ||
-              "Dashboard"}
+            {isLifecycleWorkspace
+              ? 'Job Lifecycle'
+              : sideMenu.find((m) => m.path === location.pathname)?.name || "Dashboard"}
           </h5>
           <div className="user-actions">
-            <button className="btn-bell">
+            <button className="btn-bell" aria-label="Notifications">
               <FaBell />
               <span className="badge bg-danger">3</span>
             </button>

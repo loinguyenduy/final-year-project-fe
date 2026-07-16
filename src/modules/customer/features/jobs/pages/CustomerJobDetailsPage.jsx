@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Navigate, useParams, useNavigate } from 'react-router-dom';
 import { getJobDetailsApi } from '../../../services/jobService';
 import ImageLightbox from '../../../../../core/components/ImageLightbox';
 import { toast } from 'react-toastify';
@@ -8,13 +8,19 @@ import '../styles/JobDetails.scss';
 import CompareBidsModal from '../components/CompareBidsModal';
 import PublicHandymanProfileModal from '../components/PublicHandymanProfileModal';
 import HireConfirmModal from '../components/HireConfirmModal';
-import AcceptedJobView from '../../../../matchmaking/features/accepted/components/AcceptedJobView';
-import JobProgressTracker from '../../../../matchmaking/components/JobProgressTracker';
+import JobProgressStepper from '../../../../matchmaking/components/JobProgressStepper';
+import { resolveEffectiveJobProgressStatus } from '../../../../matchmaking/utils/jobProgress';
+import {
+    getLifecycleWorkspacePath,
+    isLifecycleWorkspaceStatus,
+} from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
+import { getCurrentLifecycleCancellation } from '../../../../matchmaking/api/jobLifecycleApi';
 
 const CustomerJobDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [job, setJob] = useState(null);
+    const [cancellation, setCancellation] = useState(null);
     const [loading, setLoading] = useState(true);
     const [lightboxSrc, setLightboxSrc] = useState(null);
     const [selectedBidForConfirm, setSelectedBidForConfirm] = useState(null);
@@ -28,6 +34,18 @@ const CustomerJobDetailsPage = () => {
             const res = await getJobDetailsApi(id);
             if (res && res.EC === 0) {
                 setJob(res.DT);
+                if (res.DT?.current_status === 'CANCELLED') {
+                    try {
+                        const cancellationResponse = await getCurrentLifecycleCancellation(id);
+                        setCancellation(
+                            cancellationResponse?.EC === 0 ? cancellationResponse.DT : null,
+                        );
+                    } catch {
+                        setCancellation(null);
+                    }
+                } else {
+                    setCancellation(null);
+                }
                 setSelectedBids([]); // Reset selections on refresh
             } else {
                 toast.error(res.EM || "Failed to load job details.");
@@ -83,20 +101,22 @@ const CustomerJobDetailsPage = () => {
 
     const getStatusClass = (status) => {
         const map = {
-            POSTED: 'status-posted', BIDDING: 'status-bidding', ACCEPTED: 'status-accepted',
+            POSTED: 'status-posted', BIDDING: 'status-bidding', PENDING_DEPOSIT: 'status-bidding', ACCEPTED: 'status-accepted',
             EN_ROUTE: 'status-enroute', ARRIVED: 'status-arrived', IN_PROGRESS: 'status-inprogress',
-            WARRANTY: 'status-warranty', CLOSED: 'status-completed',
+            QUOTE_PENDING: 'status-arrived', PAYMENT_PENDING: 'status-accepted',
+            WARRANTY: 'status-warranty', CLOSED: 'status-completed', CANCELLED: 'status-default',
         };
         return map[status] || 'status-default';
     };
 
     const getStatusText = (status) => {
         const map = {
-            POSTED: 'Posted', BIDDING: 'Bidding', ACCEPTED: 'Accepted',
+            POSTED: 'Posted', BIDDING: 'Bidding', PENDING_DEPOSIT: 'Deposit pending', ACCEPTED: 'Accepted',
             EN_ROUTE: 'En Route', ARRIVED: 'Arrived', IN_PROGRESS: 'In Progress',
-            WARRANTY: 'Warranty', CLOSED: 'Completed',
+            QUOTE_PENDING: 'Quote Pending', PAYMENT_PENDING: 'Payment Pending',
+            WARRANTY: 'Warranty', CLOSED: 'Completed', CANCELLED: 'Cancelled',
         };
-        return map[status] || status;
+        return map[status] || 'Status updated';
     };
 
     const formatEta = (dateStr) => {
@@ -128,8 +148,8 @@ const CustomerJobDetailsPage = () => {
         : 'TBD';
     const agreedPriceDisplay = job.final_agreed_price ? formatCurrency(job.final_agreed_price) : 'Not agreed yet';
 
-    if (job.current_status === 'ACCEPTED') {
-        return <AcceptedJobView jobId={id} role="CUSTOMER" />;
+    if (isLifecycleWorkspaceStatus(job.current_status)) {
+        return <Navigate to={getLifecycleWorkspacePath(id)} replace />;
     }
 
     return (
@@ -148,7 +168,12 @@ const CustomerJobDetailsPage = () => {
             {/* PROGRESS */}
             <div className="progress-card">
                 <h4 className="card-title">Job Progress</h4>
-                <JobProgressTracker currentStatus={job.current_status} />
+                <JobProgressStepper
+                    currentStatus={resolveEffectiveJobProgressStatus({
+                        currentStatus: job.current_status,
+                        cancellation,
+                    })}
+                />
             </div>
 
             {/* JOB DETAILS (Moved up) */}

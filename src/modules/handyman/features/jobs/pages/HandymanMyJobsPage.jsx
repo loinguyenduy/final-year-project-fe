@@ -3,26 +3,35 @@ import { useNavigate } from 'react-router-dom';
 import { getMyBidsApi } from '../../../services/jobService';
 import { toast } from 'react-toastify';
 import { FaArrowRight, FaClipboardList, FaCalendarAlt, FaMapMarkerAlt, FaMoneyBillWave } from 'react-icons/fa';
+import { getJobDetailsPath } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 import '../styles/FindJob.scss';
 
 const STATUS_TEXT = {
     POSTED: 'Looking for Handyman',
     BIDDING: 'Accepting Bids',
+    PENDING_DEPOSIT: 'Deposit Pending',
     ACCEPTED: 'Assigned',
     EN_ROUTE: 'En Route',
     ARRIVED: 'Arrived',
+    CANCELLATION_REVIEW: 'Cancellation Review',
+    QUOTE_PENDING: 'Quote Pending',
+    PAYMENT_PENDING: 'Payment Pending',
     IN_PROGRESS: 'In Progress',
     WARRANTY: 'Warranty',
     CLOSED: 'Completed',
+    CANCELLED: 'Cancelled',
 };
 
 const BID_STATUS_CONFIG = {
     PENDING: { label: 'Pending', className: 'bid-status-badge--pending' },
     WON:     { label: 'Won',     className: 'bid-status-badge--won' },
     LOST:    { label: 'Not Selected', className: 'bid-status-badge--lost' },
+    WITHDRAWN: { label: 'Withdrawn', className: 'bid-status-badge--lost' },
+    CANCELLED_BY_CUSTOMER: { label: 'Selection Cancelled', className: 'bid-status-badge--lost' },
+    CANCELLED_BY_HANDYMAN: { label: 'Withdrawn', className: 'bid-status-badge--lost' },
 };
 
-const HandymanMyBidsPage = () => {
+const HandymanMyJobsPage = () => {
     const navigate = useNavigate();
     const [bids, setBids] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,13 +56,13 @@ const HandymanMyBidsPage = () => {
 
     const formatCurrency = (val) => {
         if (!val) return '—';
-        return new Intl.NumberFormat('vi-VN').format(val) + 'đ';
+        return `${new Intl.NumberFormat('en-US').format(val)} VND`;
     };
 
     const formatDate = (dateStr) => {
         if (!dateStr) return 'Flexible';
-        return new Date(dateStr).toLocaleDateString('vi-VN', {
-            day: '2-digit', month: '2-digit', year: 'numeric'
+        return new Date(dateStr).toLocaleDateString('en-US', {
+            day: '2-digit', month: 'short', year: 'numeric'
         });
     };
 
@@ -67,8 +76,8 @@ const HandymanMyBidsPage = () => {
         <div className="find-job-container py-4" style={{ minHeight: '100vh' }}>
             <div className="container">
                 <div className="mb-4">
-                    <h2 className="title-text fw-bold m-0">My Bids</h2>
-                    <p className="subtitle-text text-muted m-0 mt-1">Track all the jobs you have bid on</p>
+                    <h2 className="title-text fw-bold m-0">My Jobs</h2>
+                    <p className="subtitle-text text-muted m-0 mt-1">Track your bids and active jobs in one place</p>
                 </div>
 
                 {bids.length === 0 ? (
@@ -84,7 +93,8 @@ const HandymanMyBidsPage = () => {
                     <div className="d-flex flex-column gap-3">
                         {bids.map((bid) => {
                             const job = bid.Job;
-                            const bidConfig = BID_STATUS_CONFIG[bid.status] || { label: bid.status, className: '' };
+                            const bidConfig = BID_STATUS_CONFIG[bid.status]
+                                || { label: 'Updated', className: '' };
                             const jobCode = job ? `JOB-${job.id.substring(0, 4).toUpperCase()}` : '—';
 
                             return (
@@ -119,7 +129,7 @@ const HandymanMyBidsPage = () => {
 
                                             {/* Job status pill */}
                                             <span className="my-bid-job-status">
-                                                Job: {STATUS_TEXT[job?.current_status] || job?.current_status}
+                                                Job: {STATUS_TEXT[job?.current_status] || 'Status updated'}
                                             </span>
                                         </div>
 
@@ -139,7 +149,11 @@ const HandymanMyBidsPage = () => {
                                             {job && (
                                                 <button
                                                     className="btn btn-apply btn-sm fw-semibold"
-                                                    onClick={() => navigate(`/handyman/jobs/${job.id}`)}
+                                                    onClick={() => navigate(getJobDetailsPath({
+                                                        jobId: job.id,
+                                                        status: job.current_status,
+                                                        role: 'HANDYMAN',
+                                                    }))}
                                                 >
                                                     View Job <FaArrowRight className="ms-1" size={11} />
                                                 </button>
@@ -163,4 +177,4 @@ const HandymanMyBidsPage = () => {
     );
 };
 
-export default HandymanMyBidsPage;
+export default HandymanMyJobsPage;

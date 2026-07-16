@@ -26,6 +26,7 @@ import {
 } from '../../../services/jobService';
 import { getUserProfileApi } from '../../../services/profileService';
 import LocationPickerMap from '../../../../matchmaking/components/LocationPickerMap';
+import { getCurrentBrowserLocation } from '../../../../../core/utils/browserGeolocation';
 import '../styles/CreateJob.scss';
 
 const LOCATION_SOURCES = {
@@ -187,13 +188,8 @@ const CustomerCreateJobPage = () => {
         }
     };
 
-    const handleGetLocation = () => {
+    const handleGetLocation = async () => {
         if (addressOptionRef.current !== 3) return;
-        if (!navigator.geolocation) {
-            setLocationError('Geolocation is not supported by your browser.');
-            setShowMap(true);
-            return;
-        }
 
         const requestId = ++locationRequestRef.current;
         setIsFetchingGps(true);
@@ -201,34 +197,31 @@ const CustomerCreateJobPage = () => {
         setLocationConfirmed(false);
         setLocationSource(null);
 
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                if (requestId !== locationRequestRef.current || addressOptionRef.current !== 3) return;
-                setGpsLat(position.coords.latitude);
-                setGpsLong(position.coords.longitude);
-                setGpsAccuracy(position.coords.accuracy ?? null);
-                setLocationSource(LOCATION_SOURCES.CURRENT_GPS);
-                setResolvedAddress('');
-                setShowMap(true);
-                setIsFetchingGps(false);
-                toast.success('Location retrieved. Please verify the pin on the map.');
-                void resolveCurrentGpsAddress(
-                    position.coords.latitude,
-                    position.coords.longitude,
-                    requestId
-                );
-            },
-            (error) => {
-                if (requestId !== locationRequestRef.current || addressOptionRef.current !== 3) return;
-                const message = error.code === error.PERMISSION_DENIED
-                    ? 'Location permission was denied. Retry, choose a pin manually, or use another address option.'
+        try {
+            const location = await getCurrentBrowserLocation();
+            if (requestId !== locationRequestRef.current || addressOptionRef.current !== 3) return;
+            setGpsLat(location.gps_lat);
+            setGpsLong(location.gps_long);
+            setGpsAccuracy(location.gps_accuracy_meters);
+            setLocationSource(LOCATION_SOURCES.CURRENT_GPS);
+            setResolvedAddress('');
+            setShowMap(true);
+            toast.success('Location retrieved. Please verify the pin on the map.');
+            void resolveCurrentGpsAddress(location.gps_lat, location.gps_long, requestId);
+        } catch (error) {
+            if (requestId !== locationRequestRef.current || addressOptionRef.current !== 3) return;
+            const message = error?.code === 'GEOLOCATION_PERMISSION_DENIED'
+                ? 'Location permission was denied. Retry, choose a pin manually, or use another address option.'
+                : error?.code === 'GEOLOCATION_UNSUPPORTED'
+                    ? 'Geolocation is not supported by your browser.'
                     : 'Unable to get your location before timeout. Please retry or choose a pin manually.';
-                setLocationError(message);
-                setShowMap(true);
+            setLocationError(message);
+            setShowMap(true);
+        } finally {
+            if (requestId === locationRequestRef.current && addressOptionRef.current === 3) {
                 setIsFetchingGps(false);
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
+            }
+        }
     };
 
     const handleOptionChange = (value) => {
