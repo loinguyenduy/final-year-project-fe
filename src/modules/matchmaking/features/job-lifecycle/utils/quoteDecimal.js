@@ -1,9 +1,8 @@
-const parseUnsignedScaledDecimal = (value, scale = 3) => {
+const parsePositiveInteger = (value) => {
   const raw = String(value ?? '').trim();
-  const match = new RegExp(`^(\\d+)(?:\\.(\\d{1,${scale}}))?$`).exec(raw);
-  if (!match) return null;
-  const fraction = String(match[2] || '').padEnd(scale, '0');
-  return (BigInt(match[1]) * (10n ** BigInt(scale))) + BigInt(fraction || '0');
+  if (!/^\d+$/.test(raw)) return null;
+  const parsed = BigInt(raw);
+  return parsed > 0n && parsed <= 2147483647n ? parsed : null;
 };
 
 const parseVndInteger = (value) => {
@@ -12,14 +11,14 @@ const parseVndInteger = (value) => {
   return match ? BigInt(match[1]) : null;
 };
 
-const calculateQuotePreview = ({ items, discountAmount }) => {
+const calculateQuotePreview = ({ items }) => {
   let subtotal = 0n;
   const lineTotals = [];
 
   for (const item of items || []) {
-    const quantityScaled = parseUnsignedScaledDecimal(item.quantity, 3);
+    const quantity = parsePositiveInteger(item.quantity);
     const unitPrice = parseVndInteger(item.unit_price);
-    if (quantityScaled === null || quantityScaled <= 0n || unitPrice === null) {
+    if (quantity === null || unitPrice === null) {
       return {
         valid: false,
         lineTotals: (items || []).map(() => null),
@@ -27,26 +26,16 @@ const calculateQuotePreview = ({ items, discountAmount }) => {
         total: null,
       };
     }
-    const lineTotal = ((quantityScaled * unitPrice) + 500n) / 1000n;
+    const lineTotal = quantity * unitPrice;
     lineTotals.push(lineTotal.toString());
     subtotal += lineTotal;
-  }
-
-  const discount = parseVndInteger(discountAmount || '0');
-  if (discount === null || discount > subtotal) {
-    return {
-      valid: false,
-      lineTotals,
-      subtotal: subtotal.toString(),
-      total: null,
-    };
   }
 
   return {
     valid: true,
     lineTotals,
     subtotal: subtotal.toString(),
-    total: (subtotal - discount).toString(),
+    total: subtotal.toString(),
   };
 };
 
@@ -87,7 +76,7 @@ const combineDurationMinutes = ({ hours, minutes, maxMinutes }) => {
 export {
   calculateQuotePreview,
   combineDurationMinutes,
-  parseUnsignedScaledDecimal,
+  parsePositiveInteger,
   parseVndInteger,
   splitDurationMinutes,
 };

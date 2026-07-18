@@ -1,3 +1,5 @@
+> Superseded for ARRIVED and later stages by `manual-frontend-arrived-to-in-progress-test.md`.
+
 # Kiểm thử frontend Job flow từ POSTED đến QUOTE_PENDING
 
 Tài liệu này thay thế phạm vi nghiệm thu của `manual-frontend-posted-to-arrived-test.md`. Manual cũ được giữ lại để đối chiếu regression, không còn là nguồn test hiện hành.

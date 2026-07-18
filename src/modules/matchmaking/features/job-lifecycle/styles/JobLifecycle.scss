@@ -42,9 +42,7 @@
 
 .job-lifecycle__grid {
   display: grid;
-  grid-template-areas:
-    'main side'
-    'details details';
+  grid-template-areas: 'main side';
   grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
   gap: 24px;
   align-items: start;
@@ -63,8 +61,8 @@
 }
 
 .job-lifecycle__details-row {
-  grid-area: details;
   min-width: 0;
+  margin-top: 24px;
 }
 
 .lifecycle-header,
@@ -176,6 +174,16 @@
   &--quote_pending {
     background: #ede9fe;
     color: #6d28d9;
+  }
+
+  &--payment_pending {
+    background: #e0f2fe;
+    color: #075985;
+  }
+
+  &--in_progress {
+    background: #dcfce7;
+    color: #166534;
   }
 }
 
@@ -1000,6 +1008,42 @@
   }
 }
 
+.lifecycle-confirmation-summary,
+.lifecycle-payment-summary {
+  display: grid;
+  gap: 1px;
+  margin: 16px 0 0;
+  overflow: hidden;
+  border: 1px solid var(--lifecycle-border);
+  border-radius: var(--lifecycle-radius-group);
+  background: var(--lifecycle-border);
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 11px 13px;
+    background: #fff;
+  }
+
+  dt {
+    color: var(--lifecycle-muted);
+    font-size: 12px;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--lifecycle-ink);
+    font-size: 13px;
+    font-weight: 800;
+    text-align: right;
+  }
+}
+
+.lifecycle-payment-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .lifecycle-stage--inspection {
   display: grid;
   gap: 24px;
@@ -1322,6 +1366,28 @@
   }
 }
 
+.quote-policy-snapshot {
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  margin-bottom: 16px;
+  padding: 11px 13px;
+  border: 1px solid var(--lifecycle-border);
+  border-radius: var(--lifecycle-radius-control);
+  background: #f8fafc;
+
+  span,
+  small {
+    color: var(--lifecycle-muted);
+    font-size: 11px;
+  }
+
+  strong {
+    color: var(--lifecycle-ink);
+    font-size: 15px;
+  }
+}
+
 .quote-items {
   margin-top: 8px;
 }
@@ -1373,13 +1439,21 @@
 
 .quote-item-editor__grid {
   display: grid;
-  grid-template-columns: minmax(120px, 0.7fr) minmax(0, 1.6fr) repeat(3, minmax(100px, 0.7fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   align-items: end;
 
   .lifecycle-field {
     margin: 0;
   }
+}
+
+.quote-item-editor__name {
+  grid-column: span 2;
+}
+
+.quote-item-editor__description {
+  grid-column: 1 / -1;
 }
 
 .quote-item-editor__line-total {
@@ -1430,6 +1504,18 @@
     margin-top: 4px;
     color: var(--lifecycle-muted);
     font-size: 11px;
+  }
+}
+
+.contract-view {
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    svg {
+      color: var(--lifecycle-accent);
+    }
   }
 }
 
@@ -1633,8 +1719,7 @@
   .job-lifecycle__grid {
     grid-template-areas:
       'main'
-      'side'
-      'details';
+      'side';
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -1661,7 +1746,7 @@
   }
 
   .quote-item-editor__description {
-    grid-column: auto;
+    grid-column: 1 / -1;
   }
 }
 
@@ -1704,7 +1789,8 @@
   }
 
   .lifecycle-metrics,
-  .lifecycle-request-facts {
+  .lifecycle-request-facts,
+  .lifecycle-payment-summary {
     grid-template-columns: 1fr;
   }
 
@@ -1793,6 +1879,11 @@
   }
 
   .quote-form-grid__wide {
+    grid-column: auto;
+  }
+
+  .quote-item-editor__name,
+  .quote-item-editor__description {
     grid-column: auto;
   }
 

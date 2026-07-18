@@ -14,30 +14,30 @@ const ARRIVAL_REJECTION_LABELS = Object.freeze({
 
 const CANCELLATION_REASON_DEFINITIONS = Object.freeze({
   CUSTOMER: Object.freeze({
-    NO_LONGER_NEEDED: { label: 'The service is no longer needed', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING'], mode: 'AUTO', classification: 'CUSTOMER_FAULT' },
-    WRONG_JOB_INFORMATION: { label: 'The job information is incorrect', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING'], mode: 'AUTO', classification: 'CUSTOMER_FAULT' },
-    SCOPE_CHANGED: { label: 'The scope of work has changed', phases: ['ARRIVED', 'QUOTE_PENDING'], mode: 'AUTO', classification: 'CUSTOMER_FAULT' },
-    FINAL_QUOTE_TOO_HIGH: { label: 'The final Quote is too high', phases: ['QUOTE_PENDING'], mode: 'AUTO', classification: 'NEUTRAL_QUOTE_REJECTION' },
-    FINAL_QUOTE_NOT_ACCEPTABLE: { label: 'The final Quote is not acceptable', phases: ['QUOTE_PENDING'], mode: 'AUTO', classification: 'NEUTRAL_QUOTE_REJECTION' },
+    NO_LONGER_NEEDED: { label: 'The service is no longer needed', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'AUTO', classification: 'CUSTOMER_FAULT' },
+    WRONG_JOB_INFORMATION: { label: 'The job information is incorrect', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'AUTO', classification: 'CUSTOMER_FAULT' },
+    SCOPE_CHANGED: { label: 'The scope of work has changed', phases: ['ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'AUTO', classification: 'CUSTOMER_FAULT' },
+    FINAL_QUOTE_TOO_HIGH: { label: 'The final Quote is too high', phases: ['QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'AUTO', classification: 'NEUTRAL_QUOTE_REJECTION' },
+    FINAL_QUOTE_NOT_ACCEPTABLE: { label: 'The final Quote is not acceptable', phases: ['QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'AUTO', classification: 'NEUTRAL_QUOTE_REJECTION' },
     HANDYMAN_NOT_PROGRESSING: { label: 'The handyman is not progressing', phases: ['EN_ROUTE', 'ARRIVED'], mode: 'REVIEW', classification: 'DISPUTED' },
     HANDYMAN_NOT_PRESENT: { label: 'The handyman is not present', phases: ['EN_ROUTE'], mode: 'REVIEW', classification: 'DISPUTED' },
-    HANDYMAN_UNPROFESSIONAL: { label: 'The handyman acted unprofessionally', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING'], mode: 'REVIEW', classification: 'DISPUTED' },
-    EXTERNAL_CIRCUMSTANCE: { label: 'External circumstances', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING'], mode: 'AUTO', classification: 'NEUTRAL' },
-    MUTUAL_AGREEMENT: { label: 'Both parties agree to cancel', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING'], mode: 'MUTUAL', classification: 'NEUTRAL' },
-    OTHER: { label: 'Another reason', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING'], mode: 'REVIEW', classification: 'DISPUTED' },
+    HANDYMAN_UNPROFESSIONAL: { label: 'The handyman acted unprofessionally', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'REVIEW', classification: 'DISPUTED' },
+    EXTERNAL_CIRCUMSTANCE: { label: 'External circumstances', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'AUTO', classification: 'NEUTRAL' },
+    MUTUAL_AGREEMENT: { label: 'Both parties agree to cancel', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'MUTUAL', classification: 'NEUTRAL' },
+    OTHER: { label: 'Another reason', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'REVIEW', classification: 'DISPUTED' },
   }),
   HANDYMAN: Object.freeze({
-    JOB_OUTSIDE_SKILL: { label: 'The job is outside my skills', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING'], mode: 'AUTO', classification: 'HANDYMAN_FAULT' },
-    EQUIPMENT_OR_PART_UNAVAILABLE: { label: 'Required equipment or parts are unavailable', phases: ['ARRIVED', 'QUOTE_PENDING'], mode: 'AUTO', classification: 'NEUTRAL' },
+    JOB_OUTSIDE_SKILL: { label: 'The job is outside my skills', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'AUTO', classification: 'HANDYMAN_FAULT' },
+    EQUIPMENT_OR_PART_UNAVAILABLE: { label: 'Required equipment or parts are unavailable', phases: ['ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'AUTO', classification: 'NEUTRAL' },
     CUSTOMER_UNAVAILABLE: { label: 'The customer is unavailable', phases: ['EN_ROUTE', 'ARRIVED'], mode: 'REVIEW', classification: 'DISPUTED' },
     WRONG_ADDRESS: { label: 'The service address is incorrect', phases: ['EN_ROUTE', 'ARRIVED'], mode: 'REVIEW', classification: 'DISPUTED' },
     CUSTOMER_REFUSED_ACCESS: { label: 'The customer refused access', phases: ['EN_ROUTE', 'ARRIVED'], mode: 'REVIEW', classification: 'DISPUTED' },
-    UNSAFE_WORKING_CONDITION: { label: 'The working conditions are unsafe', phases: ['ARRIVED', 'QUOTE_PENDING'], mode: 'REVIEW', classification: 'DISPUTED' },
-    JOB_SCOPE_MISMATCH: { label: 'The actual work does not match the job description', phases: ['ARRIVED', 'QUOTE_PENDING'], mode: 'REVIEW', classification: 'DISPUTED' },
-    CUSTOMER_CHANGED_SCOPE: { label: 'The customer changed the scope of work', phases: ['ARRIVED', 'QUOTE_PENDING'], mode: 'REVIEW', classification: 'DISPUTED' },
-    EXTERNAL_CIRCUMSTANCE: { label: 'External circumstances', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING'], mode: 'AUTO', classification: 'NEUTRAL' },
-    MUTUAL_AGREEMENT: { label: 'Both parties agree to cancel', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING'], mode: 'MUTUAL', classification: 'NEUTRAL' },
-    OTHER: { label: 'Another reason', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING'], mode: 'REVIEW', classification: 'DISPUTED' },
+    UNSAFE_WORKING_CONDITION: { label: 'The working conditions are unsafe', phases: ['ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'REVIEW', classification: 'DISPUTED' },
+    JOB_SCOPE_MISMATCH: { label: 'The actual work does not match the job description', phases: ['ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'REVIEW', classification: 'DISPUTED' },
+    CUSTOMER_CHANGED_SCOPE: { label: 'The customer changed the scope of work', phases: ['ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'REVIEW', classification: 'DISPUTED' },
+    EXTERNAL_CIRCUMSTANCE: { label: 'External circumstances', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'AUTO', classification: 'NEUTRAL' },
+    MUTUAL_AGREEMENT: { label: 'Both parties agree to cancel', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'MUTUAL', classification: 'NEUTRAL' },
+    OTHER: { label: 'Another reason', phases: ['EN_ROUTE', 'ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'], mode: 'REVIEW', classification: 'DISPUTED' },
   }),
 });
 
@@ -45,6 +45,12 @@ const CUSTOMER_PERCENT = Object.freeze({
   EN_ROUTE: Object.freeze({ CUSTOMER_FAULT: 50, HANDYMAN_FAULT: 100, NEUTRAL: 100 }),
   ARRIVED: Object.freeze({ CUSTOMER_FAULT: 30, HANDYMAN_FAULT: 100, NEUTRAL: 50 }),
   QUOTE_PENDING: Object.freeze({
+    CUSTOMER_FAULT: 30,
+    HANDYMAN_FAULT: 100,
+    NEUTRAL: 50,
+    NEUTRAL_QUOTE_REJECTION: 70,
+  }),
+  PAYMENT_PENDING: Object.freeze({
     CUSTOMER_FAULT: 30,
     HANDYMAN_FAULT: 100,
     NEUTRAL: 50,
@@ -99,10 +105,19 @@ const LIFECYCLE_ERROR_MESSAGES = Object.freeze({
   QUOTE_NOT_FOUND: 'The current Quote is not available.',
   QUOTE_NOT_DRAFT: 'The Quote is no longer editable.',
   QUOTE_LIFECYCLE_INCONSISTENT: 'The Quote no longer matches the current Job lifecycle.',
+  QUOTE_RESPONSE_CONFLICT: 'The Quote response was already finalized in another session.',
+  QUOTE_LIFECYCLE_CONFLICT: 'The Quote is no longer waiting for this response.',
+  QUOTE_NOT_ACCEPTED: 'The Quote must be accepted before payment.',
+  FINANCIAL_DATA_INCONSISTENT: 'The Job payment data could not be verified. No funds were moved.',
+  QUOTE_TOTAL_BELOW_HELD_DEPOSIT: 'The final Quote cannot be lower than the deposit already held.',
+  PAYMENT_WALLET_BLOCKED: 'A wallet required for payment is currently unavailable.',
+  PAYMENT_STATE_INCONSISTENT: 'The payment state could not be verified. No duplicate payment was created.',
+  PAYMENT_SUMMARY_NOT_FOUND: 'The payment summary is not available.',
+  CONTRACT_NOT_FOUND: 'The active Contract is not available yet.',
   QUOTE_DRAFT_REVISION_CONFLICT: 'This Draft changed in another session. The latest version will be loaded.',
   INVALID_DRAFT_REVISION: 'The saved Draft revision is invalid. Refresh and try again.',
   INVALID_QUOTE_ITEM: 'Review the Quote items and try again.',
-  INVALID_QUOTE_AMOUNT: 'Review the Quote amounts and discount.',
+  INVALID_QUOTE_AMOUNT: 'Review the Quote amounts.',
   INVALID_ESTIMATED_DURATION: 'Estimated duration is outside the allowed range.',
   INVALID_WARRANTY_DAYS: 'Warranty must be between 0 and 3,650 days.',
   BEFORE_EVIDENCE_REQUIRED: 'Upload at least one inspection photo before submitting.',
@@ -199,7 +214,12 @@ const getLocationWarning = (warning) => {
 const getCancellationReasonOptions = (role, phase) => {
   const definitions = CANCELLATION_REASON_DEFINITIONS[String(role || '').toUpperCase()] || {};
   return Object.entries(definitions)
-    .filter(([, definition]) => definition.phases.includes(phase))
+    .filter(([reason, definition]) => (
+      definition.phases.includes(phase)
+      && !(String(role || '').toUpperCase() === 'CUSTOMER'
+        && phase === 'QUOTE_PENDING'
+        && ['FINAL_QUOTE_TOO_HIGH', 'FINAL_QUOTE_NOT_ACCEPTABLE'].includes(reason))
+    ))
     .map(([value, definition]) => ({ value, ...definition }));
 };
 

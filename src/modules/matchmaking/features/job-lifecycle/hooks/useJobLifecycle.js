@@ -90,6 +90,11 @@ const SOCKET_TOASTS = Object.freeze({
   JOB_ARRIVAL_REJECTED: 'The customer did not confirm the arrival request.',
   JOB_ARRIVED: 'The customer confirmed the handyman’s arrival.',
   JOB_QUOTE_SUBMITTED: 'The final Quote was submitted.',
+  JOB_QUOTE_ACCEPTED: 'The Customer accepted the final Quote.',
+  JOB_QUOTE_REJECTED: 'The Customer rejected the final Quote and the Job was cancelled.',
+  JOB_PAYMENT_REQUIRED: 'The accepted Quote is waiting for the remaining payment.',
+  JOB_PAYMENT_COMPLETED: 'The remaining payment was completed.',
+  JOB_IN_PROGRESS: 'The Contract is active and the Job is now In progress.',
   JOB_CANCELLATION_REQUESTED: 'A cancellation request is waiting for a response.',
   JOB_CANCELLATION_REVIEW_REQUIRED: 'A cancellation request now requires review.',
   JOB_CANCELLATION_REJECTED: 'The mutual cancellation request was declined and moved to review.',
@@ -155,6 +160,7 @@ const useJobLifecycle = ({ jobId, accessToken, role }) => {
   const actionInFlightRef = useRef(null);
   const refreshTimerRef = useRef(null);
   const seenEventsRef = useRef(new Set());
+  const recentTransitionToastsRef = useRef(new Map());
   const cooldownRefreshRef = useRef(null);
 
   const refreshDetails = useCallback(async ({ silent = false } = {}) => {
@@ -260,7 +266,22 @@ const useJobLifecycle = ({ jobId, accessToken, role }) => {
       if (seenEventsRef.current.size > 80) {
         seenEventsRef.current = new Set([...seenEventsRef.current].slice(-40));
       }
-      if (!(eventName === 'JOB_QUOTE_SUBMITTED' && role === 'HANDYMAN')) {
+      const transitionStatus = payload?.job_status || payload?.status || (
+        eventName === 'JOB_QUOTE_REJECTED' ? 'CANCELLED' : null
+      );
+      const transitionKey = transitionStatus
+        ? `${payload?.job_id || jobId}:${payload?.acceptance_cycle || 'cycle'}:${transitionStatus}`
+        : null;
+      const transitionSeenAt = transitionKey
+        ? recentTransitionToastsRef.current.get(transitionKey)
+        : null;
+      const pairedTransitionDuplicate = transitionSeenAt
+        && Date.now() - transitionSeenAt < 2500;
+      if (transitionKey && !pairedTransitionDuplicate) {
+        recentTransitionToastsRef.current.set(transitionKey, Date.now());
+      }
+      if (!(eventName === 'JOB_QUOTE_SUBMITTED' && role === 'HANDYMAN')
+        && !pairedTransitionDuplicate) {
         toast.info(SOCKET_TOASTS[eventName] || 'The job was updated.');
       }
     }
@@ -431,6 +452,7 @@ const useJobLifecycle = ({ jobId, accessToken, role }) => {
     hasJobCoordinates,
     mutationState,
     openModal: (name) => dispatch({ type: 'OPEN_MODAL', name }),
+    exitWorkspace: (status) => dispatch({ type: 'OUTSIDE_STATUS', status }),
     refreshDetails,
     socketConnectionState,
   };

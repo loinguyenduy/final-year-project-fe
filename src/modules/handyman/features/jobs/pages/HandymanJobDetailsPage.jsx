@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { getCachedLocation } from '../../../../../core/utils/locationCache';
 import { getJobDetailsApi, submitBidApi, updateBidApi, withdrawBidApi } from '../../../services/jobService';
 import ImageLightbox from '../../../../../core/components/ImageLightbox';
@@ -14,6 +15,7 @@ import {
     getLifecycleWorkspacePath,
     isLifecycleWorkspaceStatus,
 } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
+import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
 
 const STATUS_TEXT = {
     POSTED: 'Looking for Handyman',
@@ -24,12 +26,14 @@ const STATUS_TEXT = {
     IN_PROGRESS: 'In Progress',
     WARRANTY: 'Warranty',
     CLOSED: 'Completed',
+    CANCELLED: 'Cancelled',
 };
 
 const STATUS_BADGE_CLASS = {
     POSTED: 'posted', BIDDING: 'bidding', ACCEPTED: 'accepted',
     EN_ROUTE: 'enroute', ARRIVED: 'arrived', IN_PROGRESS: 'inprogress',
     WARRANTY: 'warranty', CLOSED: 'completed',
+    CANCELLED: 'cancelled',
 };
 
 const INITIAL_FORM = { proposed_price: '', message: '', eta: '', estimated_duration_hours: '' };
@@ -37,6 +41,7 @@ const INITIAL_FORM = { proposed_price: '', message: '', eta: '', estimated_durat
 const HandymanJobDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { token: accessToken, account } = useSelector((state) => state.identity);
 
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -67,6 +72,12 @@ const HandymanJobDetailsPage = () => {
         fetchJob();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
+
+    usePreLifecycleRealtime({
+        accessToken,
+        jobId: id,
+        onInvalidate: () => fetchJob(),
+    });
 
     const myBid = job?.Bids?.[0] || null;
     const canBid = job && ['POSTED', 'BIDDING'].includes(job.current_status);
@@ -195,7 +206,9 @@ const HandymanJobDetailsPage = () => {
     const avgRating = parseFloat(job.Customer?.avg_rating) || 0;
     const canSeePhone = !['POSTED', 'BIDDING'].includes(job.current_status);
 
-    if (isLifecycleWorkspaceStatus(job.current_status)) {
+    if (isLifecycleWorkspaceStatus(job.current_status)
+        && job.selected_handyman_id === account?.id
+        && myBid?.status === 'WON') {
         return <Navigate to={getLifecycleWorkspacePath(id)} replace />;
     }
 

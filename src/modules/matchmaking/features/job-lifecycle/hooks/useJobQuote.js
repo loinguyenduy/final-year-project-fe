@@ -10,11 +10,11 @@ import { INSPECTION_QUOTE_LIMITS } from '../constants/inspectionQuote.constants'
 import {
   calculateQuotePreview,
   combineDurationMinutes,
-  parseUnsignedScaledDecimal,
+  parsePositiveInteger,
   parseVndInteger,
   splitDurationMinutes,
 } from '../utils/quoteDecimal';
-import { getFriendlyLifecycleError } from '../utils/jobLifecycleUi';
+import { formatCurrency, getFriendlyLifecycleError } from '../utils/jobLifecycleUi';
 
 const createItemId = () => (
   globalThis.crypto?.randomUUID?.()
@@ -27,8 +27,6 @@ const emptyQuoteForm = () => ({
   recommended_solution: '',
   duration_hours: '',
   duration_minutes: '',
-  warranty_days: '',
-  discount_amount: '0',
   variance_reason: '',
   variance_reason_text: '',
   items: [],
@@ -43,15 +41,12 @@ const quoteToForm = (quote) => {
     recommended_solution: quote.recommended_solution || '',
     duration_hours: duration.hours,
     duration_minutes: duration.minutes,
-    warranty_days: quote.warranty_days === null || quote.warranty_days === undefined
-      ? ''
-      : String(quote.warranty_days),
-    discount_amount: quote.discount_amount || '0',
     variance_reason: quote.variance_reason || '',
     variance_reason_text: quote.variance_reason_text || '',
     items: (quote.items || []).map((item) => ({
       client_id: item.id || createItemId(),
       item_type: item.item_type || 'LABOUR',
+      name: item.name || '',
       description: item.description || '',
       quantity: item.quantity || '',
       unit: item.unit || '',
@@ -69,23 +64,6 @@ const buildDraftPayload = (form, expectedDraftRevision) => {
     maxMinutes: INSPECTION_QUOTE_LIMITS.durationMaxMinutes,
   });
   if (!duration.valid) return { valid: false, message: duration.message };
-
-  const warrantyRaw = String(form.warranty_days ?? '').trim();
-  let warranty = null;
-  if (warrantyRaw) {
-    if (!/^\d+$/.test(warrantyRaw)) {
-      return { valid: false, message: 'Warranty days must be a whole number.' };
-    }
-    warranty = Number(warrantyRaw);
-    if (!Number.isSafeInteger(warranty)
-      || warranty < 0
-      || warranty > INSPECTION_QUOTE_LIMITS.warrantyMaxDays) {
-      return {
-        valid: false,
-        message: `Warranty must be between 0 and ${INSPECTION_QUOTE_LIMITS.warrantyMaxDays.toLocaleString('en-US')} days.`,
-      };
-    }
-  }
 
   const textFields = [
     ['Problem summary', form.problem_summary],
@@ -111,8 +89,11 @@ const buildDraftPayload = (form, expectedDraftRevision) => {
 
   for (let index = 0; index < form.items.length; index += 1) {
     const item = form.items[index];
-    if (!String(item.description || '').trim()) {
-      return { valid: false, message: `Item ${index + 1} needs a description.` };
+    if (!String(item.name || '').trim()) {
+      return { valid: false, message: `Item ${index + 1} needs a name.` };
+    }
+    if (String(item.name).trim().length > INSPECTION_QUOTE_LIMITS.itemNameMaxLength) {
+      return { valid: false, message: `Item ${index + 1} name is too long.` };
     }
     if (String(item.description).trim().length > INSPECTION_QUOTE_LIMITS.itemDescriptionMaxLength) {
       return { valid: false, message: `Item ${index + 1} description is too long.` };
@@ -121,11 +102,11 @@ const buildDraftPayload = (form, expectedDraftRevision) => {
       || String(item.unit).trim().length > INSPECTION_QUOTE_LIMITS.itemUnitMaxLength) {
       return { valid: false, message: `Item ${index + 1} needs a valid unit.` };
     }
-    const quantity = parseUnsignedScaledDecimal(item.quantity, 3);
-    if (quantity === null || quantity <= 0n) {
+    const quantity = parsePositiveInteger(item.quantity);
+    if (quantity === null) {
       return {
         valid: false,
-        message: `Item ${index + 1} quantity must be greater than zero with at most three decimal places.`,
+        message: `Item ${index + 1} quantity must be a positive whole number.`,
       };
     }
     if (parseVndInteger(item.unit_price) === null) {
@@ -133,15 +114,9 @@ const buildDraftPayload = (form, expectedDraftRevision) => {
     }
   }
 
-  const preview = calculateQuotePreview({
-    items: form.items,
-    discountAmount: form.discount_amount,
-  });
+  const preview = calculateQuotePreview({ items: form.items });
   if (!preview.valid) {
-    return {
-      valid: false,
-      message: 'Discount must be a VND integer between zero and the current subtotal.',
-    };
+    return { valid: false, message: 'Review item quantities and VND unit prices.' };
   }
   if (BigInt(preview.total) > BigInt(INSPECTION_QUOTE_LIMITS.quoteMaxAmount)) {
     return {
@@ -150,10 +125,6 @@ const buildDraftPayload = (form, expectedDraftRevision) => {
     };
   }
 
-  if (form.variance_reason === 'OTHER'
-    && !String(form.variance_reason_text || '').trim()) {
-    return { valid: false, message: 'Add a short explanation for the variance reason.' };
-  }
   if (!form.variance_reason && String(form.variance_reason_text || '').trim()) {
     return { valid: false, message: 'Select a variance reason before adding its explanation.' };
   }
@@ -170,11 +141,10 @@ const buildDraftPayload = (form, expectedDraftRevision) => {
       inspection_notes: String(form.inspection_notes || '').trim() || null,
       recommended_solution: String(form.recommended_solution || '').trim() || null,
       estimated_duration_minutes: duration.value,
-      warranty_days: warranty,
-      discount_amount: String(form.discount_amount || '0').trim() || '0',
       items: form.items.map((item) => ({
         item_type: item.item_type,
-        description: String(item.description || '').trim(),
+        name: String(item.name || '').trim(),
+        description: String(item.description || '').trim() || null,
         quantity: String(item.quantity || '').trim(),
         unit: String(item.unit || '').trim(),
         unit_price: String(item.unit_price || '').trim(),
@@ -288,6 +258,7 @@ const useJobQuote = ({
           {
             client_id: createItemId(),
             item_type: 'LABOUR',
+            name: '',
             description: '',
             quantity: '1',
             unit: 'job',
@@ -332,6 +303,21 @@ const useJobQuote = ({
       if (response?.EC !== 0) throw response;
       applyCanonicalQuote(response.DT?.quote || null);
       toast.success('Quote Draft saved. Backend totals are now canonical.');
+      const missing = response.DT?.quote?.readiness?.missing_requirements || [];
+      if (missing.includes('QUOTE_TOTAL_BELOW_HELD_DEPOSIT')) {
+        const minimum = response.DT?.quote?.readiness?.minimum_quote_total_amount;
+        const message = `The saved Quote is below the held deposit. Set the total to at least ${formatCurrency(minimum)}, then Save Draft again.`;
+        setFormError(message);
+        toast.warning(message);
+      } else if (missing.includes('VARIANCE_REASON_REQUIRED')) {
+        setFormError(
+          'The saved total is more than 50% above the selected Bid. Select a variance reason, then Save Draft again.',
+        );
+      } else if (missing.includes('VARIANCE_REASON_TEXT_REQUIRED')) {
+        setFormError(
+          'The saved variance reason requires an explanation. Add it, then Save Draft again.',
+        );
+      }
       await onCanonicalRefresh?.({ silent: true });
       return response;
     } catch (error) {
@@ -348,6 +334,7 @@ const useJobQuote = ({
         'JOB_NOT_ARRIVED',
         'QUOTE_LIFECYCLE_INCONSISTENT',
         'ACCEPTANCE_CYCLE_INCONSISTENT',
+        'QUOTE_TOTAL_BELOW_HELD_DEPOSIT',
       ].includes(envelope.code)) {
         await onCanonicalRefresh?.({ silent: true });
       }
@@ -416,8 +403,7 @@ const useJobQuote = ({
 
   const preview = useMemo(() => calculateQuotePreview({
     items: form.items,
-    discountAmount: form.discount_amount,
-  }), [form.discount_amount, form.items]);
+  }), [form.items]);
 
   return {
     addItem,

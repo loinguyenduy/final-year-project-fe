@@ -97,6 +97,7 @@ function App() {
             <Route path="/customer/ai-diagnosis" element={<CustomerCreateJobPage />} />
             <Route path="/customer/my-jobs" element={<CustomerMyJobsPage />} />
             <Route path="/customer/my-jobs/:id" element={<CustomerJobDetailsPage />} />
+            <Route path="/customer/my-jobs/:id/edit" element={<CustomerCreateJobPage />} />
           </Route>
           
           {/* HANDYMAN ROUTES */}

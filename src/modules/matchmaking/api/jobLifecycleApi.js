@@ -78,7 +78,28 @@ const submitQuote = (jobId, quoteId) => (
   axios.post(`/matchmaking/jobs/${jobId}/quotes/${quoteId}/submit`, {})
 );
 
+const acceptQuote = (jobId, quoteId) => (
+  axios.post(`/matchmaking/jobs/${jobId}/quotes/${quoteId}/accept`, {})
+);
+
+const rejectQuote = (jobId, quoteId, payload) => (
+  axios.post(`/matchmaking/jobs/${jobId}/quotes/${quoteId}/reject`, payload)
+);
+
+const getPaymentSummary = (jobId, { signal } = {}) => (
+  axios.get(`/matchmaking/jobs/${jobId}/payment-summary`, withSignal(signal))
+);
+
+const payRemainingAmount = (jobId) => (
+  axios.post(`/matchmaking/jobs/${jobId}/payments/remaining`, {})
+);
+
+const getContract = (jobId, { signal } = {}) => (
+  axios.get(`/matchmaking/jobs/${jobId}/contract`, withSignal(signal))
+);
+
 export {
+  acceptQuote,
   cancelAcceptedByCustomer,
   cancelAcceptedByHandyman,
   confirmArrival,
@@ -89,12 +110,16 @@ export {
   deleteBeforeEvidence,
   getCurrentLifecycleCancellation,
   getCurrentQuote,
+  getContract,
   getJobLifecycleDetails,
+  getPaymentSummary,
   listBeforeEvidence,
   rejectArrival,
+  rejectQuote,
   rejectLifecycleCancellation,
   startMoving,
   submitQuote,
+  payRemainingAmount,
   updateQuoteDraft,
   uploadBeforeEvidence,
 };

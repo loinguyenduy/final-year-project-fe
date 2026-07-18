@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { FaCalendarAlt, FaMapMarkerAlt, FaUserCheck, FaDollarSign, FaInfoCircle, FaClipboardList, FaPlus } from 'react-icons/fa';
 import { getCustomerJobsApi } from '../../../services/jobService';
 import { getJobDetailsPath } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 import '../styles/MyJobs.scss';
+import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
 
 const CustomerMyJobsPage = () => {
     const navigate = useNavigate();
+    const accessToken = useSelector((state) => state.identity.token);
     const [jobs, setJobs] = useState([]);
     const [filteredJobs, setFilteredJobs] = useState([]);
     const [activeTab, setActiveTab] = useState('ALL');
@@ -33,6 +36,11 @@ const CustomerMyJobsPage = () => {
     useEffect(() => {
         fetchJobs();
     }, []);
+
+    usePreLifecycleRealtime({
+        accessToken,
+        onInvalidate: () => fetchJobs(),
+    });
 
     // Filter jobs based on active tab
     useEffect(() => {

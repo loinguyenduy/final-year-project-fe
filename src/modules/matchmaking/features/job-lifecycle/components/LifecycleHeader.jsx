@@ -35,6 +35,22 @@ const STATUS_CONTENT = Object.freeze({
     },
     description: 'Inspection evidence and the canonical saved Quote are now locked for review.',
   },
+  PAYMENT_PENDING: {
+    label: 'Payment pending',
+    title: {
+      CUSTOMER: 'Complete the remaining payment',
+      HANDYMAN: 'The Customer is completing payment',
+    },
+    description: 'The Quote is accepted. The Contract becomes active after the remaining payment is completed.',
+  },
+  IN_PROGRESS: {
+    label: 'In progress',
+    title: {
+      CUSTOMER: 'The service Contract is active',
+      HANDYMAN: 'The service Contract is active',
+    },
+    description: 'The agreed Quote is fully secured in escrow and the immutable Contract is available.',
+  },
   CANCELLATION_REVIEW: {
     label: 'Cancellation review',
     title: {
@@ -84,6 +100,12 @@ const LifecycleHeader = ({ job, role, socketState, onBack }) => {
         )}
         {job.status === 'QUOTE_PENDING' && (
           <span>Inspection and Quote submitted</span>
+        )}
+        {job.status === 'PAYMENT_PENDING' && (
+          <span>Quote accepted · Remaining payment required</span>
+        )}
+        {job.status === 'IN_PROGRESS' && job.in_progress_at && (
+          <span>Contract active {formatDateTime(job.in_progress_at)}</span>
         )}
       </div>
     </header>

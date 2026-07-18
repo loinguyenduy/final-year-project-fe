@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { FaCheck } from 'react-icons/fa';
 import { FULL_JOB_PROGRESS_STAGES } from '../utils/jobProgress';
 import './JobProgressStepper.scss';
@@ -11,6 +11,7 @@ const JobProgressStepper = ({
   ariaLabel = 'Job progress',
   compact = false,
   currentStatus,
+  statusBadge,
   stages,
 }) => {
   const normalizedStages = normalizeStages(stages);
@@ -24,12 +25,34 @@ const JobProgressStepper = ({
   const nextStage = hasKnownStatus && currentIndex < normalizedStages.length - 1
     ? normalizedStages[currentIndex + 1]
     : null;
+  const containerRef = useRef(null);
+  const measureRef = useRef(null);
+  const [fullFits, setFullFits] = useState(false);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const measure = measureRef.current;
+    if (!container || !measure) return undefined;
+    const updateVariant = () => {
+      const availableWidth = container.clientWidth;
+      const requiredWidth = measure.scrollWidth;
+      setFullFits(requiredWidth > 0 && availableWidth >= requiredWidth);
+    };
+    updateVariant();
+    const observer = new ResizeObserver(updateVariant);
+    observer.observe(container);
+    observer.observe(measure);
+    return () => observer.disconnect();
+  }, [normalizedStages]);
+
+  const useCompact = compact || !fullFits;
 
   return (
     <nav
+      ref={containerRef}
       className={[
         'job-progress-stepper',
-        compact ? 'job-progress-stepper--compact' : '',
+        useCompact ? 'job-progress-stepper--compact-ui' : 'job-progress-stepper--full',
       ].filter(Boolean).join(' ')}
       aria-label={ariaLabel}
     >
@@ -68,12 +91,24 @@ const JobProgressStepper = ({
         })}
       </ol>
 
+      <ol ref={measureRef} className="job-progress-stepper__measure" aria-hidden="true">
+        {normalizedStages.map((stage, index) => (
+          <li key={stage.status}>
+            <span className="job-progress-stepper__circle">{index + 1}</span>
+            <span className="job-progress-stepper__label">{stage.label}</span>
+          </li>
+        ))}
+      </ol>
+
       <div className="job-progress-stepper__compact-summary">
         {hasKnownStatus ? (
           <>
             <div className="job-progress-stepper__compact-meta">
               <span>Stage {safeCurrentIndex + 1} of {normalizedStages.length}</span>
-              <strong>{currentStage.label}</strong>
+              <strong>
+                {currentStage.label}
+                {statusBadge && <span className="job-progress-stepper__badge">{statusBadge}</span>}
+              </strong>
             </div>
             <div
               className="job-progress-stepper__compact-bar"
@@ -98,6 +133,11 @@ const JobProgressStepper = ({
           <p>Job progress is unavailable for this status.</p>
         )}
       </div>
+      {!useCompact && statusBadge && (
+        <span className="job-progress-stepper__badge job-progress-stepper__badge--full">
+          {statusBadge}
+        </span>
+      )}
     </nav>
   );
 };

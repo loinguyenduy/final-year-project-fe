@@ -1,5 +1,8 @@
 import React from 'react';
-import { QUOTE_VARIANCE_REASON_OPTIONS } from '../constants/inspectionQuote.constants';
+import {
+  QUOTE_ITEM_TYPE_OPTIONS,
+  QUOTE_VARIANCE_REASON_OPTIONS,
+} from '../constants/inspectionQuote.constants';
 import { formatCurrency, formatDateTime } from '../utils/jobLifecycleUi';
 
 const formatDuration = (minutes) => {
@@ -11,7 +14,7 @@ const formatDuration = (minutes) => {
   return remainder ? `${hours} hr ${remainder} min` : `${hours} hr`;
 };
 
-const QuoteReadOnlyView = ({ quote }) => {
+const QuoteReadOnlyView = ({ quote, showVariance = false }) => {
   if (!quote) return null;
   const varianceReasonLabel = QUOTE_VARIANCE_REASON_OPTIONS.find(
     (option) => option.value === quote.variance_reason,
@@ -59,8 +62,13 @@ const QuoteReadOnlyView = ({ quote }) => {
         {(quote.items || []).map((item) => (
           <div className="quote-readonly-items__row" key={item.id || item.sort_order}>
             <span>
-              <strong>{item.description}</strong>
-              <small>{item.item_type} · {item.unit}</small>
+              <strong>{item.name}</strong>
+              {item.description && <small>{item.description}</small>}
+              <small>
+                {QUOTE_ITEM_TYPE_OPTIONS.find((option) => option.value === item.item_type)?.label || 'Other'}
+                {' · '}
+                {item.unit}
+              </small>
             </span>
             <span>{item.quantity}</span>
             <span>{formatCurrency(item.unit_price)}</span>
@@ -70,17 +78,18 @@ const QuoteReadOnlyView = ({ quote }) => {
       </div>
 
       <dl className="quote-readonly-totals">
-        <div><dt>Subtotal</dt><dd>{formatCurrency(quote.subtotal_amount)}</dd></div>
-        <div><dt>Discount</dt><dd>{formatCurrency(quote.discount_amount)}</dd></div>
+        {showVariance && (
+          <div><dt>Subtotal</dt><dd>{formatCurrency(quote.subtotal_amount)}</dd></div>
+        )}
         <div><dt>Selected Bid</dt><dd>{formatCurrency(quote.bid_reference_amount)}</dd></div>
-        <div>
+        {showVariance && quote.variance_amount !== undefined && <div>
           <dt>Difference</dt>
           <dd>{formatCurrency(quote.variance_amount)} ({quote.variance_percent || '0'}%)</dd>
-        </div>
+        </div>}
         <div><dt>Total</dt><dd>{formatCurrency(quote.total_amount)}</dd></div>
       </dl>
 
-      {quote.variance_reason && (
+      {showVariance && quote.variance_reason && (
         <div className="lifecycle-notice lifecycle-notice--neutral">
           <strong>Variance reason</strong>
           <span>{varianceReasonLabel || 'Additional inspection context'}</span>

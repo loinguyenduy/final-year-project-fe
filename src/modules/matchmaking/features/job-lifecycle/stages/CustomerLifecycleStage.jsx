@@ -4,6 +4,8 @@ import CustomerArrivedStage from './arrived/CustomerArrivedStage';
 import CancellationReviewStage from './cancellation/CancellationReviewStage';
 import CustomerEnRouteStage from './en-route/CustomerEnRouteStage';
 import QuotePendingStage from './quote/QuotePendingStage';
+import PaymentPendingStage from './payment/PaymentPendingStage';
+import InProgressStage from './in-progress/InProgressStage';
 
 const CustomerLifecycleStage = ({
   allowedActions,
@@ -12,6 +14,7 @@ const CustomerLifecycleStage = ({
   mutationState,
   onModal,
   onOpenImage,
+  paymentState,
   quoteState,
 }) => {
   const {
@@ -67,10 +70,38 @@ const CustomerLifecycleStage = ({
         allowedActions={allowedActions}
         evidenceState={evidenceState}
         isCancelling={mutationState.isCancelling}
+        isResponding={paymentState.accepting || paymentState.rejecting}
+        onAccept={() => onModal('ACCEPT_QUOTE')}
         onCancel={() => onModal('REQUEST_CANCELLATION')}
         onOpenImage={onOpenImage}
+        onReject={() => onModal('REJECT_QUOTE')}
         quoteState={quoteState}
         role="CUSTOMER"
+      />
+    );
+  }
+
+  if (job.status === 'PAYMENT_PENDING') {
+    return (
+      <PaymentPendingStage
+        allowedActions={allowedActions}
+        evidenceState={evidenceState}
+        isCancelling={mutationState.isCancelling}
+        onCancel={() => onModal('REQUEST_CANCELLATION')}
+        onOpenImage={onOpenImage}
+        onPay={() => onModal('PAY_REMAINING')}
+        paymentState={paymentState}
+        quoteState={quoteState}
+        role="CUSTOMER"
+      />
+    );
+  }
+
+  if (job.status === 'IN_PROGRESS') {
+    return (
+      <InProgressStage
+        contractState={paymentState}
+        inProgressAt={job.in_progress_at}
       />
     );
   }

@@ -5,8 +5,8 @@
   --stepper-completed-dark: #15803d;
   --stepper-border: #cbd5e1;
   --stepper-muted: #94a3b8;
+  position: relative;
   width: 100%;
-  container-type: inline-size;
 
   &__list {
     display: none;
@@ -165,17 +165,57 @@
       text-align: right;
     }
   }
+
+  &__measure {
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    display: inline-grid;
+    grid-auto-columns: max-content;
+    grid-auto-flow: column;
+    margin: 0;
+    padding: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    li {
+      display: grid;
+      min-width: max-content;
+      justify-items: center;
+      padding: 0 18px;
+    }
+
+    .job-progress-stepper__label {
+      white-space: nowrap;
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    margin-left: 8px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.7rem;
+    font-weight: 800;
+    white-space: nowrap;
+
+    &--full {
+      margin-top: 10px;
+      margin-left: 0;
+    }
+  }
 }
 
-@container (min-width: 68rem) {
-  .job-progress-stepper:not(.job-progress-stepper--compact) {
-    .job-progress-stepper__list {
-      display: grid;
-    }
+.job-progress-stepper--full {
+  .job-progress-stepper__list {
+    display: grid;
+  }
 
-    .job-progress-stepper__compact-summary {
-      display: none;
-    }
+  .job-progress-stepper__compact-summary {
+    display: none;
   }
 }
 

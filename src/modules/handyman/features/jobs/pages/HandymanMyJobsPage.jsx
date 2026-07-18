@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { getMyBidsApi } from '../../../services/jobService';
 import { toast } from 'react-toastify';
 import { FaArrowRight, FaClipboardList, FaCalendarAlt, FaMapMarkerAlt, FaMoneyBillWave } from 'react-icons/fa';
-import { getJobDetailsPath } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
+import {
+    getJobDetailsPath,
+    isLifecycleWorkspaceStatus,
+} from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 import '../styles/FindJob.scss';
+import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
 
 const STATUS_TEXT = {
     POSTED: 'Looking for Handyman',
@@ -33,6 +38,7 @@ const BID_STATUS_CONFIG = {
 
 const HandymanMyJobsPage = () => {
     const navigate = useNavigate();
+    const accessToken = useSelector((state) => state.identity.token);
     const [bids, setBids] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -53,6 +59,18 @@ const HandymanMyJobsPage = () => {
         };
         fetchMyBids();
     }, []);
+
+    usePreLifecycleRealtime({
+        accessToken,
+        onInvalidate: async () => {
+            try {
+                const res = await getMyBidsApi();
+                if (res?.EC === 0) setBids(res.DT);
+            } catch {
+                // Keep the last canonical list visible until the next reconnect or manual visit.
+            }
+        },
+    });
 
     const formatCurrency = (val) => {
         if (!val) return '—';
@@ -149,11 +167,16 @@ const HandymanMyJobsPage = () => {
                                             {job && (
                                                 <button
                                                     className="btn btn-apply btn-sm fw-semibold"
-                                                    onClick={() => navigate(getJobDetailsPath({
-                                                        jobId: job.id,
-                                                        status: job.current_status,
-                                                        role: 'HANDYMAN',
-                                                    }))}
+                                                    onClick={() => navigate(
+                                                        bid.status === 'WON'
+                                                            && isLifecycleWorkspaceStatus(job.current_status)
+                                                            ? getJobDetailsPath({
+                                                                jobId: job.id,
+                                                                status: job.current_status,
+                                                                role: 'HANDYMAN',
+                                                            })
+                                                            : `/handyman/jobs/${job.id}`,
+                                                    )}
                                                 >
                                                     View Job <FaArrowRight className="ms-1" size={11} />
                                                 </button>

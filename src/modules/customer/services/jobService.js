@@ -28,6 +28,17 @@ const getWardsApi = (province_code) => {
     return axios.get(`/matchmaking/wards?province_code=${province_code}`);
 };
 
+const updatePostedJobApi = (jobId, formData) => axios.patch(
+    `/matchmaking/jobs/${jobId}`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+);
+
+const cancelPreAcceptanceJobApi = (jobId, payload) => axios.post(
+    `/matchmaking/jobs/${jobId}/pre-acceptance-cancellation`,
+    payload,
+);
+
 const geocodeAddressApi = (data) => {
     return axios.post('/matchmaking/locations/geocode', data);
 };
@@ -59,6 +70,8 @@ const compareBidsApi = (data) => {
 export { 
     getServicesApi, 
     postJobApi, 
+    updatePostedJobApi,
+    cancelPreAcceptanceJobApi,
     getCustomerJobsApi, 
     getJobDetailsApi, 
     getProvincesApi, 

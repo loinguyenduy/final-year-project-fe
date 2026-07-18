@@ -15,12 +15,16 @@ import LifecyclePartnerSection from '../components/LifecyclePartnerSection';
 import useBeforeEvidence from '../hooks/useBeforeEvidence';
 import useJobLifecycle from '../hooks/useJobLifecycle';
 import useJobQuote from '../hooks/useJobQuote';
+import useQuotePayment from '../hooks/useQuotePayment';
+import AcceptQuoteModal from '../modals/AcceptQuoteModal';
 import AcceptedCancellationModal from '../modals/AcceptedCancellationModal';
 import ArrivalRequestModal from '../modals/ArrivalRequestModal';
 import CancellationResponseModal from '../modals/CancellationResponseModal';
 import ConfirmArrivalModal from '../modals/ConfirmArrivalModal';
 import LifecycleCancellationModal from '../modals/LifecycleCancellationModal';
 import RejectArrivalModal from '../modals/RejectArrivalModal';
+import RejectQuoteModal from '../modals/RejectQuoteModal';
+import RemainingPaymentModal from '../modals/RemainingPaymentModal';
 import StartMovingModal from '../modals/StartMovingModal';
 import SubmitQuoteModal from '../modals/SubmitQuoteModal';
 import CustomerLifecycleStage from '../stages/CustomerLifecycleStage';
@@ -31,6 +35,21 @@ import {
 } from '../utils/jobLifecycleNavigation';
 import '../styles/JobLifecycle.scss';
 
+const calculateAcceptanceAmounts = (quoteTotal, depositAmount) => {
+  try {
+    const total = BigInt(String(quoteTotal));
+    const deposit = BigInt(String(depositAmount));
+    if (total < deposit || total < 0n || deposit < 0n) return null;
+    return {
+      quoteTotal: total.toString(),
+      deposit: deposit.toString(),
+      remaining: (total - deposit).toString(),
+    };
+  } catch {
+    return null;
+  }
+};
+
 const JobLifecyclePage = () => {
   const { jobId } = useParams();
   const navigate = useNavigate();
@@ -40,9 +59,9 @@ const JobLifecyclePage = () => {
   const lifecycle = useJobLifecycle({ jobId, accessToken: token, role });
   const canonicalStatus = lifecycle.details?.job?.status;
   const quoteSummary = lifecycle.details?.inspection_quote;
-  const quoteDataEnabled = canonicalStatus === 'QUOTE_PENDING'
+  const quoteDataEnabled = ['QUOTE_PENDING', 'PAYMENT_PENDING'].includes(canonicalStatus)
     || (role === 'HANDYMAN' && canonicalStatus === 'ARRIVED' && Boolean(quoteSummary));
-  const evidenceDataEnabled = canonicalStatus === 'QUOTE_PENDING'
+  const evidenceDataEnabled = ['QUOTE_PENDING', 'PAYMENT_PENDING'].includes(canonicalStatus)
     || (role === 'HANDYMAN' && canonicalStatus === 'ARRIVED');
   const quoteState = useJobQuote({
     enabled: quoteDataEnabled,
@@ -54,6 +73,21 @@ const JobLifecyclePage = () => {
     jobId,
     onCanonicalRefresh: lifecycle.refreshDetails,
   });
+  const paymentState = useQuotePayment({
+    contractEnabled: canonicalStatus === 'IN_PROGRESS',
+    jobId,
+    onCanonicalRefresh: lifecycle.refreshDetails,
+    onCancelled: () => lifecycle.exitWorkspace('CANCELLED'),
+    paymentEnabled: canonicalStatus === 'PAYMENT_PENDING',
+  });
+
+  useEffect(() => {
+    if (canonicalStatus !== 'PAYMENT_PENDING') return;
+    void Promise.all([
+      quoteState.refreshQuote({ silent: true }),
+      evidenceState.refreshEvidence({ silent: true }),
+    ]);
+  }, [canonicalStatus, evidenceState.refreshEvidence, quoteState.refreshQuote]);
 
   useEffect(() => {
     if (!lifecycle.outsideStatus) return;
@@ -146,6 +180,7 @@ const JobLifecyclePage = () => {
                 mutationState={mutationState}
                 onModal={lifecycle.openModal}
                 onOpenImage={setLightboxSrc}
+                paymentState={paymentState}
                 quoteState={quoteState}
               />
             ) : (
@@ -157,9 +192,13 @@ const JobLifecyclePage = () => {
                 evidenceState={evidenceState}
                 onModal={lifecycle.openModal}
                 onOpenImage={setLightboxSrc}
+                paymentState={paymentState}
                 quoteState={quoteState}
               />
             )}
+            <div className="job-lifecycle__details-row">
+              <LifecycleJobSummary job={job} onOpenImage={setLightboxSrc} />
+            </div>
           </div>
 
           <aside className="job-lifecycle__side-column">
@@ -177,10 +216,6 @@ const JobLifecyclePage = () => {
               <LifecycleFinancialSummary deposit={deposit} selectedBid={selectedBid} />
             </div>
           </aside>
-
-          <div className="job-lifecycle__details-row">
-            <LifecycleJobSummary job={job} onOpenImage={setLightboxSrc} />
-          </div>
         </div>
       </div>
 
@@ -256,6 +291,37 @@ const JobLifecyclePage = () => {
           const response = await quoteState.submitSavedDraft({
             allowed: lifecycle.allowedActions.includes('SUBMIT_QUOTE'),
           });
+          if (response) lifecycle.closeModal();
+        }}
+      />
+      <AcceptQuoteModal
+        open={activeModal === 'ACCEPT_QUOTE'}
+        onClose={lifecycle.closeModal}
+        submitting={paymentState.accepting}
+        amounts={calculateAcceptanceAmounts(
+          quoteState.quote?.total_amount,
+          deposit?.amount,
+        )}
+        onConfirm={async () => {
+          const response = await paymentState.acceptQuote(quoteState.quote?.id);
+          if (response) lifecycle.closeModal();
+        }}
+      />
+      <RejectQuoteModal
+        open={activeModal === 'REJECT_QUOTE'}
+        onClose={lifecycle.closeModal}
+        submitting={paymentState.rejecting}
+        depositAmount={deposit?.amount}
+        onSubmit={(payload) => paymentState.rejectQuote(quoteState.quote?.id, payload)}
+      />
+      <RemainingPaymentModal
+        open={activeModal === 'PAY_REMAINING'}
+        onClose={lifecycle.closeModal}
+        submitting={paymentState.paying}
+        payment={paymentState.payment || lifecycle.details.payment}
+        insufficientBalance={paymentState.insufficientBalance}
+        onConfirm={async () => {
+          const response = await paymentState.completePayment();
           if (response) lifecycle.closeModal();
         }}
       />

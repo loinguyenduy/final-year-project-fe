@@ -7,8 +7,11 @@ const QuotePendingStage = ({
   allowedActions,
   evidenceState,
   isCancelling,
+  isResponding,
+  onAccept,
   onCancel,
   onOpenImage,
+  onReject,
   quoteState,
   role,
 }) => (
@@ -36,7 +39,7 @@ const QuotePendingStage = ({
     {quoteState.loadError && (
       <div className="lifecycle-notice lifecycle-notice--danger">{quoteState.loadError}</div>
     )}
-    <QuoteReadOnlyView quote={quoteState.quote} />
+    <QuoteReadOnlyView quote={quoteState.quote} showVariance={role === 'HANDYMAN'} />
 
     <BeforeEvidenceManager
       canDelete={false}
@@ -56,6 +59,32 @@ const QuotePendingStage = ({
     {role === 'CUSTOMER' && allowedActions.includes('VIEW_QUOTE') && (
       <div className="lifecycle-notice lifecycle-notice--neutral">
         Review the submitted details and continue coordinating with the Handyman in Chat.
+      </div>
+    )}
+
+    {role === 'CUSTOMER'
+      && (allowedActions.includes('ACCEPT_QUOTE') || allowedActions.includes('REJECT_QUOTE')) && (
+      <div className="lifecycle-stage__primary-bar lifecycle-stage__primary-bar--split">
+        {allowedActions.includes('REJECT_QUOTE') && (
+          <button
+            type="button"
+            className="lifecycle-btn lifecycle-btn--secondary"
+            onClick={onReject}
+            disabled={isResponding}
+          >
+            Reject Quote
+          </button>
+        )}
+        {allowedActions.includes('ACCEPT_QUOTE') && (
+          <button
+            type="button"
+            className="lifecycle-btn lifecycle-btn--primary"
+            onClick={onAccept}
+            disabled={isResponding || !quoteState.quote}
+          >
+            Accept Quote
+          </button>
+        )}
       </div>
     )}
 

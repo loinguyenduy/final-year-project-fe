@@ -3,6 +3,7 @@ import { FaPlus, FaSave, FaTrash } from 'react-icons/fa';
 import {
   INSPECTION_QUOTE_LIMITS,
   QUOTE_ITEM_TYPE_OPTIONS,
+  QUOTE_UNIT_SUGGESTIONS,
   QUOTE_VARIANCE_REASON_OPTIONS,
   READINESS_LABELS,
 } from '../constants/inspectionQuote.constants';
@@ -32,6 +33,11 @@ const QuoteDraftEditor = ({
   const showUnsavedPreview = hasUnsavedChanges;
   const subtotal = showUnsavedPreview ? preview.subtotal : quote.subtotal_amount;
   const total = showUnsavedPreview ? preview.total : quote.total_amount;
+  const showVarianceReason = Boolean(
+    readiness?.variance_reason_required
+    || quote.variance_reason
+    || form.variance_reason,
+  );
 
   const handleSubmitClick = () => {
     if (hasUnsavedChanges) {
@@ -120,25 +126,13 @@ const QuoteDraftEditor = ({
           <small>Minutes must be 0–59; total duration must be 1–43,200 minutes.</small>
         </fieldset>
 
-        <label className="lifecycle-field">
-          <span>Warranty days</span>
-          <input
-            type="number"
-            min="0"
-            max={INSPECTION_QUOTE_LIMITS.warrantyMaxDays}
-            inputMode="numeric"
-            value={form.warranty_days}
-            onChange={(event) => updateField('warranty_days', event.target.value)}
-          />
-          <small>Enter 0 when no warranty is offered.</small>
-        </label>
       </div>
 
       <div className="quote-items">
         <div className="quote-items__header">
           <div>
             <h4>Quote items</h4>
-            <p>Quantity supports up to three decimal places. Prices are integer VND.</p>
+            <p>Quantity is a positive whole number. Prices are integer VND.</p>
           </div>
           <button
             type="button"
@@ -179,10 +173,20 @@ const QuoteDraftEditor = ({
                     ))}
                   </select>
                 </label>
-                <label className="lifecycle-field quote-item-editor__description">
-                  <span>Description</span>
+                <label className="lifecycle-field quote-item-editor__name">
+                  <span>Name</span>
                   <input
                     type="text"
+                    maxLength={INSPECTION_QUOTE_LIMITS.itemNameMaxLength}
+                    value={item.name}
+                    onChange={(event) => updateItem(item.client_id, 'name', event.target.value)}
+                    placeholder="Labour, replacement valve, cable..."
+                  />
+                </label>
+                <label className="lifecycle-field quote-item-editor__description">
+                  <span>Description <em>Optional</em></span>
+                  <textarea
+                    rows="2"
                     maxLength={INSPECTION_QUOTE_LIMITS.itemDescriptionMaxLength}
                     value={item.description}
                     onChange={(event) => updateItem(item.client_id, 'description', event.target.value)}
@@ -192,16 +196,17 @@ const QuoteDraftEditor = ({
                   <span>Quantity</span>
                   <input
                     type="text"
-                    inputMode="decimal"
+                    inputMode="numeric"
                     value={item.quantity}
                     onChange={(event) => updateItem(item.client_id, 'quantity', event.target.value)}
-                    placeholder="1 or 1.250"
+                    placeholder="1"
                   />
                 </label>
                 <label className="lifecycle-field">
                   <span>Unit</span>
                   <input
                     type="text"
+                    list="quote-unit-suggestions"
                     maxLength={INSPECTION_QUOTE_LIMITS.itemUnitMaxLength}
                     value={item.unit}
                     onChange={(event) => updateItem(item.client_id, 'unit', event.target.value)}
@@ -231,57 +236,53 @@ const QuoteDraftEditor = ({
             </article>
           ))}
         </div>
+        <datalist id="quote-unit-suggestions">
+          {QUOTE_UNIT_SUGGESTIONS.map((unit) => <option value={unit} key={unit} />)}
+        </datalist>
       </div>
 
-      <div className="quote-form-grid quote-form-grid--financial">
-        <label className="lifecycle-field">
-          <span>Discount (VND)</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={form.discount_amount}
-            onChange={(event) => updateField('discount_amount', event.target.value)}
-          />
-        </label>
-        <label className="lifecycle-field">
-          <span>Variance reason <em>Required only when backend policy applies</em></span>
-          <select
-            value={form.variance_reason}
-            onChange={(event) => updateField('variance_reason', event.target.value)}
-          >
-            <option value="">Select a reason when required</option>
-            {QUOTE_VARIANCE_REASON_OPTIONS.map((option) => (
-              <option value={option.value} key={option.value}>{option.label}</option>
-            ))}
-          </select>
-        </label>
-        {form.variance_reason && (
-          <label className="lifecycle-field quote-form-grid__wide">
-            <span>
-              Variance explanation
-              {form.variance_reason === 'OTHER' && <strong aria-hidden="true"> *</strong>}
-            </span>
-            <textarea
-              rows="3"
-              maxLength={INSPECTION_QUOTE_LIMITS.varianceReasonTextMaxLength}
-              value={form.variance_reason_text}
-              onChange={(event) => updateField('variance_reason_text', event.target.value)}
-            />
-            <small>
-              {form.variance_reason_text.length}/{INSPECTION_QUOTE_LIMITS.varianceReasonTextMaxLength}
-            </small>
+      {showVarianceReason && (
+        <div className="quote-form-grid quote-form-grid--financial">
+          <div className="lifecycle-notice lifecycle-notice--warning quote-form-grid__wide">
+            The saved Quote total is more than 50% above the selected Bid. Choose a reason,
+            then Save Draft again so the backend can verify readiness.
+          </div>
+          <label className="lifecycle-field">
+            <span>Variance reason</span>
+            <select
+              value={form.variance_reason}
+              onChange={(event) => updateField('variance_reason', event.target.value)}
+            >
+              <option value="">Select a reason</option>
+              {QUOTE_VARIANCE_REASON_OPTIONS.map((option) => (
+                <option value={option.value} key={option.value}>{option.label}</option>
+              ))}
+            </select>
           </label>
-        )}
-      </div>
+          {form.variance_reason && (
+            <label className="lifecycle-field quote-form-grid__wide">
+              <span>
+                Variance explanation
+                {form.variance_reason === 'OTHER' && <strong aria-hidden="true"> *</strong>}
+              </span>
+              <textarea
+                rows="3"
+                maxLength={INSPECTION_QUOTE_LIMITS.varianceReasonTextMaxLength}
+                value={form.variance_reason_text}
+                onChange={(event) => updateField('variance_reason_text', event.target.value)}
+              />
+              <small>
+                {form.variance_reason_text.length}/{INSPECTION_QUOTE_LIMITS.varianceReasonTextMaxLength}
+              </small>
+            </label>
+          )}
+        </div>
+      )}
 
       <div className="quote-totals">
         <div>
           <span>{showUnsavedPreview ? 'Unsaved subtotal preview' : 'Canonical subtotal'}</span>
           <strong>{formatCurrency(subtotal)}</strong>
-        </div>
-        <div>
-          <span>Discount</span>
-          <strong>{formatCurrency(form.discount_amount)}</strong>
         </div>
         <div className="quote-totals__total">
           <span>{showUnsavedPreview ? 'Unsaved total preview' : 'Canonical total'}</span>
@@ -299,7 +300,7 @@ const QuoteDraftEditor = ({
         </div>
         {showUnsavedPreview && (
           <p>
-            Preview uses decimal-string scaled arithmetic and per-line half-up rounding.
+            Preview uses integer-string arithmetic.
             Backend totals become canonical only after Save Draft.
           </p>
         )}

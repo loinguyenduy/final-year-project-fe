@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useParams, useNavigate } from 'react-router-dom';
-import { getJobDetailsApi } from '../../../services/jobService';
+import { useSelector } from 'react-redux';
+import {
+    cancelPreAcceptanceJobApi,
+    getJobDetailsApi
+} from '../../../services/jobService';
 import ImageLightbox from '../../../../../core/components/ImageLightbox';
 import { toast } from 'react-toastify';
 import { FaArrowLeft, FaCheck, FaStar, FaCommentDots, FaBolt } from 'react-icons/fa';
@@ -8,17 +12,19 @@ import '../styles/JobDetails.scss';
 import CompareBidsModal from '../components/CompareBidsModal';
 import PublicHandymanProfileModal from '../components/PublicHandymanProfileModal';
 import HireConfirmModal from '../components/HireConfirmModal';
+import PreAcceptanceCancellationModal from '../components/PreAcceptanceCancellationModal';
 import JobProgressStepper from '../../../../matchmaking/components/JobProgressStepper';
 import { resolveEffectiveJobProgressStatus } from '../../../../matchmaking/utils/jobProgress';
+import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
 import {
     getLifecycleWorkspacePath,
     isLifecycleWorkspaceStatus,
 } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
-import { getCurrentLifecycleCancellation } from '../../../../matchmaking/api/jobLifecycleApi';
 
 const CustomerJobDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const accessToken = useSelector((state) => state.identity.token);
     const [job, setJob] = useState(null);
     const [cancellation, setCancellation] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -28,24 +34,15 @@ const CustomerJobDetailsPage = () => {
     const [selectedBids, setSelectedBids] = useState([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
     const [profileModalHandymanId, setProfileModalHandymanId] = useState(null);
+    const [showCancellationModal, setShowCancellationModal] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
 
     const fetchJob = async () => {
         try {
             const res = await getJobDetailsApi(id);
             if (res && res.EC === 0) {
                 setJob(res.DT);
-                if (res.DT?.current_status === 'CANCELLED') {
-                    try {
-                        const cancellationResponse = await getCurrentLifecycleCancellation(id);
-                        setCancellation(
-                            cancellationResponse?.EC === 0 ? cancellationResponse.DT : null,
-                        );
-                    } catch {
-                        setCancellation(null);
-                    }
-                } else {
-                    setCancellation(null);
-                }
+                setCancellation(res.DT?.cancellation || null);
                 setSelectedBids([]); // Reset selections on refresh
             } else {
                 toast.error(res.EM || "Failed to load job details.");
@@ -62,6 +59,12 @@ const CustomerJobDetailsPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
+    usePreLifecycleRealtime({
+        accessToken,
+        jobId: id,
+        onInvalidate: () => fetchJob(),
+    });
+
     const handleAcceptBid = (bidId) => {
         setShowCompareModal(false); // close modal if open
         const bidObj = job?.Bids?.find(b => b.id === bidId);
@@ -70,6 +73,31 @@ const CustomerJobDetailsPage = () => {
             bidId,
             handymanName
         });
+    };
+
+    const handleCancelJob = async (payload) => {
+        if (isCancelling) return;
+        setIsCancelling(true);
+        try {
+            const response = await cancelPreAcceptanceJobApi(id, payload);
+            if (response?.EC !== 0) throw response;
+            toast.success(
+                response.code === 'JOB_ALREADY_CANCELLED'
+                    ? 'This Job was already cancelled.'
+                    : 'Job cancelled. Pending Bids have expired.',
+            );
+            setShowCancellationModal(false);
+            await fetchJob();
+        } catch (error) {
+            const envelope = error?.response?.data || error || {};
+            toast.error(envelope.EM || 'The Job could not be cancelled. Refresh and try again.');
+            if (['JOB_NOT_CANCELLABLE', 'JOB_NOT_FOUND'].includes(envelope.code)) {
+                setShowCancellationModal(false);
+                await fetchJob();
+            }
+        } finally {
+            setIsCancelling(false);
+        }
     };
 
     const handleToggleSelectBid = (bidId) => {
@@ -165,6 +193,29 @@ const CustomerJobDetailsPage = () => {
                 </span>
             </div>
 
+            {(job.allowed_actions || []).some((action) => ['EDIT_JOB', 'CANCEL_JOB'].includes(action)) && (
+                <div className="job-pre-acceptance-actions">
+                    {(job.allowed_actions || []).includes('EDIT_JOB') && (
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() => navigate(`/customer/my-jobs/${id}/edit`)}
+                        >
+                            Edit Job
+                        </button>
+                    )}
+                    {(job.allowed_actions || []).includes('CANCEL_JOB') && (
+                        <button
+                            type="button"
+                            className="job-pre-acceptance-actions__cancel"
+                            onClick={() => setShowCancellationModal(true)}
+                        >
+                            Can’t continue? Cancel this Job
+                        </button>
+                    )}
+                </div>
+            )}
+
             {/* PROGRESS */}
             <div className="progress-card">
                 <h4 className="card-title">Job Progress</h4>
@@ -173,6 +224,11 @@ const CustomerJobDetailsPage = () => {
                         currentStatus: job.current_status,
                         cancellation,
                     })}
+                    statusBadge={job.current_status === 'PENDING_DEPOSIT'
+                        ? 'Deposit pending'
+                        : job.current_status === 'CANCELLED' && cancellation
+                            ? 'Cancelled'
+                            : null}
                 />
             </div>
 
@@ -448,6 +504,14 @@ const CustomerJobDetailsPage = () => {
                     onSuccess={fetchJob}
                 />
             )}
+            <PreAcceptanceCancellationModal
+                open={showCancellationModal}
+                onClose={() => {
+                    if (!isCancelling) setShowCancellationModal(false);
+                }}
+                onConfirm={handleCancelJob}
+                submitting={isCancelling}
+            />
         </div>
     );
 };

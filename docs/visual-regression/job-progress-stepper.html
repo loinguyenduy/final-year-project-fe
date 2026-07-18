@@ -31,7 +31,6 @@
       --border: #cbd5e1;
       --muted: #94a3b8;
       width: 100%;
-      container-type: inline-size;
     }
     .list {
       display: grid;
@@ -120,17 +119,15 @@
     .bar { height: 6px; overflow: hidden; border-radius: 999px; background: #e2e8f0; }
     .bar span { display: block; width: 50%; height: 100%; background: var(--accent); }
     .compact-neighbours { font-size: .75rem; }
-    @container (max-width: 67.999rem) {
-      .after .list { display: none; }
-      .after .compact { display: grid; }
-    }
+    .after.compact-mode .list { display: none; }
+    .after.compact-mode .compact { display: grid; }
   </style>
 </head>
 <body>
   <main>
     <header>
       <h1>Shared JobProgressStepper visual regression</h1>
-      <p>Baseline visual tokens are unchanged; the current component expands the stage model and switches to compact mode below 1088 px.</p>
+      <p>Baseline visual tokens are unchanged; the current component measures its own container and label requirements before selecting full or compact mode.</p>
     </header>
 
     <section>
@@ -172,5 +169,21 @@
       </nav>
     </section>
   </main>
+  <script>
+    const after = document.querySelector('.after');
+    const labels = [...after.querySelectorAll('.list .label')];
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    context.font = '600 12px Arial';
+    const requiredWidth = labels.reduce(
+      (total, label) => total + Math.max(66, context.measureText(label.textContent).width + 36),
+      0,
+    );
+    const updateVariant = () => {
+      after.classList.toggle('compact-mode', after.clientWidth < requiredWidth);
+    };
+    updateVariant();
+    new ResizeObserver(updateVariant).observe(after);
+  </script>
 </body>
 </html>

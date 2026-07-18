@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import {
@@ -18,11 +18,13 @@ import {
 } from 'react-icons/fa';
 import {
     geocodeAddressApi,
+    getJobDetailsApi,
     getProvincesApi,
     getServicesApi,
     getWardsApi,
     postJobApi,
-    reverseGeocodeApi
+    reverseGeocodeApi,
+    updatePostedJobApi
 } from '../../../services/jobService';
 import { getUserProfileApi } from '../../../services/profileService';
 import LocationPickerMap from '../../../../matchmaking/components/LocationPickerMap';
@@ -44,8 +46,18 @@ const hasCoordinates = (latitude, longitude) => (
     && Number.isFinite(Number(longitude))
 );
 
+const toDateTimeLocalValue = (value) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    const offset = date.getTimezoneOffset() * 60_000;
+    return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+};
+
 const CustomerCreateJobPage = () => {
     const navigate = useNavigate();
+    const { id: editJobId } = useParams();
+    const isEditMode = Boolean(editJobId);
     const { account } = useSelector((state) => state.identity);
     const isVerified = account?.kyc_status === 'VERIFIED';
     const addressOptionRef = useRef(1);
@@ -80,22 +92,60 @@ const CustomerCreateJobPage = () => {
 
     const [images, setImages] = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
+    const [retainedImages, setRetainedImages] = useState([]);
+    const [locationChanged, setLocationChanged] = useState(false);
+    const [originalUpdatedAt, setOriginalUpdatedAt] = useState(null);
+    const [currentServiceAddress, setCurrentServiceAddress] = useState('');
     const [isLoadingServices, setIsLoadingServices] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [servicesRes, provincesRes, profileRes] = await Promise.all([
+                const [servicesRes, provincesRes, profileRes, jobRes] = await Promise.all([
                     getServicesApi(),
                     getProvincesApi(),
-                    getUserProfileApi()
+                    getUserProfileApi(),
+                    isEditMode ? getJobDetailsApi(editJobId) : Promise.resolve(null)
                 ]);
                 if (servicesRes?.EC === 0) setServices(servicesRes.DT || []);
                 if (provincesRes?.EC === 0) setProvinces(provincesRes.DT || []);
                 if (profileRes?.EC === 0) {
                     const addresses = profileRes.DT?.User_Addresses || [];
                     setDefaultAddress(addresses.find(item => item.is_default) || null);
+                }
+                if (isEditMode) {
+                    if (jobRes?.EC !== 0 || jobRes.DT?.current_status !== 'POSTED') {
+                        toast.error('Only a Posted Job can be edited.');
+                        navigate(`/customer/my-jobs/${editJobId}`, { replace: true });
+                        return;
+                    }
+                    const job = jobRes.DT;
+                    setSelectedService(job.service_id || job.Service?.id || '');
+                    setDescription(job.issue_description || '');
+                    setScheduleTime(toDateTimeLocalValue(job.scheduled_at));
+                    setBudgetMin(job.estimated_budget_min ?? '');
+                    setBudgetMax(job.estimated_budget_max ?? '');
+                    setRetainedImages(Array.isArray(job.images) ? job.images : []);
+                    setOriginalUpdatedAt(job.updatedAt);
+                    setCurrentServiceAddress(job.service_address || '');
+                    setDetailAddress(job.detail_address || '');
+                    setSelectedProvince(job.province_code || '');
+                    setSelectedWard(job.ward_code || '');
+                    setGpsLat(job.gps_lat == null ? null : Number(job.gps_lat));
+                    setGpsLong(job.gps_long == null ? null : Number(job.gps_long));
+                    setLocationSource(job.location_source || LOCATION_SOURCES.ADDRESS_ONLY);
+                    setLocationConfirmed(Boolean(job.location_confirmed));
+                    setResolvedAddress(job.service_address || '');
+                    setShowMap(hasCoordinates(job.gps_lat, job.gps_long));
+                    const inferredOption = job.location_source === LOCATION_SOURCES.CURRENT_GPS
+                        || (!job.province_code && hasCoordinates(job.gps_lat, job.gps_long))
+                        ? 3
+                        : job.location_source === LOCATION_SOURCES.PROFILE_ADDRESS
+                            ? 2
+                            : 1;
+                    addressOptionRef.current = inferredOption;
+                    setAddressOption(inferredOption);
                 }
             } catch (error) {
                 toast.error(error?.EM || 'Failed to load initial data.');
@@ -104,7 +154,7 @@ const CustomerCreateJobPage = () => {
             }
         };
         fetchData();
-    }, []);
+    }, [editJobId, isEditMode, navigate]);
 
     useEffect(() => {
         if (selectedProvince) {
@@ -156,6 +206,7 @@ const CustomerCreateJobPage = () => {
     };
 
     const invalidateAddressLocation = () => {
+        if (isEditMode) setLocationChanged(true);
         if (addressOption !== 1) return;
         clearLocationState();
     };
@@ -190,6 +241,7 @@ const CustomerCreateJobPage = () => {
 
     const handleGetLocation = async () => {
         if (addressOptionRef.current !== 3) return;
+        if (isEditMode) setLocationChanged(true);
 
         const requestId = ++locationRequestRef.current;
         setIsFetchingGps(true);
@@ -225,6 +277,7 @@ const CustomerCreateJobPage = () => {
     };
 
     const handleOptionChange = (value) => {
+        if (isEditMode) setLocationChanged(true);
         if (value === addressOption) return;
         addressOptionRef.current = value;
         setAddressOption(value);
@@ -239,6 +292,7 @@ const CustomerCreateJobPage = () => {
     };
 
     const handleFindAddress = async () => {
+        if (isEditMode) setLocationChanged(true);
         let payload;
         if (addressOption === 1) {
             if (!detailAddress.trim() || !selectedProvince || !selectedWard) {
@@ -289,6 +343,7 @@ const CustomerCreateJobPage = () => {
     };
 
     const handleMapLocationChange = ({ latitude, longitude }) => {
+        if (isEditMode) setLocationChanged(true);
         locationRequestRef.current += 1;
         setGpsLat(latitude);
         setGpsLong(longitude);
@@ -301,6 +356,7 @@ const CustomerCreateJobPage = () => {
     };
 
     const handleConfirmLocation = async () => {
+        if (isEditMode) setLocationChanged(true);
         if (!hasCoordinates(gpsLat, gpsLong) || !locationSource) {
             toast.error('Choose a pin on the map before confirming.');
             return;
@@ -346,7 +402,7 @@ const CustomerCreateJobPage = () => {
 
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files);
-        if (images.length + files.length > 5) {
+        if (retainedImages.length + images.length + files.length > 5) {
             toast.warning('You can upload a maximum of 5 images.');
             return;
         }
@@ -369,7 +425,13 @@ const CustomerCreateJobPage = () => {
         setImagePreviews(previous => previous.filter((_, itemIndex) => itemIndex !== index));
     };
 
-    const locationReady = locationSource === LOCATION_SOURCES.ADDRESS_ONLY
+    const removeRetainedImage = (url) => {
+        setRetainedImages((current) => current.filter((item) => item !== url));
+    };
+
+    const locationReady = !locationChanged && isEditMode
+        ? true
+        : locationSource === LOCATION_SOURCES.ADDRESS_ONLY
         || (hasCoordinates(gpsLat, gpsLong) && locationConfirmed);
 
     const handleSubmit = async (event) => {
@@ -383,11 +445,13 @@ const CustomerCreateJobPage = () => {
             toast.error('Please fill in all required fields.');
             return;
         }
-        if (addressOption === 1 && (!detailAddress.trim() || !selectedProvince || !selectedWard)) {
+        if ((!isEditMode || locationChanged)
+            && addressOption === 1
+            && (!detailAddress.trim() || !selectedProvince || !selectedWard)) {
             toast.error('Please enter detail address, province and ward.');
             return;
         }
-        if (addressOption === 2 && !defaultAddress) {
+        if ((!isEditMode || locationChanged) && addressOption === 2 && !defaultAddress) {
             toast.error('No default profile address is available.');
             return;
         }
@@ -413,36 +477,46 @@ const CustomerCreateJobPage = () => {
             formData.append('service_id', selectedService);
             formData.append('issue_description', description.trim());
             formData.append('scheduled_at', scheduleTime);
-            formData.append('address_option', addressOption);
-            formData.append('location_source', locationSource);
-            formData.append('location_confirmed', String(locationConfirmed));
 
             if (budgetMin) formData.append('estimated_budget_min', budgetMin);
             if (budgetMax) formData.append('estimated_budget_max', budgetMax);
-            if (addressOption === 1) {
-                formData.append('detail_address', detailAddress.trim());
-                formData.append('province_code', selectedProvince);
-                formData.append('ward_code', selectedWard);
-            }
-            if (hasCoordinates(gpsLat, gpsLong)) {
-                formData.append('gps_lat', String(gpsLat));
-                formData.append('gps_long', String(gpsLong));
+            if (!isEditMode || locationChanged) {
+                formData.append('address_option', addressOption);
+                formData.append('location_source', locationSource);
+                formData.append('location_confirmed', String(locationConfirmed));
+                if (addressOption === 1) {
+                    formData.append('detail_address', detailAddress.trim());
+                    formData.append('province_code', selectedProvince);
+                    formData.append('ward_code', selectedWard);
+                }
+                if (hasCoordinates(gpsLat, gpsLong)) {
+                    formData.append('gps_lat', String(gpsLat));
+                    formData.append('gps_long', String(gpsLong));
+                }
             }
             images.forEach(file => formData.append('images', file));
 
-            const res = await postJobApi(formData);
+            if (isEditMode) {
+                formData.append('expected_updated_at', originalUpdatedAt);
+                formData.append('location_changed', String(locationChanged));
+                formData.append('retained_images', JSON.stringify(retainedImages));
+            }
+
+            const res = isEditMode
+                ? await updatePostedJobApi(editJobId, formData)
+                : await postJobApi(formData);
             if (res?.EC === 0) {
                 if (res.DT?.profile_coordinates_updated) {
-                    toast.success('Job posted and your default profile address coordinates were updated.');
+                    toast.success(`Job ${isEditMode ? 'updated' : 'posted'} and your default profile address coordinates were updated.`);
                 } else {
-                    toast.success(res.EM || 'Job posted successfully!');
+                    toast.success(res.EM || `Job ${isEditMode ? 'updated' : 'posted'} successfully!`);
                 }
-                navigate('/customer/my-jobs');
+                navigate(isEditMode ? `/customer/my-jobs/${editJobId}` : '/customer/my-jobs');
             } else {
                 toast.error(res?.EM || 'Failed to post job.');
             }
         } catch (error) {
-            toast.error(error?.EM || error?.response?.data?.EM || 'Something went wrong while posting the job.');
+            toast.error(error?.EM || error?.response?.data?.EM || `Something went wrong while ${isEditMode ? 'updating' : 'posting'} the Job.`);
         } finally {
             setIsSubmitting(false);
         }
@@ -462,8 +536,15 @@ const CustomerCreateJobPage = () => {
 
             <div className="card shadow-sm border-0 job-post-card form-card">
                 <div className="card-header bg-primary text-white p-4">
-                    <h4 className="mb-1"><FaTools className="me-2" /> Post a New Job Request</h4>
-                    <p className="mb-0 opacity-75">Describe the problem and confirm the exact service location.</p>
+                    <h4 className="mb-1">
+                        <FaTools className="me-2" />
+                        {isEditMode ? 'Edit Posted Job' : 'Post a New Job Request'}
+                    </h4>
+                    <p className="mb-0 opacity-75">
+                        {isEditMode
+                            ? 'Update the Job before the first active Bid arrives.'
+                            : 'Describe the problem and confirm the exact service location.'}
+                    </p>
                 </div>
 
                 <div className="card-body p-4">
@@ -525,6 +606,19 @@ const CustomerCreateJobPage = () => {
                             <label className="form-label fw-bold mb-3 text-dark">
                                 <FaMapMarkerAlt className="me-2 text-danger" /> Service Address Option
                             </label>
+
+                            {isEditMode && !locationChanged && (
+                                <div className="alert alert-info py-2">
+                                    Current location will be kept: <strong>{currentServiceAddress}</strong>.
+                                    <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-primary ms-2"
+                                        onClick={() => setLocationChanged(true)}
+                                    >
+                                        Change location
+                                    </button>
+                                </div>
+                            )}
 
                             <div className="row g-3 mb-3">
                                 {[
@@ -744,15 +838,23 @@ const CustomerCreateJobPage = () => {
                         <div className="mb-5">
                             <label className="form-label fw-bold mb-2 text-dark">Job Status Photos (Max 5 images)</label>
                             <div className="upload-container bg-light border border-dashed rounded p-4 text-center">
-                                <label className={`upload-box w-100 ${images.length >= 5 ? 'disabled' : ''}`}>
-                                    <input type="file" multiple accept="image/png, image/jpeg, image/jpg" onChange={handleFileChange} disabled={images.length >= 5} />
+                                <label className={`upload-box w-100 ${retainedImages.length + images.length >= 5 ? 'disabled' : ''}`}>
+                                    <input type="file" multiple accept="image/png, image/jpeg, image/jpg" onChange={handleFileChange} disabled={retainedImages.length + images.length >= 5} />
                                     <FaCloudUploadAlt className="text-primary mb-2" size={48} />
                                     <h6 className="fw-bold text-dark">Click to browse images</h6>
                                     <span className="text-muted small">JPG, PNG format (Max 5MB each)</span>
                                 </label>
 
-                                {imagePreviews.length > 0 && (
+                                {(retainedImages.length > 0 || imagePreviews.length > 0) && (
                                     <div className="d-flex gap-3 flex-wrap justify-content-center mt-4">
+                                        {retainedImages.map((url, index) => (
+                                            <div key={url} className="position-relative">
+                                                <img src={url} alt={`Current Job ${index + 1}`} className="rounded shadow-sm image-preview" />
+                                                <button type="button" className="btn btn-sm btn-danger remove-image-button" onClick={() => removeRetainedImage(url)}>
+                                                    <FaTrash size={10} />
+                                                </button>
+                                            </div>
+                                        ))}
                                         {imagePreviews.map((preview, index) => (
                                             <div key={preview} className="position-relative">
                                                 <img src={preview} alt={`Preview ${index + 1}`} className="rounded shadow-sm image-preview" />
@@ -772,8 +874,8 @@ const CustomerCreateJobPage = () => {
                             disabled={isSubmitting || !isVerified || !locationReady}
                         >
                             {isSubmitting
-                                ? <><span className="spinner-border spinner-border-sm me-2" />Posting Job...</>
-                                : 'Post Job Request'}
+                                ? <><span className="spinner-border spinner-border-sm me-2" />{isEditMode ? 'Updating Job...' : 'Posting Job...'}</>
+                                : isEditMode ? 'Save Job Changes' : 'Post Job Request'}
                         </button>
                     </form>
                 </div>

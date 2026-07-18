@@ -4,6 +4,8 @@ import HandymanArrivedStage from './arrived/HandymanArrivedStage';
 import CancellationReviewStage from './cancellation/CancellationReviewStage';
 import HandymanEnRouteStage from './en-route/HandymanEnRouteStage';
 import QuotePendingStage from './quote/QuotePendingStage';
+import PaymentPendingStage from './payment/PaymentPendingStage';
+import InProgressStage from './in-progress/InProgressStage';
 
 const HandymanLifecycleStage = ({
   allowedActions,
@@ -13,6 +15,7 @@ const HandymanLifecycleStage = ({
   mutationState,
   onModal,
   onOpenImage,
+  paymentState,
   quoteState,
 }) => {
   const {
@@ -70,10 +73,36 @@ const HandymanLifecycleStage = ({
         allowedActions={allowedActions}
         evidenceState={evidenceState}
         isCancelling={mutationState.isCancelling}
+        isResponding={false}
         onCancel={() => onModal('REQUEST_CANCELLATION')}
         onOpenImage={onOpenImage}
         quoteState={quoteState}
         role="HANDYMAN"
+      />
+    );
+  }
+
+  if (job.status === 'PAYMENT_PENDING') {
+    return (
+      <PaymentPendingStage
+        allowedActions={allowedActions}
+        evidenceState={evidenceState}
+        isCancelling={mutationState.isCancelling}
+        onCancel={() => onModal('REQUEST_CANCELLATION')}
+        onOpenImage={onOpenImage}
+        onPay={() => {}}
+        paymentState={paymentState}
+        quoteState={quoteState}
+        role="HANDYMAN"
+      />
+    );
+  }
+
+  if (job.status === 'IN_PROGRESS') {
+    return (
+      <InProgressStage
+        contractState={paymentState}
+        inProgressAt={job.in_progress_at}
       />
     );
   }
