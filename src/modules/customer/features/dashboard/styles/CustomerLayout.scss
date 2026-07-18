@@ -209,3 +209,46 @@
     }
   }
 }
+
+@media (max-width: 991px) {
+  .customer-layout {
+    .sidebar {
+      width: 76px;
+
+      .brand-header {
+        justify-content: center;
+        padding: 1rem 0.75rem;
+      }
+
+      .brand-name,
+      .mini-profile .info,
+      .menu-nav .menu-btn .menu-content span,
+      .menu-nav .menu-btn > .badge,
+      .logout-section .btn-logout span {
+        display: none;
+      }
+
+      .mini-profile { justify-content: center; margin: 0.75rem 0.4rem; padding: 0.5rem; }
+      .menu-nav { padding: 0 0.4rem; }
+      .menu-nav .menu-btn,
+      .logout-section .btn-logout { justify-content: center; padding: 0.75rem; }
+      .menu-nav .menu-btn .menu-content { gap: 0; }
+      .logout-section { padding: 0.6rem; }
+    }
+
+    .main-content { min-width: 0; }
+    .main-content .content-area { min-width: 0; padding: 1rem; }
+  }
+}
+
+@media (max-width: 575px) {
+  .customer-layout {
+    .sidebar { width: 58px; }
+    .sidebar .brand-header { padding: 0.75rem 0.4rem; }
+    .sidebar .brand-icon { padding: 0.4rem; }
+    .sidebar .mini-profile { display: none; }
+    .main-content .topbar { padding: 0.8rem 1rem; }
+    .main-content .topbar .page-title { font-size: 1rem; }
+    .main-content .content-area { padding: 0.75rem; overflow-x: hidden; }
+  }
+}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import AuthLayout from '../components/AuthLayout';
@@ -9,6 +9,7 @@ import {loginUserApi} from '../../../services/authService'
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const dispatch = useDispatch();
 
     const [email, setEmail] = useState("");
@@ -35,10 +36,19 @@ const LoginPage = () => {
                 } else {
                     toast.success("Login successful!");
                     const userRole = res.DT.user.role?.toUpperCase();
-                    if (userRole === 'CUSTOMER') {
-                        navigate('/customer/dashboard');
+                    const from = location.state?.from;
+                    const requestedPath = from?.pathname
+                        ? `${from.pathname}${from.search || ''}${from.hash || ''}`
+                        : null;
+
+                    if (requestedPath) {
+                        navigate(requestedPath, { replace: true });
+                    } else if (userRole === 'CUSTOMER') {
+                        navigate('/customer/dashboard', { replace: true });
+                    } else if (userRole === 'HANDYMAN') {
+                        navigate('/handyman/dashboard', { replace: true });
                     } else {
-                        navigate('/');
+                        navigate('/', { replace: true });
                     }
                 }
             } else {

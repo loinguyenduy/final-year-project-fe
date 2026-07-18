@@ -14,6 +14,7 @@ import RegisterPage from "./modules/identity/features/auth/pages/RegisterPage";
 import CheckEmailPage from "./modules/identity/features/auth/pages/CheckEmailPage";
 import VerifyEmailProcess from "./modules/identity/features/auth/pages/VerifyEmailProcess";
 import SocialCallback from "./modules/identity/features/auth/pages/SocialCallback";
+import SocialLinkCallback from "./modules/identity/features/auth/pages/SocialLinkCallback";
 import MainLayout from "./core/layouts/MainLayout";
 import HomePage from "./modules/home/pages/HomePage";
 
@@ -31,6 +32,9 @@ import HandymanWalletPage from "./modules/handyman/features/wallet/pages/Handyma
 import HandymanProfilePage from "./modules/handyman/features/profile/pages/HandymanProfilePage";
 import HandymanFindJobPage from "./modules/handyman/features/jobs/pages/HandymanFindJobPage";
 import HandymanJobDetailsPage from "./modules/handyman/features/jobs/pages/HandymanJobDetailsPage";
+import HandymanMyJobsPage from "./modules/handyman/features/jobs/pages/HandymanMyJobsPage";
+import LifecycleWorkspaceLayout from "./modules/matchmaking/features/job-lifecycle/layouts/LifecycleWorkspaceLayout";
+import JobLifecyclePage from "./modules/matchmaking/features/job-lifecycle/pages/JobLifecyclePage";
 
 import AdminLayout from './modules/admin/layouts/AdminLayout';
 import AdminDashboardPage from './modules/admin/features/dashboard/pages/AdminDashboardPage';
@@ -63,10 +67,10 @@ function App() {
           <Route path="/check-email" element={<CheckEmailPage />} />
           <Route path="/verify-email" element={<VerifyEmailProcess />} />
           <Route path="/social-callback" element={<SocialCallback />} />
+          <Route path="/social-link-callback" element={<SocialLinkCallback />} />
           
           <Route path="/payment-success" element={<PaymentResultPage />} />
           <Route path="/payment-cancel" element={<PaymentResultPage />} />
-          <Route path="/vnpay-return" element={<PaymentResultPage />} />
 
             {/* CÁC ROUTE CÓ CHUNG MAIN LAYOUT KÈM HEADER/FOOTER */}
           <Route path="/" element={<MainLayout />}>
@@ -75,6 +79,17 @@ function App() {
 
 
           {/* CÁC ROUTE PRIVATE THEO ROLE */}
+          <Route
+            path="/jobs/:jobId/lifecycle"
+            element={
+              <RoleRoute allowedRoles={['CUSTOMER', 'HANDYMAN']}>
+                <LifecycleWorkspaceLayout />
+              </RoleRoute>
+            }
+          >
+            <Route index element={<JobLifecyclePage />} />
+          </Route>
+
           <Route element={<RoleRoute allowedRoles={['CUSTOMER']}><CustomerLayout /> </RoleRoute>}>
             <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
             <Route path="/customer/profile" element={<CustomerProfilePage />} />
@@ -82,6 +97,7 @@ function App() {
             <Route path="/customer/ai-diagnosis" element={<CustomerCreateJobPage />} />
             <Route path="/customer/my-jobs" element={<CustomerMyJobsPage />} />
             <Route path="/customer/my-jobs/:id" element={<CustomerJobDetailsPage />} />
+            <Route path="/customer/my-jobs/:id/edit" element={<CustomerCreateJobPage />} />
           </Route>
           
           {/* HANDYMAN ROUTES */}
@@ -91,6 +107,8 @@ function App() {
             <Route path="/handyman/profile" element={<HandymanProfilePage />} />
             <Route path="/handyman/find-jobs" element={<HandymanFindJobPage />} />
             <Route path="/handyman/jobs/:id" element={<HandymanJobDetailsPage />} />
+            <Route path="/handyman/my-jobs" element={<HandymanMyJobsPage />} />
+            <Route path="/handyman/my-bids" element={<Navigate to="/handyman/my-jobs" replace />} />
           </Route>
 
           {/* --- LUỒNG ADMIN --- */}

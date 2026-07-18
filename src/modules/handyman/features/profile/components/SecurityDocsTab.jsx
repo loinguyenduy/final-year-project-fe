@@ -1,13 +1,25 @@
 import React from 'react';
-import { FaFileAlt, FaCheck, FaTimes, FaClock } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
+import { FaFileAlt, FaCheck, FaTimes, FaClock, FaGoogle, FaFacebook } from 'react-icons/fa';
 import moment from 'moment';
 
+const BACKEND_URL = 'http://localhost:5000/api/v1';
+
 const SecurityDocsTab = ({ account }) => {
-    const authProviders = account?.auth_providers || [];
+    const token = useSelector(state => state.identity.token);
+    const authProviders = account?.auth_providers || account?.Auth_Providers || account?.AuthProviders || [];
     const kycRequests = account?.kyc_requests || [];
 
     const isGoogleLinked = authProviders.some(p => p.provider?.toUpperCase() === 'GOOGLE');
     const isFacebookLinked = authProviders.some(p => p.provider?.toUpperCase() === 'FACEBOOK');
+
+    const linkGoogle = () => {
+        window.location.href = `${BACKEND_URL}/auth/google/link?token=${token}`;
+    };
+
+    const linkFacebook = () => {
+        window.location.href = `${BACKEND_URL}/auth/facebook/link?token=${token}`;
+    };
 
     return (
         <>
@@ -15,21 +27,23 @@ const SecurityDocsTab = ({ account }) => {
                 <h6>Account Security</h6>
                 <div className="security-row">
                     <span>Google Authentication</span>
-                    <span className={`provider-status ${isGoogleLinked ? 'linked' : 'unlinked'}`}>
-                        {isGoogleLinked ? 'Linked' : 'Not Linked'}
-                    </span>
+                    {isGoogleLinked ? (
+                        <span className="provider-status linked">Linked</span>
+                    ) : (
+                        <button className="btn btn-sm btn-outline-danger p-1 px-2" onClick={linkGoogle}>
+                            <FaGoogle className="me-1" size={12} /> Link Google
+                        </button>
+                    )}
                 </div>
                 <div className="security-row">
                     <span>Facebook Authentication</span>
-                    <span className={`provider-status ${isFacebookLinked ? 'linked' : 'unlinked'}`}>
-                        {isFacebookLinked ? 'Linked' : 'Not Linked'}
-                    </span>
-                </div>
-                <div className="security-row">
-                    <span>Password Management</span>
-                    <button className="btn btn-sm btn-link text-danger fw-bold text-decoration-none p-0">
-                        Change Password
-                    </button>
+                    {isFacebookLinked ? (
+                        <span className="provider-status linked">Linked</span>
+                    ) : (
+                        <button className="btn btn-sm btn-outline-primary p-1 px-2" onClick={linkFacebook}>
+                            <FaFacebook className="me-1" size={12} /> Link Facebook
+                        </button>
+                    )}
                 </div>
             </div>
 

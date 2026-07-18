@@ -3,7 +3,7 @@ import axiosInstance from '../../../core/api/axiosInstance';
 export const fetchProfileApi = () => axiosInstance.get('/identity/profile');
 
 export const updateHandymanAddressApi = (data) =>
-    axiosInstance.put('/identity/profile/handyman/address', data);
+    axiosInstance.put('/identity/profile/address', data);
 
 export const updateHandymanBioApi = (bio) =>
     axiosInstance.put('/identity/profile/handyman/bio', { bio });

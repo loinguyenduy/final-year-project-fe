@@ -48,10 +48,11 @@ const CustomerProfilePage = () => {
 
     return (
         <div className="py-2">
-            <ProfileDetails 
-                account={account} 
-                metrics={mockMetrics} 
-                onOpenKycModal={() => setShowKycModal(true)} 
+            <ProfileDetails
+                account={account}
+                metrics={mockMetrics}
+                onOpenKycModal={() => setShowKycModal(true)}
+                onRefresh={syncProfile}
             />
             
             <KycModal 

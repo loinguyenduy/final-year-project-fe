@@ -10,6 +10,7 @@ const CustomerLayout = () => {
     const location = useLocation();
     const dispatch = useDispatch();
     const { account } = useSelector(state => state.identity);
+    const isLifecycleWorkspace = /^\/jobs\/[^/]+\/lifecycle$/.test(location.pathname);
 
     const handleLogout = () => {
         dispatch(doLogoutSuccess());
@@ -54,12 +55,15 @@ const CustomerLayout = () => {
 
                     <div className="menu-nav">
                         {sideMenu.map((menu, index) => {
-                            const isActive = location.pathname === menu.path;
+                            const isActive = location.pathname === menu.path
+                                || (isLifecycleWorkspace && menu.path === '/customer/my-jobs');
                             return (
                                 <button 
                                     key={index}
                                     onClick={() => navigate(menu.path)}
                                     className={`menu-btn ${isActive ? 'active' : ''}`}
+                                    aria-label={menu.name}
+                                    title={menu.name}
                                 >
                                     <div className="menu-content">
                                         {menu.icon}
@@ -77,7 +81,7 @@ const CustomerLayout = () => {
                 </div>
 
                 <div className="logout-section">
-                    <button onClick={handleLogout} className="btn-logout">
+                    <button onClick={handleLogout} className="btn-logout" aria-label="Log out" title="Log out">
                         <FaSignOutAlt />
                         <span>Log out</span>
                     </button>
@@ -88,10 +92,12 @@ const CustomerLayout = () => {
             <div className="main-content">
                 <div className="topbar">
                     <h5 className="page-title">
-                        {sideMenu.find(m => m.path === location.pathname)?.name || 'Dashboard'}
+                        {isLifecycleWorkspace
+                            ? 'Job Lifecycle'
+                            : sideMenu.find(m => m.path === location.pathname)?.name || 'Dashboard'}
                     </h5>
                     <div className="user-actions">
-                        <button className="btn-bell">
+                        <button className="btn-bell" aria-label="Notifications">
                             <FaBell />
                             <span className="badge bg-danger">3</span>
                         </button>

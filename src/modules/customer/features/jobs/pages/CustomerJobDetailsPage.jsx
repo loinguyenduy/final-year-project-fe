@@ -1,33 +1,118 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getJobDetailsApi } from '../../../services/jobService';
+import { Navigate, useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import {
+    cancelPreAcceptanceJobApi,
+    getJobDetailsApi
+} from '../../../services/jobService';
+import ImageLightbox from '../../../../../core/components/ImageLightbox';
 import { toast } from 'react-toastify';
-import { FaArrowLeft, FaCheck } from 'react-icons/fa';
+import { FaArrowLeft, FaCheck, FaStar, FaCommentDots, FaBolt } from 'react-icons/fa';
 import '../styles/JobDetails.scss';
+import CompareBidsModal from '../components/CompareBidsModal';
+import PublicHandymanProfileModal from '../components/PublicHandymanProfileModal';
+import HireConfirmModal from '../components/HireConfirmModal';
+import PreAcceptanceCancellationModal from '../components/PreAcceptanceCancellationModal';
+import JobProgressStepper from '../../../../matchmaking/components/JobProgressStepper';
+import { resolveEffectiveJobProgressStatus } from '../../../../matchmaking/utils/jobProgress';
+import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
+import {
+    getLifecycleWorkspacePath,
+    isLifecycleWorkspaceStatus,
+} from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 
 const CustomerJobDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const accessToken = useSelector((state) => state.identity.token);
     const [job, setJob] = useState(null);
+    const [cancellation, setCancellation] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [lightboxSrc, setLightboxSrc] = useState(null);
+    const [selectedBidForConfirm, setSelectedBidForConfirm] = useState(null);
+
+    const [selectedBids, setSelectedBids] = useState([]);
+    const [showCompareModal, setShowCompareModal] = useState(false);
+    const [profileModalHandymanId, setProfileModalHandymanId] = useState(null);
+    const [showCancellationModal, setShowCancellationModal] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
+
+    const fetchJob = async () => {
+        try {
+            const res = await getJobDetailsApi(id);
+            if (res && res.EC === 0) {
+                setJob(res.DT);
+                setCancellation(res.DT?.cancellation || null);
+                setSelectedBids([]); // Reset selections on refresh
+            } else {
+                toast.error(res.EM || "Failed to load job details.");
+            }
+        } catch {
+            toast.error("Error fetching job details.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchJob = async () => {
-            try {
-                const res = await getJobDetailsApi(id);
-                if (res && res.EC === 0) {
-                    setJob(res.DT);
-                } else {
-                    toast.error(res.EM || "Failed to load job details.");
-                }
-            } catch (err) {
-                toast.error("Error fetching job details.");
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchJob();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
+
+    usePreLifecycleRealtime({
+        accessToken,
+        jobId: id,
+        onInvalidate: () => fetchJob(),
+    });
+
+    const handleAcceptBid = (bidId) => {
+        setShowCompareModal(false); // close modal if open
+        const bidObj = job?.Bids?.find(b => b.id === bidId);
+        const handymanName = bidObj?.User?.full_name || 'Handyman';
+        setSelectedBidForConfirm({
+            bidId,
+            handymanName
+        });
+    };
+
+    const handleCancelJob = async (payload) => {
+        if (isCancelling) return;
+        setIsCancelling(true);
+        try {
+            const response = await cancelPreAcceptanceJobApi(id, payload);
+            if (response?.EC !== 0) throw response;
+            toast.success(
+                response.code === 'JOB_ALREADY_CANCELLED'
+                    ? 'This Job was already cancelled.'
+                    : 'Job cancelled. Pending Bids have expired.',
+            );
+            setShowCancellationModal(false);
+            await fetchJob();
+        } catch (error) {
+            const envelope = error?.response?.data || error || {};
+            toast.error(envelope.EM || 'The Job could not be cancelled. Refresh and try again.');
+            if (['JOB_NOT_CANCELLABLE', 'JOB_NOT_FOUND'].includes(envelope.code)) {
+                setShowCancellationModal(false);
+                await fetchJob();
+            }
+        } finally {
+            setIsCancelling(false);
+        }
+    };
+
+    const handleToggleSelectBid = (bidId) => {
+        setSelectedBids(prev => {
+            if (prev.includes(bidId)) {
+                return prev.filter(id => id !== bidId);
+            } else {
+                if (prev.length >= 3) {
+                    toast.warning("You can compare up to 3 handymen.");
+                    return prev;
+                }
+                return [...prev, bidId];
+            }
+        });
+    };
 
     const formatCurrency = (val) => {
         if (!val) return '';
@@ -37,66 +122,66 @@ const CustomerJobDetailsPage = () => {
     const formatDateTime = (dateStr) => {
         if (!dateStr) return 'TBD';
         return new Date(dateStr).toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
         });
     };
 
     const getStatusClass = (status) => {
-        switch(status) {
-            case 'POSTED': return 'status-posted';
-            case 'BIDDING': return 'status-bidding';
-            case 'ACCEPTED': return 'status-accepted';
-            case 'EN_ROUTE': return 'status-enroute';
-            case 'ARRIVED': return 'status-arrived';
-            case 'IN_PROGRESS': return 'status-inprogress';
-            case 'WARRANTY': return 'status-warranty';
-            case 'CLOSED': return 'status-completed';
-            default: return 'status-default';
-        }
+        const map = {
+            POSTED: 'status-posted', BIDDING: 'status-bidding', PENDING_DEPOSIT: 'status-bidding', ACCEPTED: 'status-accepted',
+            EN_ROUTE: 'status-enroute', ARRIVED: 'status-arrived', IN_PROGRESS: 'status-inprogress',
+            QUOTE_PENDING: 'status-arrived', PAYMENT_PENDING: 'status-accepted',
+            WARRANTY: 'status-warranty', CLOSED: 'status-completed', CANCELLED: 'status-default',
+        };
+        return map[status] || 'status-default';
     };
 
     const getStatusText = (status) => {
-        switch(status) {
-            case 'POSTED': return 'Posted';
-            case 'BIDDING': return 'Bidding';
-            case 'ACCEPTED': return 'Accepted';
-            case 'EN_ROUTE': return 'En Route';
-            case 'ARRIVED': return 'Arrived';
-            case 'IN_PROGRESS': return 'In Progress';
-            case 'WARRANTY': return 'Warranty';
-            case 'CLOSED': return 'Completed';
-            default: return status;
-        }
+        const map = {
+            POSTED: 'Posted', BIDDING: 'Bidding', PENDING_DEPOSIT: 'Deposit pending', ACCEPTED: 'Accepted',
+            EN_ROUTE: 'En Route', ARRIVED: 'Arrived', IN_PROGRESS: 'In Progress',
+            QUOTE_PENDING: 'Quote Pending', PAYMENT_PENDING: 'Payment Pending',
+            WARRANTY: 'Warranty', CLOSED: 'Completed', CANCELLED: 'Cancelled',
+        };
+        return map[status] || 'Status updated';
     };
 
-    if (loading) return <div className="text-center p-5"><div className="spinner-border text-primary"></div></div>;
+    const formatEta = (dateStr) => {
+        if (!dateStr) return null;
+        const d = new Date(dateStr);
+        const day = d.getDate().toString().padStart(2, '0');
+        const month = (d.getMonth() + 1).toString().padStart(2, '0');
+        const hour = d.getHours().toString().padStart(2, '0');
+        const min = d.getMinutes().toString().padStart(2, '0');
+        return `${day}/${month} ${hour}:${min}`;
+    };
+
+    const formatDuration = (hours) => {
+        if (!hours) return null;
+        const value = Number(hours);
+        if (Number.isNaN(value)) return null;
+        return `${value} ${value === 1 ? 'hour' : 'hours'}`;
+    };
+
+    if (loading) return <div className="text-center p-5"><div className="spinner-border text-primary" /></div>;
     if (!job) return <div className="text-center p-5 text-danger">Job not found</div>;
 
-    const steps = [
-        { status: 'POSTED', label: 'Posted' },
-        { status: 'BIDDING', label: 'Bidding' },
-        { status: 'ACCEPTED', label: 'Accepted' },
-        { status: 'EN_ROUTE', label: 'En Route' },
-        { status: 'ARRIVED', label: 'Arrived' },
-        { status: 'IN_PROGRESS', label: 'In Progress' },
-        { status: 'CLOSED', label: 'Completed' },
-        { status: 'WARRANTY', label: 'Warranty' }
-    ];
 
-    const currentStepIdx = steps.findIndex(s => s.status === job.current_status);
     const jobCode = 'JOB-' + job.id.substring(0, 4).toUpperCase();
-    const bidCount = job.Bids ? job.Bids.length : 0;
-    const budgetDisplay = job.estimated_budget_min || job.estimated_budget_max 
-        ? `${job.estimated_budget_min ? formatCurrency(job.estimated_budget_min) : '0 đ'} - ${job.estimated_budget_max ? formatCurrency(job.estimated_budget_max) : 'Any'}` 
+    const activeBids = (job.Bids || []).filter(b => b.status !== 'WITHDRAWN');
+    const pendingBids = activeBids.filter(b => b.status === 'PENDING');
+    const budgetDisplay = job.estimated_budget_min || job.estimated_budget_max
+        ? `${job.estimated_budget_min ? formatCurrency(job.estimated_budget_min) : '0 VND'} - ${job.estimated_budget_max ? formatCurrency(job.estimated_budget_max) : 'Any'}`
         : 'TBD';
     const agreedPriceDisplay = job.final_agreed_price ? formatCurrency(job.final_agreed_price) : 'Not agreed yet';
 
+    if (isLifecycleWorkspaceStatus(job.current_status)) {
+        return <Navigate to={getLifecycleWorkspacePath(id)} replace />;
+    }
+
     return (
-        <div className="job-details-page-container">
+        <div className="job-details-page-container pb-5">
             <span className="back-link" onClick={() => navigate(-1)}>
                 <FaArrowLeft /> Back
             </span>
@@ -108,32 +193,47 @@ const CustomerJobDetailsPage = () => {
                 </span>
             </div>
 
-            {/* PROGRESS CARD */}
+            {(job.allowed_actions || []).some((action) => ['EDIT_JOB', 'CANCEL_JOB'].includes(action)) && (
+                <div className="job-pre-acceptance-actions">
+                    {(job.allowed_actions || []).includes('EDIT_JOB') && (
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={() => navigate(`/customer/my-jobs/${id}/edit`)}
+                        >
+                            Edit Job
+                        </button>
+                    )}
+                    {(job.allowed_actions || []).includes('CANCEL_JOB') && (
+                        <button
+                            type="button"
+                            className="job-pre-acceptance-actions__cancel"
+                            onClick={() => setShowCancellationModal(true)}
+                        >
+                            Can’t continue? Cancel this Job
+                        </button>
+                    )}
+                </div>
+            )}
+
+            {/* PROGRESS */}
             <div className="progress-card">
                 <h4 className="card-title">Job Progress</h4>
-                <div className="progress-steps-container">
-                    {steps.map((step, idx) => {
-                        let stepClass = '';
-                        if (idx < currentStepIdx) {
-                            stepClass = 'completed';
-                        } else if (idx === currentStepIdx) {
-                            stepClass = 'active';
-                        }
-
-                        return (
-                            <div key={step.status} className={`step-item ${stepClass}`}>
-                                <div className="step-circle">
-                                    {idx < currentStepIdx ? <FaCheck /> : idx + 1}
-                                </div>
-                                <span className="step-label">{step.label}</span>
-                            </div>
-                        );
+                <JobProgressStepper
+                    currentStatus={resolveEffectiveJobProgressStatus({
+                        currentStatus: job.current_status,
+                        cancellation,
                     })}
-                </div>
+                    statusBadge={job.current_status === 'PENDING_DEPOSIT'
+                        ? 'Deposit pending'
+                        : job.current_status === 'CANCELLED' && cancellation
+                            ? 'Cancelled'
+                            : null}
+                />
             </div>
 
-            {/* DETAILS CARD */}
-            <div className="details-card">
+            {/* JOB DETAILS (Moved up) */}
+            <div className="details-card mb-4">
                 <h4 className="card-title">Job Details</h4>
                 <div className="details-grid">
                     <div className="info-group">
@@ -153,8 +253,8 @@ const CustomerJobDetailsPage = () => {
                         <span className="info-value">{formatDateTime(job.createdAt)}</span>
                     </div>
                     <div className="info-group">
-                        <span className="info-label">Applied Handymen</span>
-                        <span className="info-value highlight">{bidCount} Handymen</span>
+                        <span className="info-label">Total Bids</span>
+                        <span className="info-value highlight">{activeBids.length} Handymen</span>
                     </div>
                     <div className="info-group">
                         <span className="info-label">Budget Range</span>
@@ -163,12 +263,6 @@ const CustomerJobDetailsPage = () => {
                     <div className="info-group">
                         <span className="info-label">Agreed Price</span>
                         <span className="info-value">{agreedPriceDisplay}</span>
-                    </div>
-                    <div className="info-group">
-                        <span className="info-label">Deposit Status (10%)</span>
-                        <span className="info-value">
-                            {job.final_agreed_price ? 'Deposited' : 'Not Deposited'}
-                        </span>
                     </div>
                     <div className="info-group">
                         <span className="info-label">Schedule Date</span>
@@ -184,7 +278,9 @@ const CustomerJobDetailsPage = () => {
                         <h5 className="section-title">Job Photos</h5>
                         <div className="photo-gallery">
                             {job.images.map((img, i) => (
-                                <img key={i} src={img} alt={`Job Image ${i}`} className="gallery-img" onClick={() => window.open(img, '_blank')} />
+                                <img key={i} src={img} alt={`Job Image ${i}`} className="gallery-img"
+                                    style={{ cursor: 'zoom-in' }}
+                                    onClick={() => setLightboxSrc(img)} />
                             ))}
                         </div>
                     </>
@@ -193,7 +289,7 @@ const CustomerJobDetailsPage = () => {
                 {job.SelectedHandyman && (
                     <>
                         <h5 className="section-title">Assigned Handyman</h5>
-                        <div className="handyman-card">
+                        <div className="handyman-card" onClick={() => setProfileModalHandymanId(job.SelectedHandyman.id)} style={{cursor: 'pointer'}}>
                             {job.SelectedHandyman.avatar_url ? (
                                 <img src={job.SelectedHandyman.avatar_url} alt="Handyman" className="avatar" />
                             ) : (
@@ -210,6 +306,212 @@ const CustomerJobDetailsPage = () => {
                     </>
                 )}
             </div>
+
+            {/* BIDS LIST - shown when job is in BIDDING stage */}
+            {job.current_status === 'BIDDING' && (
+                <div className="bids-card">
+                    <div className="bids-card__header mb-3">
+                        <h4 className="card-title mb-0">
+                            Handyman Quotes
+                            <span className="bids-count-badge ms-2">{pendingBids.length}</span>
+                        </h4>
+                        <div className="bids-header-subtext mt-3 p-3">
+                            <div className="bids-header-subtext__title">
+                                <FaBolt color="#eab308" /> {pendingBids.length} quotes received - private bidding
+                            </div>
+                            <p className="small mt-1 mb-0">
+                                Select up to 3 handymen to compare price, reliability, experience, and timing side by side.
+                            </p>
+                        </div>
+                    </div>
+
+                    {pendingBids.length === 0 ? (
+                        <div className="text-center py-4 text-muted">
+                            <p className="mb-0">No bids received yet. Handymen will appear here once they apply.</p>
+                        </div>
+                    ) : (
+                        <div className="bids-list">
+                            {pendingBids.map((bid) => {
+                                const handyman = bid.User;
+                                const profile = handyman?.Handyman_Profile;
+                                const rating = parseFloat(profile?.bayesian_score) || 0;
+                                const isAccepting = selectedBidForConfirm?.bidId === bid.id;
+                                const isSelected = selectedBids.includes(bid.id);
+
+                                const metaItems = [
+                                    rating > 0 && (
+                                        <span key="rating" className="bid-meta__rating">
+                                            <FaStar size={11} /> {rating.toFixed(1)}
+                                        </span>
+                                    ),
+                                    profile?.total_jobs_completed > 0 && (
+                                        <span key="jobs">{profile.total_jobs_completed} jobs</span>
+                                    ),
+                                    bid.eta && (
+                                        <span key="eta">ETA: {formatEta(bid.eta)}</span>
+                                    ),
+                                    bid.estimated_duration_hours && (
+                                        <span key="duration">{formatDuration(bid.estimated_duration_hours)}</span>
+                                    ),
+                                ].filter(Boolean);
+
+                                return (
+                                    <div key={bid.id} className={`bid-card-wrapper ${bid.isBestChoice ? 'is-best-choice' : ''}`}>
+                                        {bid.isBestChoice && (
+                                            <div className="best-choice-badge">
+                                                <FaStar /> Recommended by Trusted Handyman
+                                            </div>
+                                        )}
+                                        <div className={`bid-card ${isSelected ? 'selected' : ''}`}>
+                                            <div className="bid-card__main">
+                                                <div className="bid-card__checkbox">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={isSelected}
+                                                        onChange={() => handleToggleSelectBid(bid.id)}
+                                                    />
+                                                </div>
+
+                                                {/* Avatar */}
+                                                <div 
+                                                    className="bid-card__avatar-wrapper"
+                                                    onClick={() => setProfileModalHandymanId(handyman.id)}
+                                                >
+                                                    {handyman?.avatar_url ? (
+                                                        <img src={handyman.avatar_url} alt="Handyman" className="bid-card__avatar" />
+                                                    ) : (
+                                                        <div className="bid-card__avatar-placeholder">
+                                                            {handyman?.full_name?.charAt(0).toUpperCase() || '?'}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Name + stats */}
+                                                <div className="bid-card__info" onClick={() => setProfileModalHandymanId(handyman.id)}>
+                                                    <div className="bid-card__name-row">
+                                                        <span className="bid-card__name">{handyman?.full_name || 'Unknown'}</span>
+                                                        {profile?.handyman_level && (
+                                                            <span className={`kyc-badge level-${profile.handyman_level.toLowerCase()}`}>
+                                                                {handyman?.kyc_status || 'UNVERIFIED'} / {profile.handyman_level}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="bid-card__meta">
+                                                        {metaItems.map((item, idx) => (
+                                                            <React.Fragment key={idx}>
+                                                                {idx > 0 && <span className="bid-meta__sep">•</span>}
+                                                                {item}
+                                                            </React.Fragment>
+                                                        ))}
+                                                        {bid.match_score && (
+                                                            <>
+                                                                <span className="bid-meta__sep">•</span>
+                                                                <span className="match-score-text">{bid.match_score}% match</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    {/* Match Progress Bar */}
+                                                    {bid.match_score && (
+                                                        <div className="match-progress-container mt-2">
+                                                            <div className="match-progress-bar">
+                                                                <div 
+                                                                    className="match-progress-fill" 
+                                                                    style={{ width: `${Math.min(bid.match_score, 100)}%` }} 
+                                                                />
+                                                            </div>
+                                                            <span className="match-progress-label">{bid.match_score}% match</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Price + hire button */}
+                                                <div className="bid-card__right">
+                                                    <div className="bid-card__price">{formatCurrency(bid.proposed_price)}</div>
+                                                    <button
+                                                        className="bid-card__accept-btn"
+                                                        onClick={() => handleAcceptBid(bid.id)}
+                                                        disabled={isAccepting}
+                                                    >
+                                                        {isAccepting
+                                                            ? <><span className="spinner-border spinner-border-sm me-1" />Confirming...</>
+                                                            : 'Hire'
+                                                        }
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Message quote */}
+                                            {bid.message && (
+                                                <div className="bid-card__message">
+                                                    <FaCommentDots className="bid-card__message-icon" />
+                                                    <span>{bid.message}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* FLOATING COMPARE BAR */}
+            {selectedBids.length > 0 && (
+                <div className="floating-compare-bar">
+                    <div className="compare-bar-content">
+                        <span><strong>{selectedBids.length}</strong> selected (max 3)</span>
+                        <div className="compare-actions">
+                            <button className="btn btn-outline-secondary me-2" onClick={() => setSelectedBids([])}>Clear</button>
+                            <button 
+                                className="btn btn-primary"
+                                onClick={() => setShowCompareModal(true)}
+                                disabled={selectedBids.length < 1}
+                            >
+                                Compare
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+            
+            {showCompareModal && (
+                <CompareBidsModal 
+                    jobId={id} 
+                    selectedBidIds={selectedBids} 
+                    onClose={() => setShowCompareModal(false)} 
+                    onAcceptBid={handleAcceptBid}
+                />
+            )}
+
+            {profileModalHandymanId && (
+                <PublicHandymanProfileModal 
+                    jobId={id} 
+                    handymanId={profileModalHandymanId} 
+                    onClose={() => setProfileModalHandymanId(null)} 
+                />
+            )}
+
+            {selectedBidForConfirm && (
+                <HireConfirmModal
+                    jobId={id}
+                    bidId={selectedBidForConfirm.bidId}
+                    handymanName={selectedBidForConfirm.handymanName}
+                    onClose={() => setSelectedBidForConfirm(null)}
+                    onSuccess={fetchJob}
+                />
+            )}
+            <PreAcceptanceCancellationModal
+                open={showCancellationModal}
+                onClose={() => {
+                    if (!isCancelling) setShowCancellationModal(false);
+                }}
+                onConfirm={handleCancelJob}
+                submitting={isCancelling}
+            />
         </div>
     );
 };

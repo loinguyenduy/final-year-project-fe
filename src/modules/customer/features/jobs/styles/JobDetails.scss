@@ -1,6 +1,6 @@
 .job-details-page-container {
   padding: 24px 0;
-  max-width: 900px;
+  max-width: 1180px;
   margin: 0 auto;
 
   .back-link {
@@ -374,6 +374,213 @@
   }
 }
 
+// ── Bids section ─────────────────────────────────────────────────────
+.bids-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+
+  .bids-card__header {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 16px;
+  }
+
+  .bids-header-subtext {
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+
+    &__title {
+      font-weight: 700;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    p {
+      color: #64748b;
+    }
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+
+  .bids-count-badge {
+    display: inline-block;
+    background: #f97316;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 9999px;
+    vertical-align: middle;
+  }
+}
+
+.bids-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bid-card {
+  border: 1px solid #e8ecf0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  background: #fff;
+  transition: box-shadow 0.2s, border-color 0.2s;
+
+  &:hover {
+    border-color: #bfdbfe;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.07);
+  }
+
+  // ── Main row: avatar | info | price+btn ──
+  &__main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  &__avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e2e8f0;
+    flex-shrink: 0;
+  }
+
+  &__avatar-placeholder {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #f97316;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 12.5px;
+    color: #64748b;
+  }
+
+  &__right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  &__price {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #1e293b;
+    white-space: nowrap;
+  }
+
+  &__accept-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover:not(:disabled) { background: #1d4ed8; }
+    &:disabled { opacity: 0.65; cursor: not-allowed; }
+  }
+
+  // ── Message quote ──
+  &__message {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #e8ecf0;
+    font-size: 13.5px;
+    color: #475569;
+    line-height: 1.55;
+  }
+
+  &__message-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #94a3b8;
+    font-size: 13px;
+  }
+
+  // ── Mobile ──
+  @media (max-width: 576px) {
+    &__main { flex-wrap: wrap; }
+    &__right {
+      flex-direction: row;
+      width: 100%;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+}
+
+// ── Bid meta inline items ──
+.bid-meta__sep {
+  color: #cbd5e1;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.bid-meta__rating {
+  color: #f59e0b;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.bid-meta__level {
+  font-size: 12px;
+  font-weight: 600;
+
+  &.level-c0 { color: #64748b; }
+  &.level-c1 { color: #059669; }
+  &.level-c2 { color: #2563eb; }
+  &.level-c3 { color: #d97706; }
+}
+
 @keyframes pulse-active {
   0% {
     box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4);
@@ -383,5 +590,259 @@
   }
   100% {
     box-shadow: 0 0 0 0 rgba(234, 88, 12, 0);
+  }
+}
+
+// ── Bids Enhancements (Best Choice, Checkbox, Match Score) ──
+
+.bid-card-wrapper {
+  position: relative;
+  margin-bottom: 16px;
+
+  &.is-best-choice {
+    .bid-card {
+      border: 2px solid #eab308; // yellow-500
+      box-shadow: 0 4px 15px rgba(234, 179, 8, 0.15);
+      border-top-left-radius: 0; // for the badge
+    }
+  }
+}
+
+.best-choice-badge {
+  background-color: #eab308;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: -1px;
+  position: relative;
+  z-index: 2;
+
+  svg {
+    font-size: 12px;
+  }
+}
+
+.bid-card {
+  &.selected {
+    border-color: #3b82f6;
+    background-color: #f0fdf4; // green-50
+  }
+
+  &__main {
+    align-items: flex-start; // change from center to allow progress bar below name
+  }
+
+  &__checkbox {
+    display: flex;
+    align-items: center;
+    padding-top: 12px;
+    margin-right: 4px;
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #2563eb;
+    }
+  }
+
+  &__avatar-wrapper {
+    cursor: pointer;
+    transition: transform 0.2s;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
+  &__info {
+    cursor: pointer;
+  }
+
+  &__name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+}
+
+.kyc-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+
+  &.level-c1 { color: #059669; background: #ecfdf5; border-color: #a7f3d0; }
+  &.level-c2 { color: #2563eb; background: #eff6ff; border-color: #bfdbfe; }
+  &.level-c3 { color: #d97706; background: #fffbeb; border-color: #fde68a; }
+}
+
+.match-score-text {
+  color: #16a34a; // green-600
+  font-weight: 700;
+}
+
+.match-progress-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .match-progress-bar {
+    height: 6px;
+    background-color: #e2e8f0;
+    border-radius: 3px;
+    flex: 1;
+    max-width: 200px;
+    overflow: hidden;
+  }
+
+  .match-progress-fill {
+    height: 100%;
+    background-color: #3b82f6; // blue-500
+    border-radius: 3px;
+  }
+
+  .match-progress-label {
+    font-size: 12px;
+    color: #64748b;
+    white-space: nowrap;
+  }
+}
+
+.is-best-choice .match-progress-fill {
+  background-color: #22c55e; // green-500
+}
+
+// ── Floating Compare Bar ──
+
+.floating-compare-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+  padding: 16px 24px;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  animation: slideUp 0.3s ease-out;
+
+  .compare-bar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 900px;
+    
+    span {
+      font-size: 15px;
+      color: #334155;
+      
+      strong {
+        color: #2563eb;
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.job-pre-acceptance-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  margin: -8px 0 20px;
+
+  &__cancel {
+    border: 0;
+    background: transparent;
+    color: #b91c1c;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.early-cancellation-modal {
+  position: fixed;
+  z-index: 1100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.55);
+
+  &__dialog {
+    display: grid;
+    gap: 16px;
+    width: min(520px, 100%);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding: 24px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+
+    h3,
+    p {
+      margin: 0;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font: inherit;
+    }
+
+    small {
+      color: #64748b;
+      text-align: right;
+    }
+  }
+
+  &__error {
+    color: #b91c1c;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 576px) {
+  .job-pre-acceptance-actions,
+  .early-cancellation-modal__actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
