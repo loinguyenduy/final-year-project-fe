@@ -128,6 +128,7 @@ const LIFECYCLE_ERROR_MESSAGES = Object.freeze({
   WARRANTY_CLAIM_WINDOW_EXPIRED: 'The Warranty Claim window has ended.',
   WARRANTY_CLAIM_ALREADY_ACTIVE: 'An active Warranty Claim already exists.',
   WARRANTY_REWORK_NOT_REQUIRED: 'Warranty rework is not currently required.',
+  WARRANTY_STATE_INCONSISTENT: 'The Warranty approval is incomplete. Refresh after the Admin updates both the Claim and Warranty states.',
   WARRANTY_COMPLETION_REQUEST_NOT_FOUND: 'This Warranty completion request is no longer available.',
   WARRANTY_COMPLETION_REQUEST_NOT_PENDING: 'This Warranty completion request has already been handled.',
   WARRANTY_ALREADY_RELEASED: 'The Warranty Reserve has already been released.',

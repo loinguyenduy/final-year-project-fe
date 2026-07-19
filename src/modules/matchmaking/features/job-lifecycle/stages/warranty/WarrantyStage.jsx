@@ -53,6 +53,8 @@ const WarrantyStage = ({
   const latestRework = warranty?.latest_rework_request;
   const approvedClaimAwaitingWarrantyTransition = status === 'CLAIM_PENDING'
     && warranty?.latest_claim?.status === 'APPROVED_REWORK_REQUIRED';
+  const warrantyAwaitingClaimTransition = status === 'REWORK_REQUIRED'
+    && warranty?.latest_claim?.status !== 'APPROVED_REWORK_REQUIRED';
   const inferredReworkOpen = Boolean(
     warranty?.readiness?.warranty_evidence_count
     || latestRework,
@@ -137,11 +139,26 @@ const WarrantyStage = ({
         </div>
       )}
 
+      {warrantyAwaitingClaimTransition && (
+        <div className="lifecycle-notice lifecycle-notice--danger">
+          <div>
+            <strong>The warranty transition is incomplete</strong>
+            <p>
+              The Warranty is ready for rework, but the Claim has not been marked as approved.
+              The Admin transition must set the Claim to APPROVED_REWORK_REQUIRED before work can begin.
+            </p>
+          </div>
+          <button type="button" className="lifecycle-btn lifecycle-btn--ghost" onClick={onRefresh}>
+            <FaRedo aria-hidden="true" /> Refresh
+          </button>
+        </div>
+      )}
+
       {status === 'CLAIM_PENDING' && !approvedClaimAwaitingWarrantyTransition && (
         <RefreshNotice onRefresh={onRefresh}>Waiting for the claim review</RefreshNotice>
       )}
 
-      {status === 'REWORK_REQUIRED' && (isCustomer ? (
+      {status === 'REWORK_REQUIRED' && !warrantyAwaitingClaimTransition && (isCustomer ? (
         <div className="lifecycle-notice lifecycle-notice--warning">
           <FaHourglassHalf aria-hidden="true" />
           <div><strong>Waiting for warranty rework</strong><p>The Handyman will send a completion request when the corrective work is finished.</p></div>
@@ -154,7 +171,10 @@ const WarrantyStage = ({
                 type="button"
                 className="lifecycle-btn lifecycle-btn--primary"
                 disabled={!allowedActions.includes('UPLOAD_WARRANTY_EVIDENCE')}
-                onClick={() => setReworkOpen(true)}
+                onClick={async () => {
+                  await onRefresh();
+                  setReworkOpen(true);
+                }}
               >
                 <FaPlay aria-hidden="true" /> Start warranty rework
               </button>

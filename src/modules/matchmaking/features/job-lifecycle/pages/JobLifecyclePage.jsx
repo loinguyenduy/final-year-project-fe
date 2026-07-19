@@ -64,8 +64,8 @@ const JobLifecyclePage = () => {
   const quoteSummary = lifecycle.details?.inspection_quote;
   const quoteDataEnabled = ['QUOTE_PENDING', 'PAYMENT_PENDING'].includes(canonicalStatus)
     || (role === 'HANDYMAN' && canonicalStatus === 'ARRIVED' && Boolean(quoteSummary));
-  const evidenceDataEnabled = ['QUOTE_PENDING', 'PAYMENT_PENDING'].includes(canonicalStatus)
-    || (role === 'HANDYMAN' && canonicalStatus === 'ARRIVED');
+  const evidenceDataEnabled = role === 'HANDYMAN'
+    && ['ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'].includes(canonicalStatus);
   const quoteState = useJobQuote({
     enabled: quoteDataEnabled,
     jobId,

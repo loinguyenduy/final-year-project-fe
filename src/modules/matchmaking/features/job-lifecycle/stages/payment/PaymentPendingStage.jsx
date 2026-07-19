@@ -51,20 +51,22 @@ const PaymentPendingStage = ({
       )}
 
       <QuoteReadOnlyView quote={quoteState.quote} showVariance={role === 'HANDYMAN'} />
-      <BeforeEvidenceManager
-        canDelete={false}
-        canUpload={false}
-        deletingId={null}
-        evidence={evidenceState.evidence}
-        loadError={evidenceState.loadError}
-        loading={evidenceState.loading}
-        onDelete={() => {}}
-        onOpenImage={onOpenImage}
-        onRemoveFailedUpload={() => {}}
-        onRetryUpload={() => {}}
-        onUpload={() => {}}
-        uploads={[]}
-      />
+      {role === 'HANDYMAN' && (
+        <BeforeEvidenceManager
+          canDelete={false}
+          canUpload={false}
+          deletingId={null}
+          evidence={evidenceState.evidence}
+          loadError={evidenceState.loadError}
+          loading={evidenceState.loading}
+          onDelete={() => {}}
+          onOpenImage={onOpenImage}
+          onRemoveFailedUpload={() => {}}
+          onRetryUpload={() => {}}
+          onUpload={() => {}}
+          uploads={[]}
+        />
+      )}
 
       {role === 'CUSTOMER' && allowedActions.includes('PAY_REMAINING_AMOUNT') && (
         <div className="lifecycle-stage__primary-bar">
