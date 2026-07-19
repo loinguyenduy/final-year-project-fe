@@ -26,7 +26,7 @@ const CheckEmailPage = () => {
             } else {
                 toast.error(res.EM);
             }
-        } catch (error) {
+        } catch {
             toast.error("An error occurred while resending the email.");
         }
         setIsLoading(false);

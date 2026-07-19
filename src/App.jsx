@@ -1,12 +1,12 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { Navigate } from "react-router-dom";
 
 // Route Guards
 import GuestRoute from "./core/routes/GuestRoute";
-import PrivateRoute from "./core/routes/PrivateRoute";
 import RoleRoute from "./core/routes/RoleRoute";
+import AdminRoute from './core/routes/AdminRoute';
 
 // Pages
 import LoginPage from "./modules/identity/features/auth/pages/LoginPage";
@@ -120,9 +120,9 @@ function App() {
 
         {/* Luồng quản trị nội bộ */}
         <Route path="/admin" element={
-            <RoleRoute allowedRoles={['ADMIN']}>
+            <AdminRoute>
                 <AdminLayout />
-            </RoleRoute>
+            </AdminRoute>
         }>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboardPage />} />

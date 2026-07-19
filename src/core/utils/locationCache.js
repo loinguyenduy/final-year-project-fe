@@ -16,5 +16,7 @@ export function getCachedLocation() {
 export function setCachedLocation(lat, long) {
   try {
     sessionStorage.setItem(CACHE_KEY, JSON.stringify({ lat, long, timestamp: Date.now() }));
-  } catch {}
+  } catch {
+    // Location caching is optional when session storage is unavailable.
+  }
 }

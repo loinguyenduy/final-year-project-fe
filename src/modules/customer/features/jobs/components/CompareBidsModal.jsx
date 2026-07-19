@@ -19,7 +19,7 @@ const CompareBidsModal = ({ jobId, selectedBidIds, onClose, onAcceptBid }) => {
                     toast.error(res.EM || "Failed to load comparison data.");
                     onClose();
                 }
-            } catch (error) {
+            } catch {
                 toast.error("Error fetching comparison data.");
                 onClose();
             } finally {
@@ -52,20 +52,6 @@ const CompareBidsModal = ({ jobId, selectedBidIds, onClose, onAcceptBid }) => {
         const value = Number(hours);
         if (Number.isNaN(value)) return 'TBD';
         return `${value} ${value === 1 ? 'hour' : 'hours'}`;
-    };
-
-    const getScoreLine = (bid) => {
-        const details = bid.match_score_details || {};
-        const weights = details.weights || {};
-        return [
-            `Price ${details.price_score ?? 0}/${weights.price ?? 30}`,
-            `Reliability ${details.reputation_score ?? 0}/${weights.reputation ?? 25}`,
-            `Category ${details.category_experience_score ?? details.expertise_score ?? 0}/${weights.categoryExperience ?? 20}`,
-            `Total exp. ${details.total_experience_score ?? 0}/${weights.totalExperience ?? 10}`,
-            `Verification ${details.kyc_score ?? 0}/${weights.kyc ?? 5}`,
-            `ETA ${details.eta_score ?? 0}/${weights.eta ?? 5}`,
-            `Completion ${details.completion_time_score ?? 0}/${weights.completionTime ?? 5}`
-        ];
     };
 
     if (!jobId || !selectedBidIds) return null;

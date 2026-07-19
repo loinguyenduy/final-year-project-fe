@@ -7,7 +7,7 @@ import ImageLightbox from '../../../../../core/components/ImageLightbox';
 import { toast } from 'react-toastify';
 import {
     FaArrowLeft, FaMapMarkerAlt, FaCalendarAlt, FaMoneyBillWave, FaClock,
-    FaPhone, FaStar, FaLocationArrow, FaTag, FaUsers, FaEdit, FaTimesCircle,
+    FaPhone, FaStar, FaLocationArrow, FaUsers, FaEdit, FaTimesCircle,
     FaCheckCircle, FaPaperPlane
 } from 'react-icons/fa';
 import '../styles/FindJob.scss';

@@ -63,7 +63,10 @@ const HandymanDashboardPage = () => {
           <>
             <div className="alert alert-danger d-flex align-items-center justify-content-center gap-2 border-0 bg-danger bg-opacity-10 text-danger mb-3">
               <FaExclamationTriangle size={20} />
-              <strong>Rejected!</strong> Please check your documents and try again.
+              <div>
+                <strong>Rejected!</strong> {account?.kyc_rejection?.message || 'Please check your documents and try again.'}
+                {account?.kyc_rejection?.reason_text && <div className="small mt-1"><strong>Reviewer note:</strong> {account.kyc_rejection.reason_text}</div>}
+              </div>
             </div>
             <button className="btn btn-danger px-5 py-2 fw-bold" onClick={() => setShowKycModal(true)}>
               Re-upload Documents

@@ -227,7 +227,12 @@ const ProfileDetails = ({ account, metrics, onOpenKycModal, onRefresh }) => {
                                     <FaExclamationTriangle className="text-danger flex-shrink-0 mt-1" />
                                     <div>
                                         <strong className="text-danger">KYC Verification Rejected</strong>
-                                        <p className="small text-danger text-opacity-75 m-0 mt-1">Unfortunately, your KYC documents were rejected. Please double-check your documents and try again.</p>
+                                        <p className="small text-danger text-opacity-75 m-0 mt-1">
+                                            {account?.kyc_rejection?.message || 'Unfortunately, your KYC documents were rejected. Please double-check your documents and try again.'}
+                                        </p>
+                                        {account?.kyc_rejection?.reason_text && (
+                                            <p className="small text-danger m-0 mt-1"><strong>Reviewer note:</strong> {account.kyc_rejection.reason_text}</p>
+                                        )}
                                     </div>
                                 </div>
                                 <button className="btn btn-danger fw-bold mt-2 w-auto align-self-start" onClick={onOpenKycModal}>

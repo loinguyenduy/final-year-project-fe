@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getMyBidsApi } from '../../../services/jobService';
 import { toast } from 'react-toastify';
-import { FaArrowRight, FaClipboardList, FaCalendarAlt, FaMapMarkerAlt, FaMoneyBillWave } from 'react-icons/fa';
+import { FaArrowRight, FaClipboardList, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import {
     getJobDetailsPath,
     isLifecycleWorkspaceStatus,

@@ -1,110 +1,156 @@
-import React from 'react';
-import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { 
-    FaHome, FaUserCheck, FaGavel, FaWallet, FaFolderOpen, 
-    FaSignOutAlt, FaBell, FaWrench, FaShieldAlt
+import React, { useEffect, useMemo, useState } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  FaBars,
+  FaBell,
+  FaFolderOpen,
+  FaGavel,
+  FaHome,
+  FaShieldAlt,
+  FaSignOutAlt,
+  FaTimes,
+  FaUserCheck,
+  FaWallet,
+  FaWrench
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-// Import action logout của bạn (điều chỉnh đường dẫn nếu cần)
-import { doLogoutSuccess } from '../../identity/redux/authAction'; 
+import { doLogoutSuccess } from '../../identity/redux/authAction';
+import { logoutAdmin } from '../services/adminAuthService';
+import useAdminQueueCounts from '../hooks/useAdminQueueCounts';
 import './AdminLayout.scss';
 
+const MENU_ITEMS = [
+  { path: '/admin/dashboard', icon: FaHome, title: 'Dashboard' },
+  { path: '/admin/kyc', icon: FaUserCheck, title: 'KYC Management', queue: 'kyc_pending' },
+  { icon: FaGavel, title: 'Disputes', disabled: true },
+  { icon: FaWallet, title: 'Finance', disabled: true },
+  { icon: FaFolderOpen, title: 'Evidence Vault', disabled: true }
+];
+
 const AdminLayout = () => {
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const location = useLocation();
-    
-    // Lấy thông tin Admin từ Redux
-    const { account } = useSelector(state => state.identity);
-    const adminName = account?.full_name || 'System Admin';
-    const initials = adminName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const { account } = useSelector((state) => state.identity);
+  const { counts, isLoading: countsLoading, refresh: refreshQueueCounts } = useAdminQueueCounts();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const adminName = account?.full_name || 'System Admin';
+  const initials = useMemo(() => adminName.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase(), [adminName]);
 
-    // Mảng cấu hình Sidebar Menu (Rất dễ mở rộng)
-    const menuItems = [
-        { path: '/admin/dashboard', icon: <FaHome size={18}/>, title: 'Dashboard' },
-        { path: '/admin/kyc', icon: <FaUserCheck size={18}/>, title: 'KYC Management', badge: 5 },
-        { path: '/admin/disputes', icon: <FaGavel size={18}/>, title: 'Disputes', badge: 3 },
-        { path: '/admin/finance', icon: <FaWallet size={18}/>, title: 'Finance' },
-        { path: '/admin/evidence', icon: <FaFolderOpen size={18}/>, title: 'Evidence Vault' },
-    ];
-    const handleLogout = () => {
-        dispatch(doLogoutSuccess());
-        toast.success("Logout successful!");
-        navigate('/login');
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = drawerOpen ? 'hidden' : '';
+    const handleKey = (event) => {
+      if (event.key === 'Escape') setDrawerOpen(false);
     };
-
-    // Helper: Lấy title cho Header dựa trên route hiện tại
-    const getHeaderTitle = () => {
-        const currentMenu = menuItems.find(item => location.pathname.includes(item.path));
-        return currentMenu ? currentMenu.title : 'Admin Portal';
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setDrawerOpen(false);
     };
+    document.addEventListener('keydown', handleKey);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKey);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [drawerOpen]);
 
-    return (
-        <div className="admin-layout-wrapper">
-            {/* SIDEBAR TRÁI */}
-            <aside className="admin-sidebar">
-                <div className="sidebar-header">
-                    <div className="logo-icon"><FaWrench /></div>
-                    <div className="logo-text">
-                        <h4>The Trusted Handyman</h4>
-                        <small>Admin Portal</small>
-                    </div>
-                </div>
+  const handleLogout = async () => {
+    if (loggingOut) return;
+    setDrawerOpen(false);
+    setLoggingOut(true);
+    let serverFailed = false;
+    try {
+      await logoutAdmin();
+    } catch {
+      serverFailed = true;
+    } finally {
+      dispatch(doLogoutSuccess());
+      navigate('/admin/login', { replace: true });
+      toast[serverFailed ? 'warning' : 'success'](
+        serverFailed
+          ? 'Local session cleared. The server session could not be revoked.'
+          : 'Administrator session ended.'
+      );
+    }
+  };
 
-                <div className="admin-info">
-                    <div className="avatar">{initials}</div>
-                    <div className="details">
-                        <h6>{adminName}</h6>
-                        <small><FaShieldAlt className="text-warning"/> Administrator</small>
-                    </div>
-                </div>
+  const currentTitle = MENU_ITEMS.find((item) => item.path === location.pathname)?.title || 'Admin Portal';
+  const pendingCount = counts.kyc_pending;
 
-                <nav className="nav-menu">
-                    {menuItems.map((item, index) => (
-                        <NavLink 
-                            key={index} 
-                            to={item.path} 
-                            className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
-                        >
-                            <div className="nav-left">
-                                <span className="icon">{item.icon}</span>
-                                <span>{item.title}</span>
-                            </div>
-                            {item.badge && <span className="badge">{item.badge}</span>}
-                        </NavLink>
-                    ))}
-                </nav>
-
-                <div className="sidebar-footer">
-                    <button className="logout-btn" onClick={handleLogout}>
-                        <FaSignOutAlt size={18}/> Logout
-                    </button>
-                </div>
-            </aside>
-
-            {/* MAIN CONTENT PHẢI */}
-            <main className="admin-main">
-                {/* Header ngang */}
-                <header className="admin-header">
-                    <h5 className="header-title">{getHeaderTitle()}</h5>
-                    
-                    <div className="header-actions">
-                        <div className="icon-btn">
-                            <FaBell size={20} />
-                            <span className="notify-dot">3</span>
-                        </div>
-                        <div className="user-circle">AD</div>
-                    </div>
-                </header>
-
-                {/* Khu vực render nội dung các trang con (Dashboard, KYC...) */}
-                <section className="admin-content">
-                    <Outlet />
-                </section>
-            </main>
+  return (
+    <div className="admin-layout-wrapper">
+      {drawerOpen && <button className="sidebar-backdrop" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} />}
+      <aside className={`admin-sidebar ${drawerOpen ? 'open' : ''}`} aria-label="Administrator navigation">
+        <div className="sidebar-header">
+          <div className="logo-icon"><FaWrench /></div>
+          <div className="logo-text"><h4>The Trusted Handyman</h4><small>Admin Portal</small></div>
+          <button className="close-sidebar" aria-label="Close navigation" onClick={() => setDrawerOpen(false)}><FaTimes /></button>
         </div>
-    );
+        <div className="admin-info">
+          <div className="avatar">{initials}</div>
+          <div className="details"><h6>{adminName}</h6><small><FaShieldAlt /> Administrator</small></div>
+        </div>
+        <nav className="nav-menu">
+          {MENU_ITEMS.map((item) => {
+            const Icon = item.icon;
+            if (item.disabled) {
+              return (
+                <button key={item.title} type="button" className="nav-item disabled" disabled>
+                  <span className="nav-left"><Icon /><span>{item.title}</span></span>
+                  <span className="coming-soon">Coming soon</span>
+                </button>
+              );
+            }
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={() => setDrawerOpen(false)}
+                className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+              >
+                <span className="nav-left"><Icon /><span>{item.title}</span></span>
+                {item.queue && pendingCount > 0 && <span className="queue-badge">{pendingCount > 99 ? '99+' : pendingCount}</span>}
+              </NavLink>
+            );
+          })}
+        </nav>
+        <div className="sidebar-footer">
+          <button className="logout-btn" onClick={handleLogout} disabled={loggingOut}>
+            <FaSignOutAlt /> {loggingOut ? 'Signing out...' : 'Logout'}
+          </button>
+        </div>
+      </aside>
+
+      <main className="admin-main">
+        <header className="admin-header">
+          <div className="header-heading">
+            <button className="menu-toggle" aria-label="Open navigation" onClick={() => setDrawerOpen(true)}><FaBars /></button>
+            <h1>{currentTitle}</h1>
+          </div>
+          <div className="header-actions">
+            <button
+              className="notification-button"
+              aria-label={pendingCount === null ? 'Open KYC requests' : `${pendingCount} pending KYC requests`}
+              onClick={() => navigate('/admin/kyc')}
+            >
+              <FaBell />
+              {!countsLoading && pendingCount > 0 && <span>{pendingCount > 99 ? '99+' : pendingCount}</span>}
+            </button>
+            <div className="user-circle" aria-label={adminName}>{initials}</div>
+          </div>
+        </header>
+        <section className="admin-content">
+          <Outlet context={{ queueCounts: counts, refreshQueueCounts }} />
+        </section>
+      </main>
+    </div>
+  );
 };
 
 export default AdminLayout;

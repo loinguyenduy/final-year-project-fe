@@ -19,7 +19,7 @@ const PublicHandymanProfileModal = ({ jobId, handymanId, onClose }) => {
                     toast.error(res.EM || "Failed to load public profile.");
                     onClose();
                 }
-            } catch (error) {
+            } catch {
                 toast.error("Error fetching public profile.");
                 onClose();
             } finally {

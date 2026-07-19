@@ -1,10 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import {
-  doLogoutSuccess,
-  doFetchProfileSuccess,
-} from "../../../../identity/redux/authAction";
+import { doLogoutSuccess } from "../../../../identity/redux/authAction";
 import {
   FaThLarge,
   FaBriefcase,
@@ -16,30 +13,16 @@ import {
   FaLock,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import axios from "../../../../../core/api/axiosInstance";
 import "../styles/HandymanLayout.scss";
+import useKycStatusRealtime from '../../../../identity/hooks/useKycStatusRealtime';
 
 const HandymanLayout = () => {
+  useKycStatusRealtime();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
   const { account } = useSelector((state) => state.identity);
   const isLifecycleWorkspace = /^\/jobs\/[^/]+\/lifecycle$/.test(location.pathname);
-
-  // Fetch latest profile when layout mounts
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        let res = await axios.get("/identity/profile");
-        if (res && res.EC === 0) {
-          dispatch(doFetchProfileSuccess(res.DT));
-        }
-      } catch (error) {
-        console.error("Failed to fetch profile", error);
-      }
-    };
-    fetchProfile();
-  }, [dispatch]);
 
   // Lấy level hiện tại của thợ (Mặc định C0 nếu chưa có)
   const currentLevel = account?.handyman_profile?.handyman_level || "C0";

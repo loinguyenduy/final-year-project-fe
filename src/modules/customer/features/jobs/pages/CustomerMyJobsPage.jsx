@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FaCalendarAlt, FaMapMarkerAlt, FaUserCheck, FaDollarSign, FaInfoCircle, FaClipboardList, FaPlus } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaClipboardList, FaPlus } from 'react-icons/fa';
 import { getCustomerJobsApi } from '../../../services/jobService';
 import { getJobDetailsPath } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 import '../styles/MyJobs.scss';

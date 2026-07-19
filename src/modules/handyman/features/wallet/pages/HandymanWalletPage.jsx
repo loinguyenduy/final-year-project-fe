@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { FaWallet, FaLock, FaUnlockAlt, FaArrowDown, FaArrowUp, FaMoneyBillWave } from 'react-icons/fa';
+import { FaWallet, FaLock, FaUnlockAlt, FaArrowDown, FaArrowUp } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { topUpWalletApi } from '../../../services/walletService';
 import '../styles/HandymanWallet.scss';

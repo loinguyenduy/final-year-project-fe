@@ -4,7 +4,7 @@ import { doLogoutSuccess, doUpdateAccessToken } from "../../modules/identity/red
 
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000/api/v1", 
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1",
   withCredentials: true, // automatically send cookies (Refresh Token) in requests to the backend
 });
 
@@ -44,11 +44,17 @@ axiosInstance.interceptors.response.use(
   },
   async function (error) {
     const originalRequest = error.config;
+    const responseCode = error.response?.data?.code;
+
+    if (['ADMIN_NOT_ACTIVE', 'ADMIN_ROLE_REQUIRED', 'ADMIN_SESSION_EXPIRED'].includes(responseCode)) {
+      store.dispatch(doLogoutSuccess());
+      return Promise.reject(error.response.data);
+    }
 
     // Handle 401 errors - Unauthorized (token expired or invalid)
-    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+    if (error.response && error.response.status === 401 && originalRequest && !originalRequest._retry) {
       
-      if (originalRequest.url === "/auth/refresh" || originalRequest.url === "/auth/login") {
+      if (["/auth/refresh", "/auth/login", "/auth/admin/login"].includes(originalRequest.url)) {
         return Promise.reject(error.response.data);
       }
 

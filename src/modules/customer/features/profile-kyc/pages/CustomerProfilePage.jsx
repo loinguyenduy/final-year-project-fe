@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {getUserProfileApi} from '../../../services/profileService';
 import { doFetchProfileSuccess } from '../../../../identity/redux/authAction';
@@ -13,7 +13,7 @@ const CustomerProfilePage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [showKycModal, setShowKycModal] = useState(false);
 
-    const syncProfile = async () => {
+    const syncProfile = useCallback(async () => {
         try {
             let res = await getUserProfileApi();
             if (res && res.EC === 0) {
@@ -24,11 +24,11 @@ const CustomerProfilePage = () => {
             toast.error("Cannot sync profile data.");
         }
         setIsLoading(false);
-    };
+    }, [dispatch]);
 
     useEffect(() => {
         syncProfile();
-    }, [dispatch]);
+    }, [syncProfile]);
 
     // Mock Data for English UI
     const mockMetrics = {

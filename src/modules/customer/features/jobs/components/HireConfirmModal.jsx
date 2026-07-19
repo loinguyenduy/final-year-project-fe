@@ -1,11 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { FaTimes, FaWallet, FaClock, FaCheckCircle, FaExclamationTriangle, FaExternalLinkAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getDepositSummaryApi, acceptBidWithWalletDepositApi } from '../../../services/jobService';
 
 const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) => {
-    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [summary, setSummary] = useState(null);
@@ -24,7 +22,7 @@ const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) =>
                     toast.error(res.EM || "Failed to retrieve deposit details.");
                     onClose();
                 }
-            } catch (error) {
+            } catch {
                 toast.error("Error loading deposit summary.");
                 onClose();
             } finally {
@@ -85,7 +83,7 @@ const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) =>
             } else {
                 toast.error(res.EM || "Payment failed. Please try again.");
             }
-        } catch (error) {
+        } catch {
             toast.error("An error occurred during payment.");
         } finally {
             setSubmitting(false);
