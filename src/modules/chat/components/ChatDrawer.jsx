@@ -14,7 +14,8 @@ import {
 import ChatComposer from './ChatComposer';
 import ChatMessageList from './ChatMessageList';
 
-const getConnectionCopy = (connectionState, joined) => {
+const getConnectionCopy = (connectionState, joined, historyOnly = false) => {
+  if (historyOnly) return 'History only';
   if (connectionState === CHAT_CONNECTION_STATES.CONNECTED && joined) return 'Chat connected';
   if (connectionState === CHAT_CONNECTION_STATES.RECONNECTING) return 'Chat reconnecting…';
   if (connectionState === CHAT_CONNECTION_STATES.CONNECTING) return 'Chat connecting…';
@@ -97,7 +98,14 @@ const ChatDrawer = ({
 }) => {
   const closeButtonRef = useRef(null);
   const isActive = chat.accessState === CHAT_ACCESS_STATES.ACTIVE;
-  const connectionCopy = getConnectionCopy(chat.connectionState, chat.joined);
+  const isHistoryOnly = chat.accessState === CHAT_ACCESS_STATES.CLOSED
+    && chat.conversation?.status === 'CLOSED'
+    && chat.conversation?.allowed_actions?.includes('HISTORY');
+  const connectionCopy = getConnectionCopy(
+    chat.connectionState,
+    chat.joined,
+    isHistoryOnly,
+  );
 
   useEffect(() => {
     closeButtonRef.current?.focus();
@@ -157,7 +165,7 @@ const ChatDrawer = ({
           </button>
         </header>
 
-        {chat.generalError && isActive && chat.conversation && (
+        {chat.generalError && (isActive || isHistoryOnly) && chat.conversation && (
           <div className="accepted-chat__error" role="alert">
             <FaCircleExclamation />
             <span>{chat.generalError}</span>
@@ -174,7 +182,7 @@ const ChatDrawer = ({
           </div>
         )}
 
-        {!isActive ? (
+        {!isActive && !isHistoryOnly ? (
           <AccessNotice
             accessState={chat.accessState}
             details={chat.accessDetails}
@@ -197,6 +205,15 @@ const ChatDrawer = ({
           </div>
         ) : (
           <>
+            {isHistoryOnly && (
+              <div className="accepted-chat__history-notice" role="status">
+                <FaLock aria-hidden="true" />
+                <span>
+                  <strong>Conversation closed</strong>
+                  Message history remains available, but new messages cannot be sent.
+                </span>
+              </div>
+            )}
             <ChatMessageList
               currentUserId={currentUserId}
               hasMore={chat.hasMore}
@@ -204,25 +221,28 @@ const ChatDrawer = ({
               historyLoading={chat.historyLoading}
               messages={chat.messages}
               onLoadOlder={chat.loadOlderMessages}
-              onResendAsNew={onResendAsNew}
-              onRetryMessage={onRetryMessage}
+              onResendAsNew={isActive ? onResendAsNew : undefined}
+              onRetryMessage={isActive ? onRetryMessage : undefined}
               onViewportAtBottom={chat.setViewportAtBottom}
               paginationError={chat.paginationError}
               paginationLoading={chat.paginationLoading}
               partner={partner}
+              readOnly={isHistoryOnly}
             />
-            <ChatComposer
-              canSend={chat.canSend && !isSubmitting}
-              cooldownRemainingMs={chat.cooldownRemainingMs}
-              draft={draft}
-              error={chat.composerError}
-              isSubmitting={isSubmitting}
-              onChange={(value) => {
-                onDraftChange(value);
-                chat.clearComposerError();
-              }}
-              onSubmit={onSubmit}
-            />
+            {isActive && (
+              <ChatComposer
+                canSend={chat.canSend && !isSubmitting}
+                cooldownRemainingMs={chat.cooldownRemainingMs}
+                draft={draft}
+                error={chat.composerError}
+                isSubmitting={isSubmitting}
+                onChange={(value) => {
+                  onDraftChange(value);
+                  chat.clearComposerError();
+                }}
+                onSubmit={onSubmit}
+              />
+            )}
           </>
         )}
       </section>

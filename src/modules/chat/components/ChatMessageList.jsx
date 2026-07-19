@@ -40,6 +40,7 @@ const ChatMessageList = ({
   paginationError,
   paginationLoading,
   partner,
+  readOnly = false,
 }) => {
   const viewportRef = useRef(null);
   const paginationInFlightRef = useRef(false);
@@ -106,12 +107,6 @@ const ChatMessageList = ({
     window.requestAnimationFrame(reportViewport);
   }, [currentUserId, historyLoaded, messages, reportViewport]);
 
-  useEffect(() => {
-    previousLastMessageRef.current = messages.at(-1)?.id
-      || messages.at(-1)?.client_message_id
-      || null;
-  }, []);
-
   if (historyLoading && !historyLoaded) {
     return (
       <div className="accepted-chat__loading accepted-chat__loading--messages" role="status">
@@ -148,8 +143,12 @@ const ChatMessageList = ({
 
         {!messages.length && historyLoaded && (
           <div className="accepted-chat__empty">
-            <span>Start the conversation</span>
-            <p>Send a message to coordinate this job with {partner?.full_name || 'your partner'}.</p>
+            <span>{readOnly ? 'No message history' : 'Start the conversation'}</span>
+            <p>
+              {readOnly
+                ? 'No messages were exchanged before this conversation closed.'
+                : `Send a message to coordinate this job with ${partner?.full_name || 'your partner'}.`}
+            </p>
           </div>
         )}
 

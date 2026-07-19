@@ -98,28 +98,159 @@ const getContract = (jobId, { signal } = {}) => (
   axios.get(`/matchmaking/jobs/${jobId}/contract`, withSignal(signal))
 );
 
+const WORK_EVIDENCE_PATHS = Object.freeze({
+  DURING: 'during',
+  AFTER: 'after',
+  WARRANTY_CLAIM: 'warranty-claim',
+  WARRANTY: 'warranty',
+});
+
+const getWorkEvidencePath = (stage) => {
+  const path = WORK_EVIDENCE_PATHS[String(stage || '').toUpperCase()];
+  if (!path) throw new Error(`Unsupported work evidence stage: ${stage}`);
+  return path;
+};
+
+const listWorkEvidence = (jobId, stage, { signal } = {}) => (
+  axios.get(
+    `/matchmaking/jobs/${jobId}/evidence/${getWorkEvidencePath(stage)}`,
+    withSignal(signal),
+  )
+);
+
+const uploadWorkEvidence = (jobId, stage, file, { onUploadProgress } = {}) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  return axios.post(
+    `/matchmaking/jobs/${jobId}/evidence/${getWorkEvidencePath(stage)}`,
+    formData,
+    { onUploadProgress },
+  );
+};
+
+const deleteWorkEvidence = (jobId, stage, evidenceId) => (
+  axios.delete(
+    `/matchmaking/jobs/${jobId}/evidence/${getWorkEvidencePath(stage)}/${evidenceId}`,
+  )
+);
+
+const createCompletionRequest = (jobId, payload) => (
+  axios.post(`/matchmaking/jobs/${jobId}/completion-requests`, payload)
+);
+
+const listCompletionRequests = (jobId, { signal } = {}) => (
+  axios.get(`/matchmaking/jobs/${jobId}/completion-requests`, withSignal(signal))
+);
+
+const getCompletionRequestEvidence = (jobId, requestId, { signal } = {}) => (
+  axios.get(
+    `/matchmaking/jobs/${jobId}/completion-requests/${requestId}/evidence`,
+    withSignal(signal),
+  )
+);
+
+const confirmCompletionRequest = (jobId, requestId) => (
+  axios.post(`/matchmaking/jobs/${jobId}/completion-requests/${requestId}/confirm`, {})
+);
+
+const rejectCompletionRequest = (jobId, requestId, payload) => (
+  axios.post(`/matchmaking/jobs/${jobId}/completion-requests/${requestId}/reject`, payload)
+);
+
+const getWarranty = (jobId, { signal } = {}) => (
+  axios.get(`/matchmaking/jobs/${jobId}/warranty`, withSignal(signal))
+);
+
+const createWarrantyClaim = (jobId, payload) => (
+  axios.post(`/matchmaking/jobs/${jobId}/warranty/claims`, payload)
+);
+
+const listWarrantyClaims = (jobId, { signal } = {}) => (
+  axios.get(`/matchmaking/jobs/${jobId}/warranty/claims`, withSignal(signal))
+);
+
+const getWarrantyClaimEvidence = (jobId, claimId, { signal } = {}) => (
+  axios.get(
+    `/matchmaking/jobs/${jobId}/warranty/claims/${claimId}/evidence`,
+    withSignal(signal),
+  )
+);
+
+const createWarrantyCompletionRequest = (jobId, payload) => (
+  axios.post(`/matchmaking/jobs/${jobId}/warranty/completion-requests`, payload)
+);
+
+const listWarrantyCompletionRequests = (jobId, { signal } = {}) => (
+  axios.get(
+    `/matchmaking/jobs/${jobId}/warranty/completion-requests`,
+    withSignal(signal),
+  )
+);
+
+const getWarrantyCompletionRequestEvidence = (
+  jobId,
+  requestId,
+  { signal } = {},
+) => (
+  axios.get(
+    `/matchmaking/jobs/${jobId}/warranty/completion-requests/${requestId}/evidence`,
+    withSignal(signal),
+  )
+);
+
+const confirmWarrantyCompletionRequest = (jobId, requestId) => (
+  axios.post(
+    `/matchmaking/jobs/${jobId}/warranty/completion-requests/${requestId}/confirm`,
+    {},
+  )
+);
+
+const rejectWarrantyCompletionRequest = (jobId, requestId, payload) => (
+  axios.post(
+    `/matchmaking/jobs/${jobId}/warranty/completion-requests/${requestId}/reject`,
+    payload,
+  )
+);
+
 export {
   acceptQuote,
   cancelAcceptedByCustomer,
   cancelAcceptedByHandyman,
   confirmArrival,
+  confirmCompletionRequest,
   confirmLifecycleCancellation,
+  confirmWarrantyCompletionRequest,
   createArrivalRequest,
+  createCompletionRequest,
   createLifecycleCancellation,
   createQuoteDraft,
+  createWarrantyClaim,
+  createWarrantyCompletionRequest,
   deleteBeforeEvidence,
+  deleteWorkEvidence,
   getCurrentLifecycleCancellation,
   getCurrentQuote,
   getContract,
+  getCompletionRequestEvidence,
   getJobLifecycleDetails,
   getPaymentSummary,
+  getWarranty,
+  getWarrantyClaimEvidence,
+  getWarrantyCompletionRequestEvidence,
   listBeforeEvidence,
+  listCompletionRequests,
+  listWarrantyClaims,
+  listWarrantyCompletionRequests,
+  listWorkEvidence,
   rejectArrival,
+  rejectCompletionRequest,
   rejectQuote,
   rejectLifecycleCancellation,
+  rejectWarrantyCompletionRequest,
   startMoving,
   submitQuote,
   payRemainingAmount,
   updateQuoteDraft,
   uploadBeforeEvidence,
+  uploadWorkEvidence,
 };

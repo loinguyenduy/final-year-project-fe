@@ -6,7 +6,7 @@ import { normalizeMessageContent } from '../utils/chatMessage';
 import ChatDrawer from './ChatDrawer';
 import '../styles/AcceptedJobChat.scss';
 
-const AcceptedJobChat = ({ jobId, jobCode, partner, role, onRefreshJob }) => {
+const AcceptedJobChat = ({ jobId, jobCode, jobStatus, partner, role, onRefreshJob }) => {
   const { account, token } = useSelector((state) => state.identity);
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState('');
@@ -16,13 +16,21 @@ const AcceptedJobChat = ({ jobId, jobCode, partner, role, onRefreshJob }) => {
     jobId,
     currentUserId: account.id,
     accessToken: token,
+    historyOnlyExpected: jobStatus === 'CLOSED',
     isOpen,
   });
+  const {
+    messages,
+    openConversation,
+    resendMessageAsNew: resendChatMessageAsNew,
+    retryMessage: retryChatMessage,
+    sendMessage,
+  } = chat;
 
   const openChat = useCallback(() => {
     setIsOpen(true);
-    void chat.openConversation();
-  }, [chat.openConversation]);
+    void openConversation();
+  }, [openConversation]);
 
   const closeChat = useCallback(() => {
     setIsOpen(false);
@@ -33,7 +41,7 @@ const AcceptedJobChat = ({ jobId, jobCode, partner, role, onRefreshJob }) => {
     if (isSubmitting) return false;
     const submittedDraft = draft;
     setIsSubmitting(true);
-    const delivered = await chat.sendMessage(submittedDraft);
+    const delivered = await sendMessage(submittedDraft);
     setIsSubmitting(false);
 
     if (delivered) {
@@ -42,11 +50,11 @@ const AcceptedJobChat = ({ jobId, jobCode, partner, role, onRefreshJob }) => {
       ));
     }
     return delivered;
-  }, [chat.sendMessage, draft, isSubmitting]);
+  }, [draft, isSubmitting, sendMessage]);
 
   const retryAccess = useCallback(async () => {
-    await chat.openConversation();
-  }, [chat.openConversation]);
+    await openConversation();
+  }, [openConversation]);
 
   const clearMatchingDraft = useCallback((messageContent) => {
     setDraft((currentDraft) => (
@@ -55,20 +63,20 @@ const AcceptedJobChat = ({ jobId, jobCode, partner, role, onRefreshJob }) => {
   }, []);
 
   const retryMessage = useCallback(async (clientMessageId) => {
-    const message = chat.messages.find(
+    const message = messages.find(
       (item) => item.client_message_id === clientMessageId,
     );
-    const delivered = await chat.retryMessage(clientMessageId);
+    const delivered = await retryChatMessage(clientMessageId);
     if (delivered && message) clearMatchingDraft(message.content);
-  }, [chat.messages, chat.retryMessage, clearMatchingDraft]);
+  }, [clearMatchingDraft, messages, retryChatMessage]);
 
   const resendMessageAsNew = useCallback(async (clientMessageId) => {
-    const message = chat.messages.find(
+    const message = messages.find(
       (item) => item.client_message_id === clientMessageId,
     );
-    const delivered = await chat.resendMessageAsNew(clientMessageId);
+    const delivered = await resendChatMessageAsNew(clientMessageId);
     if (delivered && message) clearMatchingDraft(message.content);
-  }, [chat.messages, chat.resendMessageAsNew, clearMatchingDraft]);
+  }, [clearMatchingDraft, messages, resendChatMessageAsNew]);
 
   return (
     <>
@@ -81,10 +89,10 @@ const AcceptedJobChat = ({ jobId, jobCode, partner, role, onRefreshJob }) => {
         aria-expanded={isOpen}
         aria-label={chat.unreadCount > 0
           ? `Open chat. ${chat.unreadCount} unread messages.`
-          : 'Open chat'}
+          : jobStatus === 'CLOSED' ? 'Open chat history' : 'Open chat'}
       >
         <FaCommentDots aria-hidden="true" />
-        <span>Message</span>
+        <span>{jobStatus === 'CLOSED' ? 'History' : 'Message'}</span>
         {chat.unreadCount > 0 && (
           <span className="accepted-chat-launcher__badge" aria-hidden="true">
             {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
