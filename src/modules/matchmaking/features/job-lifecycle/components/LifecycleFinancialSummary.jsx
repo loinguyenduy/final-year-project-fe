@@ -2,38 +2,39 @@ import React from 'react';
 import { FaShieldAlt } from 'react-icons/fa';
 import { formatCurrency, formatDateTime } from '../utils/jobLifecycleUi';
 
-const LifecycleFinancialSummary = ({ deposit, selectedBid }) => (
-  <section className="lifecycle-financial" aria-labelledby="lifecycle-financial-title">
-    <span className="lifecycle-context-label">Financial summary</span>
-    <div className="lifecycle-financial__heading">
-      <FaShieldAlt aria-hidden="true" />
-      <div>
-        <h2 id="lifecycle-financial-title">Deposit protected</h2>
-        <p>The job deposit is being held securely.</p>
-      </div>
-    </div>
+const LifecycleFinancialSummary = ({
+  deposit,
+  jobStatus,
+  selectedBid,
+  warranty,
+}) => {
+  const completed = jobStatus === 'CLOSED' || warranty?.status === 'COMPLETED';
+  const heading = completed
+    ? 'Payment complete'
+    : warranty
+      ? 'Warranty protection active'
+      : 'Payment protected';
+  const copy = completed
+    ? 'The payment lifecycle for this Job is complete.'
+    : warranty
+      ? 'Payment remains protected while the warranty lifecycle is active.'
+      : 'Payment remains protected while the service is in progress.';
 
-    <dl className="lifecycle-financial__details">
-      <div>
-        <dt>Selected bid</dt>
-        <dd>{formatCurrency(selectedBid?.proposed_price)}</dd>
+  return (
+    <section className="lifecycle-financial" aria-labelledby="lifecycle-financial-title">
+      <span className="lifecycle-context-label">Financial summary</span>
+      <div className="lifecycle-financial__heading">
+        <FaShieldAlt aria-hidden="true" />
+        <div><h2 id="lifecycle-financial-title">{heading}</h2><p>{copy}</p></div>
       </div>
-      <div>
-        <dt>Deposit</dt>
-        <dd>{formatCurrency(deposit?.amount)}</dd>
-      </div>
-      <div>
-        <dt>Deposit status</dt>
-        <dd>{deposit?.status === 'HELD' ? 'Held securely' : 'Payment recorded'}</dd>
-      </div>
-      {deposit?.paid_at && (
-        <div>
-          <dt>Paid at</dt>
-          <dd>{formatDateTime(deposit.paid_at)}</dd>
-        </div>
-      )}
-    </dl>
-  </section>
-);
+      <dl className="lifecycle-financial__details">
+        <div><dt>Agreed service price</dt><dd>{formatCurrency(selectedBid?.proposed_price)}</dd></div>
+        <div><dt>Payment status</dt><dd>{completed ? 'Completed' : 'Protected'}</dd></div>
+        {deposit?.paid_at && <div><dt>Deposit paid</dt><dd>{formatDateTime(deposit.paid_at)}</dd></div>}
+        {warranty?.released_at && <div><dt>Payment completed</dt><dd>{formatDateTime(warranty.released_at)}</dd></div>}
+      </dl>
+    </section>
+  );
+};
 
 export default LifecycleFinancialSummary;

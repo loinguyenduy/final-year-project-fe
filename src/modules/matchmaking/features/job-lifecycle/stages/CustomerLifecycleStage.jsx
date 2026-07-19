@@ -6,16 +6,25 @@ import CustomerEnRouteStage from './en-route/CustomerEnRouteStage';
 import QuotePendingStage from './quote/QuotePendingStage';
 import PaymentPendingStage from './payment/PaymentPendingStage';
 import InProgressStage from './in-progress/InProgressStage';
+import WarrantyStage from './warranty/WarrantyStage';
+import CompletedStage from './completed/CompletedStage';
 
 const CustomerLifecycleStage = ({
   allowedActions,
+  afterEvidence,
+  claimEvidenceState,
+  completionState,
   details,
+  duringEvidence,
   evidenceState,
   mutationState,
   onModal,
   onOpenImage,
+  onRefresh,
   paymentState,
   quoteState,
+  warrantyEvidenceState,
+  warrantyState,
 }) => {
   const {
     arrival_request: request,
@@ -100,8 +109,43 @@ const CustomerLifecycleStage = ({
   if (job.status === 'IN_PROGRESS') {
     return (
       <InProgressStage
+        afterEvidence={afterEvidence}
+        allowedActions={allowedActions}
+        completionState={completionState}
         contractState={paymentState}
-        inProgressAt={job.in_progress_at}
+        details={details}
+        duringEvidence={duringEvidence}
+        onOpenImage={onOpenImage}
+        role="CUSTOMER"
+      />
+    );
+  }
+
+  if (job.status === 'WARRANTY') {
+    return (
+      <WarrantyStage
+        allowedActions={allowedActions}
+        claimEvidenceState={claimEvidenceState}
+        completionState={completionState}
+        details={details}
+        onOpenImage={onOpenImage}
+        onRefresh={onRefresh}
+        role="CUSTOMER"
+        warrantyEvidenceState={warrantyEvidenceState}
+        warrantyState={warrantyState}
+      />
+    );
+  }
+
+  if (job.status === 'CLOSED') {
+    return (
+      <CompletedStage
+        completionState={completionState}
+        contractState={paymentState}
+        details={details}
+        onOpenImage={onOpenImage}
+        role="CUSTOMER"
+        warrantyState={warrantyState}
       />
     );
   }

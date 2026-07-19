@@ -43,6 +43,20 @@ const createInitialState = () => ({
   cooldownUntil: 0,
 });
 
+const isHistoryOnlyConversation = (conversation) => (
+  conversation?.status === 'CLOSED'
+  && Array.isArray(conversation.allowed_actions)
+  && conversation.allowed_actions.includes('HISTORY')
+);
+
+const getClosedAccessDetails = (conversation, fallback = null) => ({
+  code: 'CONVERSATION_CLOSED',
+  message: 'This conversation is closed. You can still review its message history.',
+  ...(fallback || {}),
+  ...(conversation?.closed_reason ? { reason: conversation.closed_reason } : {}),
+  ...(conversation?.closed_at ? { closed_at: conversation.closed_at } : {}),
+});
+
 const chatReducer = (state, action) => {
   switch (action.type) {
     case 'DISCOVERY_START':
@@ -70,17 +84,31 @@ const chatReducer = (state, action) => {
         accessDetails: null,
         generalError: null,
       };
-    case 'CONVERSATION_READY':
+    case 'CONVERSATION_READY': {
+      const historyOnly = isHistoryOnlyConversation(action.conversation);
       return {
         ...state,
         discoveryStatus: 'ready',
         opening: false,
         conversation: action.conversation,
-        unreadCount: Number(action.conversation.unread_count || 0),
-        accessState: CHAT_ACCESS_STATES.ACTIVE,
-        accessDetails: null,
+        unreadCount: historyOnly ? 0 : Number(action.conversation.unread_count || 0),
+        accessState: historyOnly
+          ? CHAT_ACCESS_STATES.CLOSED
+          : CHAT_ACCESS_STATES.ACTIVE,
+        accessDetails: historyOnly
+          ? getClosedAccessDetails(
+              action.conversation,
+              state.accessState === CHAT_ACCESS_STATES.CLOSED ? state.accessDetails : null,
+            )
+          : null,
+        connectionState: historyOnly
+          ? CHAT_CONNECTION_STATES.IDLE
+          : state.connectionState,
+        joined: historyOnly ? false : state.joined,
+        composerError: historyOnly ? null : state.composerError,
         generalError: null,
       };
+    }
     case 'OPEN_START':
       return { ...state, opening: true, generalError: null };
     case 'OPEN_END':
@@ -127,15 +155,20 @@ const chatReducer = (state, action) => {
         ...state,
         opening: false,
         accessState: CHAT_ACCESS_STATES.CLOSED,
-        accessDetails: action.details,
+        accessDetails: getClosedAccessDetails(state.conversation, action.details),
+        conversation: state.conversation
+          ? {
+              ...state.conversation,
+              status: 'CLOSED',
+              allowed_actions: ['HISTORY'],
+            }
+          : state.conversation,
         connectionState: CHAT_CONNECTION_STATES.DISCONNECTED,
         joined: false,
-        messages: [],
-        historyLoaded: false,
         historyLoading: false,
         paginationLoading: false,
-        paginationError: null,
         unreadCount: 0,
+        composerError: null,
         generalError: null,
       };
     case 'ACCESS_UNAVAILABLE':
@@ -292,7 +325,13 @@ const chatReducer = (state, action) => {
   }
 };
 
-const useJobChat = ({ jobId, currentUserId, accessToken, isOpen }) => {
+const useJobChat = ({
+  jobId,
+  currentUserId,
+  accessToken,
+  historyOnlyExpected = false,
+  isOpen,
+}) => {
   const [state, dispatch] = useReducer(chatReducer, undefined, createInitialState);
   const [clock, setClock] = useState(Date.now());
   const socketRef = useRef(null);
@@ -390,7 +429,35 @@ const useJobChat = ({ jobId, currentUserId, accessToken, isOpen }) => {
     let conversation = stateRef.current.conversation;
 
     try {
-      if (!conversation || stateRef.current.accessState !== CHAT_ACCESS_STATES.ACTIVE) {
+      if (!conversation) {
+        try {
+          const discoveryResponse = await getConversationByJobApi(jobId);
+          if (discoveryResponse?.EC !== 0 || !discoveryResponse.DT?.conversation) {
+            throw discoveryResponse;
+          }
+          conversation = discoveryResponse.DT.conversation;
+          dispatch({ type: 'CONVERSATION_READY', conversation });
+        } catch (discoveryError) {
+          const envelope = getErrorEnvelope(discoveryError);
+          if (envelope.code !== 'CONVERSATION_NOT_FOUND') throw discoveryError;
+        }
+      }
+
+      if (!conversation && historyOnlyExpected) {
+        dispatch({
+          type: 'ACCESS_CLOSED',
+          details: {
+            code: 'CONVERSATION_CLOSED',
+            message: 'This job is complete and no conversation history is available.',
+          },
+        });
+        return true;
+      }
+
+      if (!conversation || (
+        !isHistoryOnlyConversation(conversation)
+        && stateRef.current.accessState !== CHAT_ACCESS_STATES.ACTIVE
+      )) {
         const response = await createOrGetConversationApi(jobId);
         if (response?.EC !== 0 || !response.DT?.conversation) throw response;
         conversation = response.DT.conversation;
@@ -410,7 +477,7 @@ const useJobChat = ({ jobId, currentUserId, accessToken, isOpen }) => {
       }
       return false;
     }
-  }, [applyAccessError, fetchLatestHistory, jobId]);
+  }, [applyAccessError, fetchLatestHistory, historyOnlyExpected, jobId]);
 
   const loadOlderMessages = useCallback(async () => {
     const current = stateRef.current;
@@ -776,6 +843,7 @@ const useJobChat = ({ jobId, currentUserId, accessToken, isOpen }) => {
             message: 'This conversation has been closed.',
           },
         });
+        void fetchLatestHistory(conversationId, { reset: false });
       };
 
       const handleSocketError = (envelope) => {

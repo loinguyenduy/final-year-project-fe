@@ -13,9 +13,12 @@ import LifecycleJobSummary from '../components/LifecycleJobSummary';
 import LifecycleLoadingState from '../components/LifecycleLoadingState';
 import LifecyclePartnerSection from '../components/LifecyclePartnerSection';
 import useBeforeEvidence from '../hooks/useBeforeEvidence';
+import useCompletionLifecycle from '../hooks/useCompletionLifecycle';
 import useJobLifecycle from '../hooks/useJobLifecycle';
 import useJobQuote from '../hooks/useJobQuote';
 import useQuotePayment from '../hooks/useQuotePayment';
+import useWarrantyLifecycle from '../hooks/useWarrantyLifecycle';
+import useWorkEvidence from '../hooks/useWorkEvidence';
 import AcceptQuoteModal from '../modals/AcceptQuoteModal';
 import AcceptedCancellationModal from '../modals/AcceptedCancellationModal';
 import ArrivalRequestModal from '../modals/ArrivalRequestModal';
@@ -61,8 +64,8 @@ const JobLifecyclePage = () => {
   const quoteSummary = lifecycle.details?.inspection_quote;
   const quoteDataEnabled = ['QUOTE_PENDING', 'PAYMENT_PENDING'].includes(canonicalStatus)
     || (role === 'HANDYMAN' && canonicalStatus === 'ARRIVED' && Boolean(quoteSummary));
-  const evidenceDataEnabled = ['QUOTE_PENDING', 'PAYMENT_PENDING'].includes(canonicalStatus)
-    || (role === 'HANDYMAN' && canonicalStatus === 'ARRIVED');
+  const evidenceDataEnabled = role === 'HANDYMAN'
+    && ['ARRIVED', 'QUOTE_PENDING', 'PAYMENT_PENDING'].includes(canonicalStatus);
   const quoteState = useJobQuote({
     enabled: quoteDataEnabled,
     jobId,
@@ -74,20 +77,87 @@ const JobLifecyclePage = () => {
     onCanonicalRefresh: lifecycle.refreshDetails,
   });
   const paymentState = useQuotePayment({
-    contractEnabled: canonicalStatus === 'IN_PROGRESS',
+    contractEnabled: ['IN_PROGRESS', 'WARRANTY', 'CLOSED'].includes(canonicalStatus),
     jobId,
     onCanonicalRefresh: lifecycle.refreshDetails,
     onCancelled: () => lifecycle.exitWorkspace('CANCELLED'),
     paymentEnabled: canonicalStatus === 'PAYMENT_PENDING',
   });
+  const duringEvidence = useWorkEvidence({
+    enabled: role === 'HANDYMAN' && canonicalStatus === 'IN_PROGRESS',
+    jobId,
+    onCanonicalRefresh: lifecycle.refreshDetails,
+    stage: 'DURING',
+  });
+  const afterEvidence = useWorkEvidence({
+    enabled: role === 'HANDYMAN' && canonicalStatus === 'IN_PROGRESS',
+    jobId,
+    onCanonicalRefresh: lifecycle.refreshDetails,
+    stage: 'AFTER',
+  });
+  const claimEvidenceState = useWorkEvidence({
+    enabled: role === 'CUSTOMER'
+      && canonicalStatus === 'WARRANTY'
+      && lifecycle.details?.warranty?.status === 'ACTIVE',
+    jobId,
+    onCanonicalRefresh: lifecycle.refreshDetails,
+    stage: 'WARRANTY_CLAIM',
+  });
+  const warrantyEvidenceState = useWorkEvidence({
+    enabled: role === 'HANDYMAN'
+      && canonicalStatus === 'WARRANTY'
+      && lifecycle.details?.warranty?.status === 'REWORK_REQUIRED',
+    jobId,
+    onCanonicalRefresh: lifecycle.refreshDetails,
+    stage: 'WARRANTY',
+  });
+  const completionState = useCompletionLifecycle({
+    enabled: ['IN_PROGRESS', 'WARRANTY', 'CLOSED'].includes(canonicalStatus),
+    jobId,
+    onCanonicalRefresh: lifecycle.refreshDetails,
+    refreshKey: [
+      lifecycle.details?.completion?.latest_request?.id,
+      lifecycle.details?.completion?.latest_request?.status,
+      lifecycle.details?.completion?.latest_request?.responded_at,
+    ].join(':'),
+  });
+  const warrantyState = useWarrantyLifecycle({
+    enabled: ['WARRANTY', 'CLOSED'].includes(canonicalStatus),
+    jobId,
+    onCanonicalRefresh: lifecycle.refreshDetails,
+    refreshKey: [
+      lifecycle.details?.warranty?.status,
+      lifecycle.details?.warranty?.latest_claim?.id,
+      lifecycle.details?.warranty?.latest_claim?.status,
+      lifecycle.details?.warranty?.latest_rework_request?.id,
+      lifecycle.details?.warranty?.latest_rework_request?.status,
+    ].join(':'),
+  });
+  const refreshBeforeEvidence = evidenceState.refreshEvidence;
+  const refreshQuote = quoteState.refreshQuote;
+  const refreshLifecycleDetails = lifecycle.refreshDetails;
 
   useEffect(() => {
     if (canonicalStatus !== 'PAYMENT_PENDING') return;
     void Promise.all([
-      quoteState.refreshQuote({ silent: true }),
-      evidenceState.refreshEvidence({ silent: true }),
+      refreshQuote({ silent: true }),
+      refreshBeforeEvidence({ silent: true }),
     ]);
-  }, [canonicalStatus, evidenceState.refreshEvidence, quoteState.refreshQuote]);
+  }, [canonicalStatus, refreshBeforeEvidence, refreshQuote]);
+
+  useEffect(() => {
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') {
+        void refreshLifecycleDetails({ silent: true });
+      }
+    };
+    window.addEventListener('focus', refreshWhenVisible);
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    return () => {
+      window.removeEventListener('focus', refreshWhenVisible);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+    };
+  }, [refreshLifecycleDetails]);
 
   useEffect(() => {
     if (!lifecycle.outsideStatus) return;
@@ -174,26 +244,46 @@ const JobLifecyclePage = () => {
           <div className="job-lifecycle__main-column">
             {role === 'CUSTOMER' ? (
               <CustomerLifecycleStage
+                afterEvidence={afterEvidence}
                 details={lifecycle.details}
                 allowedActions={lifecycle.allowedActions}
+                claimEvidenceState={claimEvidenceState}
+                completionState={completionState}
+                duringEvidence={duringEvidence}
                 evidenceState={evidenceState}
                 mutationState={mutationState}
                 onModal={lifecycle.openModal}
                 onOpenImage={setLightboxSrc}
+                onRefresh={() => Promise.all([
+                  lifecycle.refreshDetails({ silent: true }),
+                  warrantyState.refreshHistory({ silent: true }),
+                ])}
                 paymentState={paymentState}
                 quoteState={quoteState}
+                warrantyEvidenceState={warrantyEvidenceState}
+                warrantyState={warrantyState}
               />
             ) : (
               <HandymanLifecycleStage
+                afterEvidence={afterEvidence}
                 details={lifecycle.details}
+                claimEvidenceState={claimEvidenceState}
+                completionState={completionState}
+                duringEvidence={duringEvidence}
                 allowedActions={lifecycle.allowedActions}
                 mutationState={mutationState}
                 cooldownSeconds={lifecycle.cooldownSeconds}
                 evidenceState={evidenceState}
                 onModal={lifecycle.openModal}
                 onOpenImage={setLightboxSrc}
+                onRefresh={() => Promise.all([
+                  lifecycle.refreshDetails({ silent: true }),
+                  warrantyState.refreshHistory({ silent: true }),
+                ])}
                 paymentState={paymentState}
                 quoteState={quoteState}
+                warrantyEvidenceState={warrantyEvidenceState}
+                warrantyState={warrantyState}
               />
             )}
             <div className="job-lifecycle__details-row">
@@ -208,12 +298,18 @@ const JobLifecyclePage = () => {
                   key={jobId}
                   jobId={jobId}
                   jobCode={jobCode}
+                  jobStatus={job.status}
                   partner={partner}
                   role={role}
                   onRefreshJob={() => lifecycle.refreshDetails({ silent: true })}
                 />
               </LifecyclePartnerSection>
-              <LifecycleFinancialSummary deposit={deposit} selectedBid={selectedBid} />
+              <LifecycleFinancialSummary
+                deposit={deposit}
+                jobStatus={job.status}
+                selectedBid={selectedBid}
+                warranty={lifecycle.details.warranty}
+              />
             </div>
           </aside>
         </div>

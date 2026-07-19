@@ -6,6 +6,8 @@ const LIFECYCLE_WORKSPACE_STATUSES = Object.freeze([
   'PAYMENT_PENDING',
   'CANCELLATION_REVIEW',
   'IN_PROGRESS',
+  'WARRANTY',
+  'CLOSED',
 ]);
 
 const normalizeRole = (role) => String(role || '').toUpperCase();

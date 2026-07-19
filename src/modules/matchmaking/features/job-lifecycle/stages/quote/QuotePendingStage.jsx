@@ -29,7 +29,7 @@ const QuotePendingStage = ({
         </h2>
         <p>
           {role === 'CUSTOMER'
-            ? 'The inspection evidence and canonical saved Quote are now available for review.'
+            ? 'The canonical saved Quote is now available for review.'
             : 'The Quote and evidence are locked while the Customer reviews the submitted result.'}
         </p>
       </div>
@@ -41,20 +41,22 @@ const QuotePendingStage = ({
     )}
     <QuoteReadOnlyView quote={quoteState.quote} showVariance={role === 'HANDYMAN'} />
 
-    <BeforeEvidenceManager
-      canDelete={false}
-      canUpload={false}
-      deletingId={null}
-      evidence={evidenceState.evidence}
-      loadError={evidenceState.loadError}
-      loading={evidenceState.loading}
-      onDelete={() => {}}
-      onOpenImage={onOpenImage}
-      onRemoveFailedUpload={() => {}}
-      onRetryUpload={() => {}}
-      onUpload={() => {}}
-      uploads={[]}
-    />
+    {role === 'HANDYMAN' && (
+      <BeforeEvidenceManager
+        canDelete={false}
+        canUpload={false}
+        deletingId={null}
+        evidence={evidenceState.evidence}
+        loadError={evidenceState.loadError}
+        loading={evidenceState.loading}
+        onDelete={() => {}}
+        onOpenImage={onOpenImage}
+        onRemoveFailedUpload={() => {}}
+        onRetryUpload={() => {}}
+        onUpload={() => {}}
+        uploads={[]}
+      />
+    )}
 
     {role === 'CUSTOMER' && allowedActions.includes('VIEW_QUOTE') && (
       <div className="lifecycle-notice lifecycle-notice--neutral">

@@ -41,15 +41,15 @@ const ChatMessageBubble = ({
       {isOwn && failed && (
         <div className="accepted-chat-message__failure" role="alert">
           <span>{message.delivery_error || 'Message not sent.'}</span>
-          {message.retryable === false ? (
+          {message.retryable === false && onResendAsNew ? (
             <button type="button" onClick={() => onResendAsNew(message.client_message_id)}>
               Send as new
             </button>
-          ) : (
+          ) : message.retryable !== false && onRetry ? (
             <button type="button" onClick={() => onRetry(message.client_message_id)}>
               <FaArrowRotateRight /> Retry
             </button>
-          )}
+          ) : null}
         </div>
       )}
 

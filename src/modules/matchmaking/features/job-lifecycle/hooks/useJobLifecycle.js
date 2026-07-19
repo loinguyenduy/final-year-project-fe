@@ -99,6 +99,17 @@ const SOCKET_TOASTS = Object.freeze({
   JOB_CANCELLATION_REVIEW_REQUIRED: 'A cancellation request now requires review.',
   JOB_CANCELLATION_REJECTED: 'The mutual cancellation request was declined and moved to review.',
   JOB_CANCELLED: 'The job was cancelled.',
+  JOB_COMPLETION_REQUESTED: 'A work completion request is ready for review.',
+  JOB_COMPLETION_REJECTED: 'The completion request was rejected.',
+  JOB_COMPLETION_CONFIRMED: 'Work completion was confirmed.',
+  JOB_WARRANTY_STARTED: 'The warranty period has started.',
+  JOB_WARRANTY_CLAIM_CREATED: 'A warranty claim was submitted.',
+  JOB_WARRANTY_REWORK_REQUIRED: 'Warranty rework is required.',
+  JOB_WARRANTY_COMPLETION_REQUESTED: 'Warranty rework is ready for confirmation.',
+  JOB_WARRANTY_REWORK_CONFIRMED: 'Warranty rework was confirmed.',
+  JOB_WARRANTY_REWORK_REJECTED: 'Warranty rework was rejected.',
+  JOB_WARRANTY_RELEASED: 'The warranty lifecycle and payment are complete.',
+  JOB_COMPLETED: 'The job is complete.',
 });
 
 const getMutationSuccessMessage = (action, response) => {
@@ -249,6 +260,10 @@ const useJobLifecycle = ({ jobId, accessToken, role }) => {
     const eventIdentity = payload?.arrival_request_id
       || payload?.cancellation_id
       || payload?.quote_id
+      || payload?.completion_request_id
+      || payload?.warranty_id
+      || payload?.claim_id
+      || payload?.warranty_completion_request_id
       || payload?.responded_at
       || payload?.arrived_at
       || payload?.started_at
@@ -266,7 +281,7 @@ const useJobLifecycle = ({ jobId, accessToken, role }) => {
       if (seenEventsRef.current.size > 80) {
         seenEventsRef.current = new Set([...seenEventsRef.current].slice(-40));
       }
-      const transitionStatus = payload?.job_status || payload?.status || (
+      const transitionStatus = payload?.current_status || payload?.job_status || payload?.status || (
         eventName === 'JOB_QUOTE_REJECTED' ? 'CANCELLED' : null
       );
       const transitionKey = transitionStatus

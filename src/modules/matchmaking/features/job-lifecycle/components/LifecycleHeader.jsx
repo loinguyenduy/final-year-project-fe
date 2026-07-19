@@ -51,6 +51,22 @@ const STATUS_CONTENT = Object.freeze({
     },
     description: 'The agreed Quote is fully secured in escrow and the immutable Contract is available.',
   },
+  WARRANTY: {
+    label: 'Warranty',
+    title: {
+      CUSTOMER: 'Your service is under warranty',
+      HANDYMAN: 'The service warranty is active',
+    },
+    description: 'Payment remains protected until the warranty lifecycle is completed.',
+  },
+  CLOSED: {
+    label: 'Completed',
+    title: {
+      CUSTOMER: 'Your job is complete',
+      HANDYMAN: 'The job is complete',
+    },
+    description: 'The Job is complete and the conversation remains available as read-only history.',
+  },
   CANCELLATION_REVIEW: {
     label: 'Cancellation review',
     title: {
@@ -107,6 +123,8 @@ const LifecycleHeader = ({ job, role, socketState, onBack }) => {
         {job.status === 'IN_PROGRESS' && job.in_progress_at && (
           <span>Contract active {formatDateTime(job.in_progress_at)}</span>
         )}
+        {job.status === 'WARRANTY' && <span>Warranty protection active</span>}
+        {job.status === 'CLOSED' && <span>Lifecycle completed</span>}
       </div>
     </header>
   );

@@ -213,6 +213,36 @@
     }
   }
 
+  &__history-notice {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid #cbd5e1;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.76rem;
+    line-height: 1.45;
+
+    > svg {
+      flex: 0 0 auto;
+      margin-top: 0.15rem;
+      color: #64748b;
+    }
+
+    span {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    strong {
+      color: #1e293b;
+      font-size: 0.8rem;
+    }
+  }
+
   &__loading {
     display: flex;
     flex: 1;

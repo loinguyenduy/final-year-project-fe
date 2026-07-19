@@ -7,7 +7,7 @@ import {
 } from '../../../services/jobService';
 import ImageLightbox from '../../../../../core/components/ImageLightbox';
 import { toast } from 'react-toastify';
-import { FaArrowLeft, FaCheck, FaStar, FaCommentDots, FaBolt } from 'react-icons/fa';
+import { FaArrowLeft, FaStar, FaCommentDots, FaBolt, FaEdit } from 'react-icons/fa';
 import '../styles/JobDetails.scss';
 import CompareBidsModal from '../components/CompareBidsModal';
 import PublicHandymanProfileModal from '../components/PublicHandymanProfileModal';
@@ -191,19 +191,21 @@ const CustomerJobDetailsPage = () => {
                 <span className={`status-pill ${getStatusClass(job.current_status)}`}>
                     {getStatusText(job.current_status)}
                 </span>
+                {(job.allowed_actions || []).includes('EDIT_JOB') && (
+                    <button
+                        type="button"
+                        className="job-header-row__edit"
+                        onClick={() => navigate(`/customer/my-jobs/${id}/edit`)}
+                        aria-label="Edit Job"
+                        title="Edit Job"
+                    >
+                        <FaEdit aria-hidden="true" />
+                    </button>
+                )}
             </div>
 
-            {(job.allowed_actions || []).some((action) => ['EDIT_JOB', 'CANCEL_JOB'].includes(action)) && (
+            {(job.allowed_actions || []).includes('CANCEL_JOB') && (
                 <div className="job-pre-acceptance-actions">
-                    {(job.allowed_actions || []).includes('EDIT_JOB') && (
-                        <button
-                            type="button"
-                            className="btn btn-primary"
-                            onClick={() => navigate(`/customer/my-jobs/${id}/edit`)}
-                        >
-                            Edit Job
-                        </button>
-                    )}
                     {(job.allowed_actions || []).includes('CANCEL_JOB') && (
                         <button
                             type="button"
@@ -226,9 +228,7 @@ const CustomerJobDetailsPage = () => {
                     })}
                     statusBadge={job.current_status === 'PENDING_DEPOSIT'
                         ? 'Deposit pending'
-                        : job.current_status === 'CANCELLED' && cancellation
-                            ? 'Cancelled'
-                            : null}
+                        : null}
                 />
             </div>
 

@@ -51,17 +51,20 @@ const LifecycleJobSummary = ({ job, onOpenImage }) => {
             <p>{job.issue_description || 'No detailed description was provided.'}</p>
           </div>
           {Array.isArray(job.images) && job.images.length > 0 && (
-            <div className="lifecycle-job-details__images">
-              {job.images.map((image, index) => (
-                <button
-                  type="button"
-                  key={`${image}-${index}`}
-                  onClick={() => onOpenImage(image)}
-                  aria-label={`Open job image ${index + 1}`}
-                >
-                  <img src={image} alt={`Job evidence ${index + 1}`} />
-                </button>
-              ))}
+            <div>
+              <span>Customer-provided Job photos</span>
+              <div className="lifecycle-job-details__images">
+                {job.images.map((image, index) => (
+                  <button
+                    type="button"
+                    key={`${image}-${index}`}
+                    onClick={() => onOpenImage(image)}
+                    aria-label={`Open Customer-provided Job photo ${index + 1}`}
+                  >
+                    <img src={image} alt={`Customer-provided Job photo ${index + 1}`} />
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
