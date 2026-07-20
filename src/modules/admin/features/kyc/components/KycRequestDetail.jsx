@@ -9,21 +9,37 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : 'Not re
 const KycRequestDetail = ({ selectedId, state, onBack, onRetry, onSelectHistory, onDecision }) => {
   const detail = state.data;
   return (
-    <section className="kyc-detail-panel" aria-label="KYC request detail">
+    <section className="kyc-detail-panel" aria-label="KYC request detail" aria-busy={state.initialLoading || state.refreshing}>
       <button className="mobile-back" type="button" onClick={onBack}><FaArrowLeft /> Back to requests</button>
       {!selectedId && <EmptyState icon={<FaInbox />} message="Select a request to review its documents." />}
-      {selectedId && state.loading && <LoadingState message="Loading request details..." />}
-      {selectedId && !state.loading && state.error && <ErrorState message={state.error} onRetry={onRetry} />}
-      {detail && !state.loading && (
+      {selectedId && state.initialLoading && <LoadingState message="Loading request details..." />}
+      {selectedId && !state.initialLoading && state.error && !detail && <ErrorState message={state.error} onRetry={onRetry} />}
+      {detail && !state.initialLoading && (
         <div className="detail-content">
+          {state.refreshing && <div className="panel-refreshing" role="status">Refreshing submission...</div>}
+          {state.error && <div className="inline-refresh-error" role="alert">{state.error} <button type="button" onClick={onRetry}>Retry</button></div>}
           <div className="detail-header">
-            <div className="identity-icon">{detail.user.role === 'HANDYMAN' ? <FaWrench /> : <FaUser />}</div>
+            {detail.user.avatar_url ? (
+              <img className="applicant-avatar" src={detail.user.avatar_url} alt={`${detail.user.full_name} avatar`} referrerPolicy="no-referrer" />
+            ) : (
+              <div className="identity-icon">{detail.user.role === 'HANDYMAN' ? <FaWrench /> : <FaUser />}</div>
+            )}
             <div>
               <div className="detail-title"><h2>{detail.user.full_name}</h2><StatusBadge status={detail.status} /></div>
               <p>{detail.user.email} · {detail.user.phone_number || 'No phone provided'}</p>
               <small>Submission #{detail.submission_sequence} · {formatDate(detail.submitted_at)}</small>
             </div>
           </div>
+
+          <section className="applicant-information" aria-labelledby="applicant-information-title">
+            <h3 id="applicant-information-title">Applicant information</h3>
+            <dl>
+              <div><dt>Role</dt><dd>{detail.user.role === 'HANDYMAN' ? 'Handyman' : 'Customer'}</dd></div>
+              <div><dt>Current KYC status</dt><dd><StatusBadge status={detail.status} /></dd></div>
+              <div><dt>Submission</dt><dd>Attempt #{detail.submission_sequence}</dd></div>
+              <div><dt>Documents</dt><dd>{detail.document_count} of {detail.required_document_count} required</dd></div>
+            </dl>
+          </section>
 
           {detail.rejection_reason_code && (
             <div className="rejection-summary">

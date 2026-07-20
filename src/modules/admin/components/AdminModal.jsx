@@ -1,6 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 
-const AdminModal = ({ open, titleId, onClose, submitting = false, className = '', children }) => {
+const AdminModal = ({
+  open,
+  titleId,
+  onClose,
+  submitting = false,
+  closeOnBackdrop = false,
+  className = '',
+  children
+}) => {
   const dialogRef = useRef(null);
   const onCloseRef = useRef(onClose);
   const submittingRef = useRef(submitting);
@@ -44,7 +52,13 @@ const AdminModal = ({ open, titleId, onClose, submitting = false, className = ''
 
   if (!open) return null;
   return (
-    <div className="admin-modal-backdrop" role="presentation">
+    <div
+      className="admin-modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (closeOnBackdrop && !submitting && event.target === event.currentTarget) onClose?.();
+      }}
+    >
       <div
         ref={dialogRef}
         className={`admin-decision-modal ${className}`.trim()}

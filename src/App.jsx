@@ -40,6 +40,8 @@ import AdminLayout from './modules/admin/layouts/AdminLayout';
 import AdminDashboardPage from './modules/admin/features/dashboard/pages/AdminDashboardPage';
 import AdminLoginPage from './modules/admin/features/login/pages/AdminLoginPage';
 import KycManagementPage from "./modules/admin/features/kyc/pages/KycManagementPage";
+import AdminReviewCenterPage from "./modules/admin/features/reviews/pages/AdminReviewCenterPage";
+import AdminReviewCasePage from "./modules/admin/features/reviews/pages/AdminReviewCasePage";
 
 function App() {
   return (
@@ -127,6 +129,8 @@ function App() {
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="kyc" element={<KycManagementPage/>}/>
+            <Route path="reviews" element={<AdminReviewCenterPage />} />
+            <Route path="reviews/:caseType/:caseId" element={<AdminReviewCasePage />} />
         </Route>
 
         </Routes>

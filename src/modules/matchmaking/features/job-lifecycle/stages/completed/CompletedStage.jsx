@@ -13,6 +13,7 @@ const CompletedStage = ({
   warrantyState,
 }) => {
   const isHandyman = role === 'HANDYMAN';
+  const participantResolution = details.warranty?.participant_resolution;
   return (
     <section className="lifecycle-stage lifecycle-stage--completed" aria-labelledby="completed-title">
       <div className="lifecycle-stage__heading">
@@ -25,9 +26,17 @@ const CompletedStage = ({
       </div>
       <dl className="lifecycle-request-facts">
         <div><dt>Warranty started</dt><dd>{formatDateTime(details.warranty?.started_at)}</dd></div>
-        <div><dt>Warranty ended</dt><dd>{formatDateTime(details.warranty?.released_at)}</dd></div>
+        <div><dt>Warranty ended</dt><dd>{formatDateTime(details.warranty?.released_at || details.warranty?.refunded_at)}</dd></div>
         <div><dt>Final status</dt><dd>Completed</dd></div>
       </dl>
+      {participantResolution && (
+        <div className="lifecycle-notice lifecycle-notice--warning">
+          <div>
+            <strong>Claim decision: Rejected</strong>
+            <p>{participantResolution.message}</p>
+          </div>
+        </div>
+      )}
       <div className="lifecycle-notice lifecycle-notice--success">
         Chat is now read-only. You can still open it to review the conversation history.
       </div>

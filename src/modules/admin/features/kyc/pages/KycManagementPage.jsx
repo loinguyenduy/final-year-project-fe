@@ -20,11 +20,15 @@ const KycManagementPage = () => {
   const selectedId = searchParams.get('submission') || '';
   const querySearch = searchParams.get('search') || '';
   const [searchText, setSearchText] = useState(querySearch);
-  const [listState, setListState] = useState({ items: [], pagination: null, loading: true, error: '' });
-  const [detailState, setDetailState] = useState({ data: null, loading: false, error: '' });
+  const [listState, setListState] = useState({ items: [], pagination: null, queryKey: '', initialLoading: true, refreshing: false, error: '' });
+  const [detailState, setDetailState] = useState({ data: null, initialLoading: false, refreshing: false, error: '' });
   const [decision, setDecision] = useState(null);
   const listRequestRef = useRef(0);
   const detailRequestRef = useRef(0);
+  const listPromiseRef = useRef(null);
+  const detailPromiseRef = useRef(null);
+  const signalTimerRef = useRef(null);
+  const mutationRefreshUntilRef = useRef(0);
 
   const updateQuery = useCallback((changes) => {
     const next = new URLSearchParams(searchParams);
@@ -36,33 +40,66 @@ const KycManagementPage = () => {
   }, [searchParams, setSearchParams]);
 
   const loadList = useCallback(async () => {
+    const requestKey = [page, pageSize, status, role, querySearch].join('|');
+    if (listPromiseRef.current?.key === requestKey) return listPromiseRef.current.promise;
     const requestId = ++listRequestRef.current;
-    setListState((current) => ({ ...current, loading: true, error: '' }));
-    try {
-      const response = await fetchKycRequests({ page, page_size: pageSize, status, role, search: querySearch });
-      if (requestId !== listRequestRef.current) return;
-      setListState({ items: response.DT.items, pagination: response.DT.pagination, loading: false, error: '' });
-    } catch (error) {
-      if (requestId !== listRequestRef.current) return;
-      setListState((current) => ({ ...current, loading: false, error: error?.EM || 'Unable to load KYC requests.' }));
-    }
+    setListState((current) => {
+      const hasCurrentData = current.queryKey === requestKey;
+      return {
+        ...current,
+        items: hasCurrentData ? current.items : [],
+        pagination: hasCurrentData ? current.pagination : null,
+        queryKey: requestKey,
+        initialLoading: !hasCurrentData,
+        refreshing: hasCurrentData,
+        error: ''
+      };
+    });
+    const promise = (async () => {
+      try {
+        const response = await fetchKycRequests({ page, page_size: pageSize, status, role, search: querySearch });
+        if (requestId !== listRequestRef.current) return;
+        setListState({ items: response.DT.items, pagination: response.DT.pagination, queryKey: requestKey, initialLoading: false, refreshing: false, error: '' });
+      } catch (error) {
+        if (requestId !== listRequestRef.current) return;
+        setListState((current) => ({ ...current, initialLoading: false, refreshing: false, error: error?.EM || 'Unable to load KYC requests.' }));
+      } finally {
+        if (listPromiseRef.current?.promise === promise) listPromiseRef.current = null;
+      }
+    })();
+    listPromiseRef.current = { key: requestKey, promise };
+    return promise;
   }, [page, pageSize, querySearch, role, status]);
 
   const loadDetail = useCallback(async () => {
-    const requestId = ++detailRequestRef.current;
     if (!selectedId) {
-      setDetailState({ data: null, loading: false, error: '' });
+      detailRequestRef.current += 1;
+      setDetailState({ data: null, initialLoading: false, refreshing: false, error: '' });
       return;
     }
-    setDetailState((current) => ({ ...current, loading: true, error: '' }));
-    try {
-      const response = await fetchKycRequestDetail(selectedId);
-      if (requestId !== detailRequestRef.current) return;
-      setDetailState({ data: response.DT, loading: false, error: '' });
-    } catch (error) {
-      if (requestId !== detailRequestRef.current) return;
-      setDetailState({ data: null, loading: false, error: error?.EM || 'Unable to load this KYC request.' });
-    }
+    if (detailPromiseRef.current?.key === selectedId) return detailPromiseRef.current.promise;
+    const requestId = ++detailRequestRef.current;
+    setDetailState((current) => ({
+      ...current,
+      data: current.data?.id === selectedId ? current.data : null,
+      initialLoading: current.data?.id !== selectedId,
+      refreshing: current.data?.id === selectedId,
+      error: ''
+    }));
+    const promise = (async () => {
+      try {
+        const response = await fetchKycRequestDetail(selectedId);
+        if (requestId !== detailRequestRef.current) return;
+        setDetailState({ data: response.DT, initialLoading: false, refreshing: false, error: '' });
+      } catch (error) {
+        if (requestId !== detailRequestRef.current) return;
+        setDetailState((current) => ({ ...current, initialLoading: false, refreshing: false, error: error?.EM || 'Unable to load this KYC request.' }));
+      } finally {
+        if (detailPromiseRef.current?.promise === promise) detailPromiseRef.current = null;
+      }
+    })();
+    detailPromiseRef.current = { key: selectedId, promise };
+    return promise;
   }, [selectedId]);
 
   useEffect(() => { void loadList(); }, [loadList]);
@@ -76,11 +113,19 @@ const KycManagementPage = () => {
   }, [querySearch, searchText, updateQuery]);
   useEffect(() => {
     const refresh = () => { void loadList(); void loadDetail(); };
+    const refreshFromSignal = () => {
+      if (Date.now() < mutationRefreshUntilRef.current) return;
+      if (signalTimerRef.current) window.clearTimeout(signalTimerRef.current);
+      signalTimerRef.current = window.setTimeout(() => {
+        if (Date.now() >= mutationRefreshUntilRef.current) refresh();
+      }, 150);
+    };
     window.addEventListener('focus', refresh);
-    window.addEventListener('admin:kyc-queue-updated', refresh);
+    window.addEventListener('admin:kyc-queue-updated', refreshFromSignal);
     return () => {
+      if (signalTimerRef.current) window.clearTimeout(signalTimerRef.current);
       window.removeEventListener('focus', refresh);
-      window.removeEventListener('admin:kyc-queue-updated', refresh);
+      window.removeEventListener('admin:kyc-queue-updated', refreshFromSignal);
     };
   }, [loadDetail, loadList]);
 
@@ -96,12 +141,14 @@ const KycManagementPage = () => {
 
   const handleDecisionSuccess = async (response) => {
     setDecision(null);
+    mutationRefreshUntilRef.current = Date.now() + 1200;
     toast.success(response?.EM || 'KYC request updated.');
     await refreshAll();
   };
   const handleDecisionError = async (error) => {
     if (['KYC_REQUEST_ALREADY_REVIEWED', 'SOURCE_STATE_CHANGED'].includes(error?.code)) {
       setDecision(null);
+      mutationRefreshUntilRef.current = Date.now() + 1200;
       toast.info('This request was already changed. The latest information has been loaded.');
       await refreshAll();
       return;

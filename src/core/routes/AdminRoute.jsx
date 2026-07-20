@@ -8,11 +8,12 @@ const AdminRoute = ({ children }) => {
   const dispatch = useDispatch();
   const location = useLocation();
   const { isAuthenticated, account, token } = useSelector((state) => state.identity);
+  const hasToken = Boolean(token);
   const [verification, setVerification] = useState('checking');
 
   useEffect(() => {
     let active = true;
-    if (!isAuthenticated || !token || account?.role !== 'ADMIN') {
+    if (!isAuthenticated || !hasToken || account?.role !== 'ADMIN') {
       setVerification('skipped');
       return () => { active = false; };
     }
@@ -28,9 +29,9 @@ const AdminRoute = ({ children }) => {
         setVerification('failed');
       });
     return () => { active = false; };
-  }, [account?.role, dispatch, isAuthenticated, token]);
+  }, [account?.role, dispatch, hasToken, isAuthenticated]);
 
-  if (!isAuthenticated || !token) {
+  if (!isAuthenticated || !hasToken) {
     return (
       <Navigate
         to="/admin/login"

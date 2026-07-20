@@ -23,7 +23,7 @@ import './AdminLayout.scss';
 const MENU_ITEMS = [
   { path: '/admin/dashboard', icon: FaHome, title: 'Dashboard' },
   { path: '/admin/kyc', icon: FaUserCheck, title: 'KYC Management', queue: 'kyc_pending' },
-  { icon: FaGavel, title: 'Disputes', disabled: true },
+  { path: '/admin/reviews', icon: FaGavel, title: 'Review Center', queue: 'review_pending_total' },
   { icon: FaWallet, title: 'Finance', disabled: true },
   { icon: FaFolderOpen, title: 'Evidence Vault', disabled: true }
 ];
@@ -35,12 +35,14 @@ const AdminLayout = () => {
   const { account } = useSelector((state) => state.identity);
   const { counts, isLoading: countsLoading, refresh: refreshQueueCounts } = useAdminQueueCounts();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const adminName = account?.full_name || 'System Admin';
   const initials = useMemo(() => adminName.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase(), [adminName]);
 
   useEffect(() => {
     setDrawerOpen(false);
+    setNotificationOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -80,8 +82,10 @@ const AdminLayout = () => {
     }
   };
 
-  const currentTitle = MENU_ITEMS.find((item) => item.path === location.pathname)?.title || 'Admin Portal';
+  const currentTitle = MENU_ITEMS.find((item) => item.path && location.pathname.startsWith(item.path))?.title || 'Admin Portal';
   const pendingCount = counts.kyc_pending;
+  const reviewCount = counts.review_pending_total;
+  const allPendingCount = Number(pendingCount || 0) + Number(reviewCount || 0);
 
   return (
     <div className="admin-layout-wrapper">
@@ -115,7 +119,7 @@ const AdminLayout = () => {
                 className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
               >
                 <span className="nav-left"><Icon /><span>{item.title}</span></span>
-                {item.queue && pendingCount > 0 && <span className="queue-badge">{pendingCount > 99 ? '99+' : pendingCount}</span>}
+                {item.queue && counts[item.queue] > 0 && <span className="queue-badge">{counts[item.queue] > 99 ? '99+' : counts[item.queue]}</span>}
               </NavLink>
             );
           })}
@@ -134,14 +138,21 @@ const AdminLayout = () => {
             <h1>{currentTitle}</h1>
           </div>
           <div className="header-actions">
-            <button
-              className="notification-button"
-              aria-label={pendingCount === null ? 'Open KYC requests' : `${pendingCount} pending KYC requests`}
-              onClick={() => navigate('/admin/kyc')}
-            >
-              <FaBell />
-              {!countsLoading && pendingCount > 0 && <span>{pendingCount > 99 ? '99+' : pendingCount}</span>}
-            </button>
+            <div className="admin-notification-menu">
+              <button
+                className="notification-button"
+                aria-label={`${allPendingCount} pending administrator reviews`}
+                aria-expanded={notificationOpen}
+                onClick={() => setNotificationOpen((value) => !value)}
+              >
+                <FaBell />
+                {!countsLoading && allPendingCount > 0 && <span>{allPendingCount > 99 ? '99+' : allPendingCount}</span>}
+              </button>
+              {notificationOpen && <div className="notification-popover">
+                <button onClick={() => navigate('/admin/kyc')}><span>KYC requests</span><strong>{pendingCount || 0}</strong></button>
+                <button onClick={() => navigate('/admin/reviews')}><span>Review Center</span><strong>{reviewCount || 0}</strong></button>
+              </div>}
+            </div>
             <div className="user-circle" aria-label={adminName}>{initials}</div>
           </div>
         </header>

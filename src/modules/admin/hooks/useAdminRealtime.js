@@ -10,8 +10,9 @@ const useAdminRealtime = (onQueueUpdated) => {
     if (!token) return undefined;
     let active = true;
     let lease;
+    let hasConnected = false;
 
-    const handleSignal = (payload = {}) => {
+    const handleSignal = (eventName) => (payload = {}) => {
       const eventId = payload.event_id;
       if (eventId && seenEvents.current.has(eventId)) return;
       if (eventId) {
@@ -20,11 +21,18 @@ const useAdminRealtime = (onQueueUpdated) => {
           seenEvents.current.delete(seenEvents.current.values().next().value);
         }
       }
-      window.dispatchEvent(new CustomEvent('admin:kyc-queue-updated'));
+      window.dispatchEvent(new CustomEvent(eventName));
       onQueueUpdated();
     };
+    const handleKycSignal = handleSignal('admin:kyc-queue-updated');
+    const handleReviewSignal = handleSignal('admin:review-queue-updated');
     const handleConnect = () => {
+      if (!hasConnected) {
+        hasConnected = true;
+        return;
+      }
       window.dispatchEvent(new CustomEvent('admin:kyc-queue-updated'));
+      window.dispatchEvent(new CustomEvent('admin:review-queue-updated'));
       onQueueUpdated();
     };
 
@@ -34,7 +42,9 @@ const useAdminRealtime = (onQueueUpdated) => {
         return;
       }
       lease = value;
-      lease.socket.on('ADMIN_KYC_QUEUE_UPDATED', handleSignal);
+      hasConnected = lease.socket.connected;
+      lease.socket.on('ADMIN_KYC_QUEUE_UPDATED', handleKycSignal);
+      lease.socket.on('ADMIN_REVIEW_QUEUE_UPDATED', handleReviewSignal);
       lease.socket.on('connect', handleConnect);
       if (!lease.socket.connected) lease.socket.connect();
     }).catch(() => {
@@ -44,7 +54,8 @@ const useAdminRealtime = (onQueueUpdated) => {
     return () => {
       active = false;
       if (lease) {
-        lease.socket.off('ADMIN_KYC_QUEUE_UPDATED', handleSignal);
+        lease.socket.off('ADMIN_KYC_QUEUE_UPDATED', handleKycSignal);
+        lease.socket.off('ADMIN_REVIEW_QUEUE_UPDATED', handleReviewSignal);
         lease.socket.off('connect', handleConnect);
         lease.release();
       }

@@ -32,6 +32,7 @@ const LifecycleFinancialSummary = ({
         <div><dt>Payment status</dt><dd>{completed ? 'Completed' : 'Protected'}</dd></div>
         {deposit?.paid_at && <div><dt>Deposit paid</dt><dd>{formatDateTime(deposit.paid_at)}</dd></div>}
         {warranty?.released_at && <div><dt>Payment completed</dt><dd>{formatDateTime(warranty.released_at)}</dd></div>}
+        {warranty?.refunded_at && <div><dt>Warranty reserve refunded</dt><dd>{formatCurrency(warranty.refunded_amount)} · {formatDateTime(warranty.refunded_at)}</dd></div>}
       </dl>
     </section>
   );

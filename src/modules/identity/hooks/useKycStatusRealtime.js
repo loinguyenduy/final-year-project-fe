@@ -18,6 +18,7 @@ const useKycStatusRealtime = () => {
     if (!token || !['CUSTOMER', 'HANDYMAN'].includes(account?.role)) return undefined;
     let active = true;
     let lease;
+    let hasConnected = false;
     const handleReviewed = (payload = {}) => {
       if (payload.event_id && seenEvents.current.has(payload.event_id)) return;
       if (payload.event_id) {
@@ -27,6 +28,13 @@ const useKycStatusRealtime = () => {
       void refreshProfile();
     };
     const handleFocus = () => void refreshProfile();
+    const handleConnect = () => {
+      if (!hasConnected) {
+        hasConnected = true;
+        return;
+      }
+      void refreshProfile();
+    };
 
     void refreshProfile();
     window.addEventListener('focus', handleFocus);
@@ -36,8 +44,9 @@ const useKycStatusRealtime = () => {
         return;
       }
       lease = value;
+      hasConnected = lease.socket.connected;
       lease.socket.on('KYC_REVIEWED', handleReviewed);
-      lease.socket.on('connect', refreshProfile);
+      lease.socket.on('connect', handleConnect);
       if (!lease.socket.connected) lease.socket.connect();
     }).catch(() => {
       // Profile refetch on focus remains available when realtime cannot connect.
@@ -48,7 +57,7 @@ const useKycStatusRealtime = () => {
       window.removeEventListener('focus', handleFocus);
       if (lease) {
         lease.socket.off('KYC_REVIEWED', handleReviewed);
-        lease.socket.off('connect', refreshProfile);
+        lease.socket.off('connect', handleConnect);
         lease.release();
       }
     };

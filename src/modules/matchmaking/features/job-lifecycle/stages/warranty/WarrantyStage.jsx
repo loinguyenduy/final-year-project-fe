@@ -28,7 +28,7 @@ const STATUS_COPY = Object.freeze({
 const RefreshNotice = ({ children, onRefresh }) => (
   <div className="lifecycle-notice lifecycle-notice--warning warranty-waiting">
     <FaHourglassHalf aria-hidden="true" />
-    <div><strong>{children}</strong><p>Raw Admin decisions do not emit realtime events. Refresh to load the canonical status.</p></div>
+    <div><strong>{children}</strong><p>The page refreshes after an Admin signal. You can also refresh the canonical status manually.</p></div>
     <button type="button" className="lifecycle-btn lifecycle-btn--ghost" onClick={onRefresh}>
       <FaRedo aria-hidden="true" /> Refresh
     </button>

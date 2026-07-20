@@ -26,6 +26,7 @@ const JOB_LIFECYCLE_SOCKET_EVENTS = Object.freeze([
   'JOB_WARRANTY_REWORK_REJECTED',
   'JOB_WARRANTY_RELEASED',
   'JOB_COMPLETED',
+  'REVIEW_CASE_UPDATED',
 ]);
 
 const acquireJobLifecycleSocket = (accessToken) => acquireAuthenticatedSocket(accessToken);
