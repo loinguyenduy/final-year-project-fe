@@ -12,7 +12,7 @@ const useAdminRealtime = (onQueueUpdated) => {
     let lease;
     let hasConnected = false;
 
-    const handleSignal = (eventName) => (payload = {}) => {
+    const handleSignal = (eventName, { refreshQueue = true } = {}) => (payload = {}) => {
       const eventId = payload.event_id;
       if (eventId && seenEvents.current.has(eventId)) return;
       if (eventId) {
@@ -21,11 +21,12 @@ const useAdminRealtime = (onQueueUpdated) => {
           seenEvents.current.delete(seenEvents.current.values().next().value);
         }
       }
-      window.dispatchEvent(new CustomEvent(eventName));
-      onQueueUpdated();
+      window.dispatchEvent(new CustomEvent(eventName, { detail: payload }));
+      if (refreshQueue) onQueueUpdated();
     };
     const handleKycSignal = handleSignal('admin:kyc-queue-updated');
     const handleReviewSignal = handleSignal('admin:review-queue-updated');
+    const handleJobSignal = handleSignal('admin:job-updated', { refreshQueue: false });
     const handleConnect = () => {
       if (!hasConnected) {
         hasConnected = true;
@@ -33,6 +34,7 @@ const useAdminRealtime = (onQueueUpdated) => {
       }
       window.dispatchEvent(new CustomEvent('admin:kyc-queue-updated'));
       window.dispatchEvent(new CustomEvent('admin:review-queue-updated'));
+      window.dispatchEvent(new CustomEvent('admin:job-updated'));
       onQueueUpdated();
     };
 
@@ -45,6 +47,7 @@ const useAdminRealtime = (onQueueUpdated) => {
       hasConnected = lease.socket.connected;
       lease.socket.on('ADMIN_KYC_QUEUE_UPDATED', handleKycSignal);
       lease.socket.on('ADMIN_REVIEW_QUEUE_UPDATED', handleReviewSignal);
+      lease.socket.on('ADMIN_JOB_UPDATED', handleJobSignal);
       lease.socket.on('connect', handleConnect);
       if (!lease.socket.connected) lease.socket.connect();
     }).catch(() => {
@@ -56,6 +59,7 @@ const useAdminRealtime = (onQueueUpdated) => {
       if (lease) {
         lease.socket.off('ADMIN_KYC_QUEUE_UPDATED', handleKycSignal);
         lease.socket.off('ADMIN_REVIEW_QUEUE_UPDATED', handleReviewSignal);
+        lease.socket.off('ADMIN_JOB_UPDATED', handleJobSignal);
         lease.socket.off('connect', handleConnect);
         lease.release();
       }

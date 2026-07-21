@@ -1,11 +1,7 @@
 import axios from '../../../core/api/axiosInstance';
 
-const listAdminReviewCases = (params) => axios.get('/admin/reviews', { params });
+// Compatibility-only read used by LegacyReviewRedirect. New UI reads cases from Admin Job detail.
 const getAdminReviewCase = (caseType, caseId) => axios.get(`/admin/reviews/${caseType}/${caseId}`);
-const getAdminReviewChat = (caseType, caseId, params) => axios.get(`/admin/reviews/${caseType}/${caseId}/chat`, { params });
-const getAdminReviewEvidenceAccess = (caseType, caseId, evidenceId) => (
-  axios.get(`/admin/reviews/${caseType}/${caseId}/evidence/${evidenceId}/access`)
-);
 const decideAdminReviewCase = (caseType, caseId, payload) => {
   const segment = {
     WARRANTY_CLAIM: 'warranty-claims',
@@ -17,8 +13,5 @@ const decideAdminReviewCase = (caseType, caseId, payload) => {
 
 export {
   decideAdminReviewCase,
-  getAdminReviewCase,
-  getAdminReviewChat,
-  getAdminReviewEvidenceAccess,
-  listAdminReviewCases
+  getAdminReviewCase
 };

@@ -4,8 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   FaBars,
   FaBell,
+  FaBriefcase,
   FaFolderOpen,
-  FaGavel,
   FaHome,
   FaShieldAlt,
   FaSignOutAlt,
@@ -23,7 +23,7 @@ import './AdminLayout.scss';
 const MENU_ITEMS = [
   { path: '/admin/dashboard', icon: FaHome, title: 'Dashboard' },
   { path: '/admin/kyc', icon: FaUserCheck, title: 'KYC Management', queue: 'kyc_pending' },
-  { path: '/admin/reviews', icon: FaGavel, title: 'Review Center', queue: 'review_pending_total' },
+  { path: '/admin/jobs', icon: FaBriefcase, title: 'Job Management', queue: 'review_pending_total' },
   { icon: FaWallet, title: 'Finance', disabled: true },
   { icon: FaFolderOpen, title: 'Evidence Vault', disabled: true }
 ];
@@ -150,7 +150,7 @@ const AdminLayout = () => {
               </button>
               {notificationOpen && <div className="notification-popover">
                 <button onClick={() => navigate('/admin/kyc')}><span>KYC requests</span><strong>{pendingCount || 0}</strong></button>
-                <button onClick={() => navigate('/admin/reviews')}><span>Review Center</span><strong>{reviewCount || 0}</strong></button>
+                <button onClick={() => navigate('/admin/jobs?needs_review=true&sort=REVIEW_REQUIRED_FIRST')}><span>Jobs requiring review</span><strong>{reviewCount || 0}</strong></button>
               </div>}
             </div>
             <div className="user-circle" aria-label={adminName}>{initials}</div>
