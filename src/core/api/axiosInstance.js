@@ -24,6 +24,7 @@ axiosInstance.interceptors.request.use(
 
 let isRefreshing = false;
 let failedQueue = [];
+let sessionInvalidationHandled = false;
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
@@ -45,6 +46,17 @@ axiosInstance.interceptors.response.use(
   async function (error) {
     const originalRequest = error.config;
     const responseCode = error.response?.data?.code;
+
+    if (['ACCOUNT_INACTIVE', 'PARTICIPANT_INACTIVE', 'SESSION_REVOKED'].includes(responseCode)) {
+      if (!sessionInvalidationHandled) {
+        sessionInvalidationHandled = true;
+        store.dispatch(doLogoutSuccess());
+        window.dispatchEvent(new CustomEvent('session:invalidated', { detail: { code: responseCode } }));
+        const target = window.location.pathname.startsWith('/admin') ? '/admin/login' : '/login';
+        window.setTimeout(() => window.location.replace(target), 0);
+      }
+      return Promise.reject(error.response.data);
+    }
 
     if (['ADMIN_NOT_ACTIVE', 'ADMIN_ROLE_REQUIRED', 'ADMIN_SESSION_EXPIRED'].includes(responseCode)) {
       store.dispatch(doLogoutSuccess());

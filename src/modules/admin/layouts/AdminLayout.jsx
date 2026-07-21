@@ -11,7 +11,9 @@ import {
   FaSignOutAlt,
   FaTimes,
   FaUserCheck,
+  FaUsers,
   FaWallet,
+  FaExchangeAlt,
   FaWrench
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -24,7 +26,10 @@ const MENU_ITEMS = [
   { path: '/admin/dashboard', icon: FaHome, title: 'Dashboard' },
   { path: '/admin/kyc', icon: FaUserCheck, title: 'KYC Management', queue: 'kyc_pending' },
   { path: '/admin/jobs', icon: FaBriefcase, title: 'Job Management', queue: 'review_pending_total' },
-  { icon: FaWallet, title: 'Finance', disabled: true },
+  { path: '/admin/users', icon: FaUsers, title: 'Users' },
+  { path: '/admin/wallets', icon: FaWallet, title: 'Wallets' },
+  { path: '/admin/transactions', icon: FaExchangeAlt, title: 'Transactions' },
+  { path: '/admin/services', icon: FaWrench, title: 'Services' },
   { icon: FaFolderOpen, title: 'Evidence Vault', disabled: true }
 ];
 

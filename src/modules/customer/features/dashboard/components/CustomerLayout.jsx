@@ -5,9 +5,11 @@ import { doLogoutSuccess } from '../../../../identity/redux/authAction';
 import { FaThLarge, FaRobot, FaBriefcase, FaWallet, FaUserShield, FaSignOutAlt, FaBell } from 'react-icons/fa';
 import '../styles/CustomerLayout.scss';
 import useKycStatusRealtime from '../../../../identity/hooks/useKycStatusRealtime';
+import useAccountSessionRealtime from '../../../../identity/hooks/useAccountSessionRealtime';
 
 const CustomerLayout = () => {
     useKycStatusRealtime();
+    useAccountSessionRealtime();
     const navigate = useNavigate();
     const location = useLocation();
     const dispatch = useDispatch();

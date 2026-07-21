@@ -15,9 +15,11 @@ import {
 import { toast } from "react-toastify";
 import "../styles/HandymanLayout.scss";
 import useKycStatusRealtime from '../../../../identity/hooks/useKycStatusRealtime';
+import useAccountSessionRealtime from '../../../../identity/hooks/useAccountSessionRealtime';
 
 const HandymanLayout = () => {
   useKycStatusRealtime();
+  useAccountSessionRealtime();
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();

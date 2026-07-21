@@ -43,6 +43,12 @@ import KycManagementPage from "./modules/admin/features/kyc/pages/KycManagementP
 import AdminJobsPage from "./modules/admin/features/jobs/pages/AdminJobsPage";
 import AdminJobDetailPage from "./modules/admin/features/jobs/pages/AdminJobDetailPage";
 import LegacyReviewRedirect from "./modules/admin/features/jobs/pages/LegacyReviewRedirect";
+import AdminUsersPage from './modules/admin/features/users/pages/AdminUsersPage';
+import AdminUserDetailPage from './modules/admin/features/users/pages/AdminUserDetailPage';
+import AdminWalletsPage from './modules/admin/features/finance/pages/AdminWalletsPage';
+import AdminTransactionsPage from './modules/admin/features/finance/pages/AdminTransactionsPage';
+import AdminTransactionDetailPage from './modules/admin/features/finance/pages/AdminTransactionDetailPage';
+import AdminServicesPage from './modules/admin/features/services/pages/AdminServicesPage';
 
 function App() {
   return (
@@ -132,6 +138,12 @@ function App() {
             <Route path="kyc" element={<KycManagementPage/>}/>
             <Route path="jobs" element={<AdminJobsPage />} />
             <Route path="jobs/:jobId" element={<AdminJobDetailPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="users/:userId" element={<AdminUserDetailPage />} />
+            <Route path="wallets" element={<AdminWalletsPage />} />
+            <Route path="transactions" element={<AdminTransactionsPage />} />
+            <Route path="transactions/:transactionId" element={<AdminTransactionDetailPage />} />
+            <Route path="services" element={<AdminServicesPage />} />
             <Route path="reviews" element={<LegacyReviewRedirect list />} />
             <Route path="reviews/:caseType/:caseId" element={<LegacyReviewRedirect />} />
         </Route>
