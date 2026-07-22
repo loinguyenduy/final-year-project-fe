@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { FaCalendarAlt, FaMapMarkerAlt, FaClipboardList, FaPlus } from 'react-icons/fa';
@@ -10,18 +10,20 @@ import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecyc
 
 const CustomerMyJobsPage = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const accessToken = useSelector((state) => state.identity.token);
-    const [jobs, setJobs] = useState([]);
     const [filteredJobs, setFilteredJobs] = useState([]);
-    const [activeTab, setActiveTab] = useState('ALL');
+    const [activeTab, setActiveTab] = useState(searchParams.get('view') || 'ALL');
+    const [pagination, setPagination] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchJobs = async () => {
+    const fetchJobs = useCallback(async () => {
         try {
-            const res = await getCustomerJobsApi();
+            const res = await getCustomerJobsApi({ view: activeTab, sort: searchParams.get('sort') || 'UPDATED_DESC', page: searchParams.get('page') || 1, page_size: 20 });
             if (res && res.EC === 0) {
-                setJobs(res.DT);
-                setFilteredJobs(res.DT);
+                const items = res.DT?.items || [];
+                setFilteredJobs(items);
+                setPagination(res.DT?.pagination || null);
             } else {
                 toast.error(res.EM || "Failed to load jobs");
             }
@@ -31,41 +33,19 @@ const CustomerMyJobsPage = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [activeTab, searchParams]);
 
-    useEffect(() => {
-        fetchJobs();
-    }, []);
+    useEffect(() => { fetchJobs(); }, [fetchJobs]);
 
     usePreLifecycleRealtime({
         accessToken,
         onInvalidate: () => fetchJobs(),
     });
 
-    // Filter jobs based on active tab
-    useEffect(() => {
-        if (activeTab === 'ALL') {
-            setFilteredJobs(jobs);
-        } else if (activeTab === 'ACTIVE') {
-            const activeStatuses = [
-                'POSTED',
-                'BIDDING',
-                'PENDING_DEPOSIT',
-                'ACCEPTED',
-                'EN_ROUTE',
-                'ARRIVED',
-                'CANCELLATION_REVIEW',
-                'QUOTE_PENDING',
-                'PAYMENT_PENDING',
-                'IN_PROGRESS',
-            ];
-            setFilteredJobs(jobs.filter(job => activeStatuses.includes(job.current_status)));
-        } else if (activeTab === 'WARRANTY') {
-            setFilteredJobs(jobs.filter(job => job.current_status === 'WARRANTY'));
-        } else if (activeTab === 'COMPLETED') {
-            setFilteredJobs(jobs.filter(job => job.current_status === 'CLOSED'));
-        }
-    }, [activeTab, jobs]);
+    const selectView = (value) => {
+        setActiveTab(value);
+        setSearchParams(value === 'ALL' ? {} : { view: value, page: '1' });
+    };
 
     const formatCurrency = (val) => {
         if (!val) return '';
@@ -133,41 +113,11 @@ const CustomerMyJobsPage = () => {
             {/* Filter Tabs */}
             <div className="custom-tabs-container mb-4">
                 <div className="custom-tabs">
-                    <button 
-                        className={`tab-btn ${activeTab === 'ALL' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('ALL')}
-                    >
-                        All ({jobs.length})
-                    </button>
-                    <button 
-                        className={`tab-btn ${activeTab === 'ACTIVE' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('ACTIVE')}
-                    >
-                        Active ({jobs.filter(j => [
-                            'POSTED',
-                            'BIDDING',
-                            'PENDING_DEPOSIT',
-                            'ACCEPTED',
-                            'EN_ROUTE',
-                            'ARRIVED',
-                            'CANCELLATION_REVIEW',
-                            'QUOTE_PENDING',
-                            'PAYMENT_PENDING',
-                            'IN_PROGRESS',
-                        ].includes(j.current_status)).length})
-                    </button>
-                    <button 
-                        className={`tab-btn ${activeTab === 'WARRANTY' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('WARRANTY')}
-                    >
-                        Warranty ({jobs.filter(j => j.current_status === 'WARRANTY').length})
-                    </button>
-                    <button 
-                        className={`tab-btn ${activeTab === 'COMPLETED' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('COMPLETED')}
-                    >
-                        Completed ({jobs.filter(j => j.current_status === 'CLOSED').length})
-                    </button>
+                    {['ALL', 'NEEDS_ACTION', 'ACTIVE', 'CLOSED', 'CANCELLED'].map((view) => (
+                        <button key={view} className={`tab-btn ${activeTab === view ? 'active' : ''}`} onClick={() => selectView(view)}>
+                            {view.replace('_', ' ')}{activeTab === view && pagination ? ` (${pagination.total_items})` : ''}
+                        </button>
+                    ))}
                 </div>
             </div>
 
@@ -292,6 +242,13 @@ const CustomerMyJobsPage = () => {
                         );
                     })}
                 </div>
+            )}
+            {pagination?.total_pages > 1 && (
+                <nav className="d-flex justify-content-center align-items-center gap-3 mt-4" aria-label="My Jobs pages">
+                    <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page <= 1} onClick={() => setSearchParams({ view: activeTab, page: String(pagination.page - 1) })}>Previous</button>
+                    <span>Page {pagination.page} of {pagination.total_pages}</span>
+                    <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page >= pagination.total_pages} onClick={() => setSearchParams({ view: activeTab, page: String(pagination.page + 1) })}>Next</button>
+                </nav>
             )}
         </div>
     );

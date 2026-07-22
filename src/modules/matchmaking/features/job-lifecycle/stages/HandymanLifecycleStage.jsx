@@ -85,6 +85,7 @@ const HandymanLifecycleStage = ({
         isResponding={false}
         onCancel={() => onModal('REQUEST_CANCELLATION')}
         onOpenImage={onOpenImage}
+        onRefresh={onRefresh}
         quoteState={quoteState}
         role="HANDYMAN"
       />
@@ -145,6 +146,7 @@ const HandymanLifecycleStage = ({
         contractState={paymentState}
         details={details}
         onOpenImage={onOpenImage}
+        onRefresh={onRefresh}
         role="HANDYMAN"
         warrantyState={warrantyState}
       />

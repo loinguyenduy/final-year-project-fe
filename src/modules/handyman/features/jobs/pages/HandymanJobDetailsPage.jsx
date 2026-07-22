@@ -203,7 +203,7 @@ const HandymanJobDetailsPage = () => {
     const budgetDisplay = job.estimated_budget_min && job.estimated_budget_max
         ? `${formatCurrency(job.estimated_budget_min)} – ${formatCurrency(job.estimated_budget_max)}`
         : job.estimated_budget_max ? formatCurrency(job.estimated_budget_max) : 'Negotiable';
-    const avgRating = parseFloat(job.Customer?.avg_rating) || 0;
+    const avgRating = job.Customer?.rating_summary?.bayesian_rating || null;
     const canSeePhone = !['POSTED', 'BIDDING'].includes(job.current_status);
 
     if (isLifecycleWorkspaceStatus(job.current_status)
@@ -513,9 +513,9 @@ const HandymanJobDetailsPage = () => {
                                     <div>
                                         <div className="fw-semibold mb-1" style={{ color: '#1e293b' }}>{job.Customer.full_name}</div>
                                         <div className="d-flex align-items-center gap-2 small text-secondary">
-                                            {avgRating > 0 ? (
+                                            {avgRating ? (
                                                 <span className="d-flex align-items-center gap-1" style={{ color: '#f59e0b', fontWeight: 600 }}>
-                                                    <FaStar size={12} /> {avgRating.toFixed(1)}
+                                                    <FaStar size={12} /> {avgRating}
                                                 </span>
                                             ) : (
                                                 <span className="fst-italic text-muted">No ratings yet</span>

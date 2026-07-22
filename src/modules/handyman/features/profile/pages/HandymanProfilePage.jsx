@@ -18,9 +18,9 @@ const HandymanProfilePage = () => {
     const [activeTab, setActiveTab] = useState(0);
 
     const profile = account?.handyman_profile || {};
-    const services = account?.Handyman_Services || [];
-    const areas = account?.Handyman_Service_Areas || [];
-    const addresses = account?.User_Addresses || [];
+    const services = account?.services || [];
+    const areas = account?.service_areas || [];
+    const addresses = account?.saved_addresses || [];
 
     const refreshProfile = useCallback(async () => {
         try {
@@ -85,7 +85,7 @@ const HandymanProfilePage = () => {
                                     onRefresh={refreshProfile}
                                 />
                                 <WorkTimesCard
-                                    workTimes={profile.preferred_work_times || []}
+                                    workTimes={account?.work_times || profile.preferred_work_times || []}
                                     onRefresh={refreshProfile}
                                 />
                             </>

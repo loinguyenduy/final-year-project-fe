@@ -12,8 +12,8 @@ const postJobApi = (formData) => {
     });
 };
 
-const getCustomerJobsApi = () => {
-    return axios.get('/matchmaking/jobs');
+const getCustomerJobsApi = (params = {}) => {
+    return axios.get('/matchmaking/jobs', { params });
 };
 
 const getJobDetailsApi = (id) => {
@@ -60,7 +60,8 @@ const acceptBidWithWalletDepositApi = (jobId, bidId) => {
 };
 
 const getPublicHandymanProfileApi = (jobId, handymanId) => {
-    return axios.get(`/matchmaking/jobs/${jobId}/handymen/${handymanId}/public-profile`);
+    void jobId;
+    return axios.get(`/identity/users/${handymanId}/public-profile`);
 };
 
 const compareBidsApi = (data) => {

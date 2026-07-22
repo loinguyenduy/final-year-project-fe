@@ -111,7 +111,7 @@ const CustomerCreateJobPage = () => {
                 if (servicesRes?.EC === 0) setServices(servicesRes.DT || []);
                 if (provincesRes?.EC === 0) setProvinces(provincesRes.DT || []);
                 if (profileRes?.EC === 0) {
-                    const addresses = profileRes.DT?.User_Addresses || [];
+                    const addresses = profileRes.DT?.saved_addresses || [];
                     setDefaultAddress(addresses.find(item => item.is_default) || null);
                 }
                 if (isEditMode) {

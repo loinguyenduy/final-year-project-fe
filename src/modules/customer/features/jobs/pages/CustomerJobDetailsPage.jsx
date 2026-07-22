@@ -333,13 +333,15 @@ const CustomerJobDetailsPage = () => {
                         <div className="bids-list">
                             {pendingBids.map((bid) => {
                                 const handyman = bid.User;
-                                const profile = handyman?.Handyman_Profile;
-                                const rating = parseFloat(profile?.bayesian_score) || 0;
+                                const profile = handyman?.profile;
+                                const rating = profile?.rating_summary?.rating_status === 'AVAILABLE'
+                                    ? parseFloat(profile.rating_summary.bayesian_rating)
+                                    : null;
                                 const isAccepting = selectedBidForConfirm?.bidId === bid.id;
                                 const isSelected = selectedBids.includes(bid.id);
 
                                 const metaItems = [
-                                    rating > 0 && (
+                                    rating !== null && (
                                         <span key="rating" className="bid-meta__rating">
                                             <FaStar size={11} /> {rating.toFixed(1)}
                                         </span>

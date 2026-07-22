@@ -30,14 +30,6 @@ const CustomerProfilePage = () => {
         syncProfile();
     }, [syncProfile]);
 
-    // Mock Data for English UI
-    const mockMetrics = {
-        trustScoreStars: 4.2,
-        totalContracts: 18,
-        completedContracts: 17,
-        completionRate: "94%"
-    };
-
     if (isLoading) {
         return (
             <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
@@ -50,7 +42,6 @@ const CustomerProfilePage = () => {
         <div className="py-2">
             <ProfileDetails
                 account={account}
-                metrics={mockMetrics}
                 onOpenKycModal={() => setShowKycModal(true)}
                 onRefresh={syncProfile}
             />

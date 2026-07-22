@@ -2,6 +2,7 @@ import React from 'react';
 import { FaPhoneAlt, FaStar } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getRoleLabel } from '../utils/jobLifecycleUi';
+import { Link } from 'react-router-dom';
 
 const LifecyclePartnerSection = ({ children, partner }) => {
   const copyPhone = async () => {
@@ -36,13 +37,14 @@ const LifecyclePartnerSection = ({ children, partner }) => {
       </div>
 
       <div className="lifecycle-partner__metrics">
-        <span><FaStar aria-hidden="true" /> {partner?.rating || 'New'}</span>
+        <span><FaStar aria-hidden="true" /> {partner?.rating_summary?.rating_status === 'AVAILABLE' ? partner.rating_summary.bayesian_rating : partner?.rating_summary?.rating_status === 'INSUFFICIENT_PRIOR_SAMPLE' ? 'Developing' : 'New'}</span>
         <span>{partner?.review_count || 0} reviews</span>
         {partner?.completion_rate != null && <span>{partner.completion_rate}% completion</span>}
       </div>
 
       <div className="lifecycle-partner__actions">
         {children}
+        {partner?.id && <Link className="lifecycle-btn lifecycle-btn--secondary lifecycle-btn--compact" to={`/participants/${partner.id}/profile`}>View profile</Link>}
         {partner?.phone_number && (
           <button
             type="button"

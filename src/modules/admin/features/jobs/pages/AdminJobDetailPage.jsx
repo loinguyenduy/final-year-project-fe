@@ -76,7 +76,7 @@ const PersonPanel = ({ title, person }) => (
       ]} />
       {person.profile && <div className="participant-profile-strip">
         <span><strong>{person.profile.handyman_level}</strong>Level</span>
-        <span><strong>{person.profile.bayesian_score}</strong>Score</span>
+        <span><strong>{person.profile.rating_summary?.bayesian_rating || 'Developing'}</strong>Score</span>
         <span><strong>{person.profile.total_jobs_completed}</strong>Completed</span>
         <span><strong>{person.profile.accepted_cancellation_count}</strong>Cancellations</span>
       </div>}

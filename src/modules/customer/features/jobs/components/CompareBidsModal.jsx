@@ -148,7 +148,7 @@ const CompareBidsModal = ({ jobId, selectedBidIds, onClose, onAcceptBid }) => {
                                         {comparisonData.map((bid) => (
                                             <td key={`score-${bid.bid_id}`} className={bid.isBestChoice ? 'best-choice-col' : ''}>
                                                 <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>
-                                                    <FaStar size={13} style={{ marginBottom: '3px' }}/> {bid.handyman?.bayesian_score?.toFixed(1) || '0.0'}
+                                                    <FaStar size={13} style={{ marginBottom: '3px' }}/> {bid.handyman?.rating_summary?.bayesian_rating || 'Developing'}
                                                 </span>
                                             </td>
                                         ))}

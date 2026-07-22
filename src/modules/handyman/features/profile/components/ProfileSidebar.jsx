@@ -5,10 +5,11 @@ const ProfileSidebar = ({ account, profile }) => {
     const fullName = account?.full_name || 'N/A';
     const wallets = account?.wallets || [];
     const level = profile?.handyman_level || 'C1';
-    const bayesianScore = parseFloat(profile?.bayesian_score || 5.0).toFixed(1);
-    const totalJobs = profile?.total_jobs_completed || 0;
+    const rating = account?.rating_summary;
+    const bayesianScore = rating?.rating_status === 'AVAILABLE' ? rating.bayesian_rating : null;
+    const totalJobs = account?.job_summary?.closed || 0;
     const isBondPaid = profile?.security_bond_status === 'PAID';
-    const escrowBalance = wallets.find(w => w.wallet_type === 'HANDYMAN_ESCROW')?.balance || 0;
+    const escrowBalance = wallets.find(w => w.wallet_type === 'HANDYMAN_ESCROW')?.available_balance || 0;
 
     const userInitials = fullName
         .split(' ')
@@ -35,11 +36,9 @@ const ProfileSidebar = ({ account, profile }) => {
 
             <div className="rating-box">
                 <div className="title">Reputation Score</div>
-                <div className="stars">
-                    <FaStar /><FaStar /><FaStar /><FaStar /><FaStar className="opacity-50" />
-                </div>
-                <div className="score">{bayesianScore}</div>
-                <small>Bayesian Algorithm</small>
+                {bayesianScore && <div className="stars"><FaStar /></div>}
+                <div className="score">{bayesianScore || (rating?.rating_status === 'INSUFFICIENT_PRIOR_SAMPLE' ? 'Developing' : 'No reviews')}</div>
+                <small>{rating?.review_count || 0} verified reviews</small>
             </div>
 
             <div className="stats-row">

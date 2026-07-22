@@ -83,6 +83,7 @@ const CustomerLifecycleStage = ({
         onAccept={() => onModal('ACCEPT_QUOTE')}
         onCancel={() => onModal('REQUEST_CANCELLATION')}
         onOpenImage={onOpenImage}
+        onRefresh={onRefresh}
         onReject={() => onModal('REJECT_QUOTE')}
         quoteState={quoteState}
         role="CUSTOMER"
@@ -144,6 +145,7 @@ const CustomerLifecycleStage = ({
         contractState={paymentState}
         details={details}
         onOpenImage={onOpenImage}
+        onRefresh={onRefresh}
         role="CUSTOMER"
         warrantyState={warrantyState}
       />

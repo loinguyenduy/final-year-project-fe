@@ -3,17 +3,18 @@ import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { FaCheckCircle, FaExclamationTriangle, FaClock, FaGoogle, FaFacebook, FaLock } from 'react-icons/fa';
 import { updateUserAddressApi, getProvincesApi, getWardsByProvinceApi } from '../../../services/profileService';
+import PasswordSecurityPanel from '../../../../identity/features/auth/components/PasswordSecurityPanel';
 
 const BACKEND_URL = 'http://localhost:5000/api/v1';
 
-const ProfileDetails = ({ account, metrics, onOpenKycModal, onRefresh }) => {
+const ProfileDetails = ({ account, onOpenKycModal, onRefresh }) => {
     const token = useSelector(state => state.identity.token);
     const userInitials = account?.full_name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
-    const authProviders = account?.auth_providers || account?.Auth_Providers || account?.AuthProviders || [];
-    const isGoogleLinked = authProviders.some(p => p.provider?.toUpperCase() === 'GOOGLE');
-    const isFacebookLinked = authProviders.some(p => p.provider?.toUpperCase() === 'FACEBOOK');
+    const authProviders = account?.auth_providers || [];
+    const isGoogleLinked = authProviders.some(p => String(p?.provider || p).toUpperCase() === 'GOOGLE');
+    const isFacebookLinked = authProviders.some(p => String(p?.provider || p).toUpperCase() === 'FACEBOOK');
 
-    const addresses = account?.User_Addresses || [];
+    const addresses = account?.saved_addresses || [];
     const defaultAddress = addresses.find(a => a.is_default) || addresses[0];
 
     const [editingAddress, setEditingAddress] = useState(false);
@@ -86,22 +87,21 @@ const ProfileDetails = ({ account, metrics, onOpenKycModal, onRefresh }) => {
 
                     <div className="trust-score-box">
                         <span className="small fw-bold text-secondary text-uppercase">Trust Score</span>
-                        <div className="score">{metrics.trustScoreStars} / 5.0</div>
-                        <div className="stars">★★★★<span className="text-muted text-opacity-25">★</span></div>
-                        <p className="small text-muted mt-2 mb-0" style={{ fontSize: '11px' }}>Based on completion rate & feedback</p>
+                        <div className="score">{account?.rating_summary?.rating_status === 'AVAILABLE' ? `${account.rating_summary.bayesian_rating} / 5` : account?.rating_summary?.rating_status === 'INSUFFICIENT_PRIOR_SAMPLE' ? 'Developing' : 'No reviews'}</div>
+                        <p className="small text-muted mt-2 mb-0" style={{ fontSize: '11px' }}>{account?.rating_summary?.review_count || 0} verified Job reviews</p>
                     </div>
 
                     <div className="d-flex justify-content-between mt-4 px-2">
                         <div>
-                            <h5 className="fw-bold text-dark m-0">{metrics.totalContracts}</h5>
+                            <h5 className="fw-bold text-dark m-0">{account?.job_summary?.total || 0}</h5>
                             <small className="text-muted" style={{ fontSize: '12px' }}>Contracts</small>
                         </div>
                         <div>
-                            <h5 className="fw-bold text-success m-0">{metrics.completedContracts}</h5>
+                            <h5 className="fw-bold text-success m-0">{account?.job_summary?.closed || 0}</h5>
                             <small className="text-muted" style={{ fontSize: '12px' }}>Completed</small>
                         </div>
                         <div>
-                            <h5 className="fw-bold text-primary m-0">{metrics.completionRate}</h5>
+                            <h5 className="fw-bold text-primary m-0">{account?.job_summary?.active || 0}</h5>
                             <small className="text-muted" style={{ fontSize: '12px' }}>Rate</small>
                         </div>
                     </div>
@@ -290,6 +290,8 @@ const ProfileDetails = ({ account, metrics, onOpenKycModal, onRefresh }) => {
                             )}
                         </div>
                     </div>
+
+                    <PasswordSecurityPanel capability={account?.password_capability} />
 
                 </div>
             </div>

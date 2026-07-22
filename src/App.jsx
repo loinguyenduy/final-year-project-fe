@@ -15,6 +15,9 @@ import CheckEmailPage from "./modules/identity/features/auth/pages/CheckEmailPag
 import VerifyEmailProcess from "./modules/identity/features/auth/pages/VerifyEmailProcess";
 import SocialCallback from "./modules/identity/features/auth/pages/SocialCallback";
 import SocialLinkCallback from "./modules/identity/features/auth/pages/SocialLinkCallback";
+import ForgotPasswordPage from './modules/identity/features/auth/pages/ForgotPasswordPage';
+import PasswordActionPage from './modules/identity/features/auth/pages/PasswordActionPage';
+import PublicProfilePage from './modules/identity/features/profile/pages/PublicProfilePage';
 import MainLayout from "./core/layouts/MainLayout";
 import HomePage from "./modules/home/pages/HomePage";
 
@@ -81,6 +84,9 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmailProcess />} />
           <Route path="/social-callback" element={<SocialCallback />} />
           <Route path="/social-link-callback" element={<SocialLinkCallback />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<PasswordActionPage mode="RESET" />} />
+          <Route path="/set-password" element={<PasswordActionPage mode="SET" />} />
           
           <Route path="/payment-success" element={<PaymentResultPage />} />
           <Route path="/payment-cancel" element={<PaymentResultPage />} />
@@ -102,6 +108,7 @@ function App() {
           >
             <Route index element={<JobLifecyclePage />} />
           </Route>
+          <Route path="/participants/:userId/profile" element={<RoleRoute allowedRoles={['CUSTOMER', 'HANDYMAN']}><PublicProfilePage /></RoleRoute>} />
 
           <Route element={<RoleRoute allowedRoles={['CUSTOMER']}><CustomerLayout /> </RoleRoute>}>
             <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />

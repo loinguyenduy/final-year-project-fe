@@ -3,12 +3,14 @@ import { FaCheckCircle } from 'react-icons/fa';
 import ContractReadOnlyView from '../../components/ContractReadOnlyView';
 import LifecycleHistoryAccordion from '../../components/LifecycleHistoryAccordion';
 import { formatDateTime } from '../../utils/jobLifecycleUi';
+import ReviewPanel from './ReviewPanel';
 
 const CompletedStage = ({
   completionState,
   contractState,
   details,
   onOpenImage,
+  onRefresh,
   role,
   warrantyState,
 }) => {
@@ -40,6 +42,7 @@ const CompletedStage = ({
       <div className="lifecycle-notice lifecycle-notice--success">
         Chat is now read-only. You can still open it to review the conversation history.
       </div>
+      <ReviewPanel jobId={details.job.id} reviewState={details.review_state} role={role} onRefresh={onRefresh} />
       <ContractReadOnlyView contract={contractState.contract} />
       {(completionState.loadError || warrantyState.loadError) && (
         <div className="lifecycle-notice lifecycle-notice--danger">

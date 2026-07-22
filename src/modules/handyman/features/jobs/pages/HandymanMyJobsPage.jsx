@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getMyBidsApi } from '../../../services/jobService';
 import { toast } from 'react-toastify';
@@ -38,16 +38,19 @@ const BID_STATUS_CONFIG = {
 
 const HandymanMyJobsPage = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const accessToken = useSelector((state) => state.identity.token);
     const [bids, setBids] = useState([]);
+    const [pagination, setPagination] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchMyBids = async () => {
             try {
-                const res = await getMyBidsApi();
+                const res = await getMyBidsApi({ view: searchParams.get('view') || 'ALL', sort: searchParams.get('sort') || 'UPDATED_DESC', page: searchParams.get('page') || 1, page_size: 20 });
                 if (res?.EC === 0) {
-                    setBids(res.DT);
+                    setBids(res.DT?.items || []);
+                    setPagination(res.DT?.pagination || null);
                 } else {
                     toast.error(res?.EM || "Failed to load your bids.");
                 }
@@ -58,14 +61,17 @@ const HandymanMyJobsPage = () => {
             }
         };
         fetchMyBids();
-    }, []);
+    }, [searchParams]);
 
     usePreLifecycleRealtime({
         accessToken,
         onInvalidate: async () => {
             try {
-                const res = await getMyBidsApi();
-                if (res?.EC === 0) setBids(res.DT);
+                const res = await getMyBidsApi({ view: searchParams.get('view') || 'ALL', sort: searchParams.get('sort') || 'UPDATED_DESC', page: searchParams.get('page') || 1, page_size: 20 });
+                if (res?.EC === 0) {
+                    setBids(res.DT?.items || []);
+                    setPagination(res.DT?.pagination || null);
+                }
             } catch {
                 // Keep the last canonical list visible until the next reconnect or manual visit.
             }
@@ -96,6 +102,9 @@ const HandymanMyJobsPage = () => {
                 <div className="mb-4">
                     <h2 className="title-text fw-bold m-0">My Jobs</h2>
                     <p className="subtitle-text text-muted m-0 mt-1">Track your bids and active jobs in one place</p>
+                </div>
+                <div className="d-flex gap-2 flex-wrap mb-4" aria-label="My Jobs filters">
+                    {['ALL', 'BIDDING', 'ASSIGNED', 'NEEDS_ACTION', 'CLOSED', 'CANCELLED'].map((view) => <button key={view} type="button" className={`btn btn-sm ${searchParams.get('view') === view || (!searchParams.get('view') && view === 'ALL') ? 'btn-warning' : 'btn-outline-secondary'}`} onClick={() => setSearchParams(view === 'ALL' ? {} : { view, page: '1' })}>{view.replace('_', ' ')}</button>)}
                 </div>
 
                 {bids.length === 0 ? (
@@ -194,6 +203,13 @@ const HandymanMyJobsPage = () => {
                             );
                         })}
                     </div>
+                )}
+                {pagination?.total_pages > 1 && (
+                    <nav className="d-flex justify-content-center align-items-center gap-3 mt-4" aria-label="My Jobs pages">
+                        <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page <= 1} onClick={() => setSearchParams({ view: searchParams.get('view') || 'ALL', page: String(pagination.page - 1) })}>Previous</button>
+                        <span>Page {pagination.page} of {pagination.total_pages}</span>
+                        <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page >= pagination.total_pages} onClick={() => setSearchParams({ view: searchParams.get('view') || 'ALL', page: String(pagination.page + 1) })}>Next</button>
+                    </nav>
                 )}
             </div>
         </div>
