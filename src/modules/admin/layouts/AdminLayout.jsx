@@ -7,6 +7,7 @@ import {
   FaBriefcase,
   FaFolderOpen,
   FaHome,
+  FaHistory,
   FaShieldAlt,
   FaSignOutAlt,
   FaTimes,
@@ -30,6 +31,7 @@ const MENU_ITEMS = [
   { path: '/admin/wallets', icon: FaWallet, title: 'Wallets' },
   { path: '/admin/transactions', icon: FaExchangeAlt, title: 'Transactions' },
   { path: '/admin/services', icon: FaWrench, title: 'Services' },
+  { path: '/admin/audit', icon: FaHistory, title: 'Audit Log' },
   { icon: FaFolderOpen, title: 'Evidence Vault', disabled: true }
 ];
 

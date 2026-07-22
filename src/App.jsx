@@ -37,7 +37,6 @@ import LifecycleWorkspaceLayout from "./modules/matchmaking/features/job-lifecyc
 import JobLifecyclePage from "./modules/matchmaking/features/job-lifecycle/pages/JobLifecyclePage";
 
 import AdminLayout from './modules/admin/layouts/AdminLayout';
-import AdminDashboardPage from './modules/admin/features/dashboard/pages/AdminDashboardPage';
 import AdminLoginPage from './modules/admin/features/login/pages/AdminLoginPage';
 import KycManagementPage from "./modules/admin/features/kyc/pages/KycManagementPage";
 import AdminJobsPage from "./modules/admin/features/jobs/pages/AdminJobsPage";
@@ -49,6 +48,11 @@ import AdminWalletsPage from './modules/admin/features/finance/pages/AdminWallet
 import AdminTransactionsPage from './modules/admin/features/finance/pages/AdminTransactionsPage';
 import AdminTransactionDetailPage from './modules/admin/features/finance/pages/AdminTransactionDetailPage';
 import AdminServicesPage from './modules/admin/features/services/pages/AdminServicesPage';
+
+const AdminDashboardPage = React.lazy(() => import('./modules/admin/features/dashboard/pages/AdminDashboardPage'));
+const AdminAuditPage = React.lazy(() => import('./modules/admin/features/audit/pages/AdminAuditPage'));
+const AdminAuditDetailPage = React.lazy(() => import('./modules/admin/features/audit/pages/AdminAuditDetailPage'));
+const adminLazy = (page) => <React.Suspense fallback={<div role="status">Loading Administrator module...</div>}>{page}</React.Suspense>;
 
 function App() {
   return (
@@ -134,7 +138,7 @@ function App() {
             </AdminRoute>
         }>
             <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboardPage />} />
+            <Route path="dashboard" element={adminLazy(<AdminDashboardPage />)} />
             <Route path="kyc" element={<KycManagementPage/>}/>
             <Route path="jobs" element={<AdminJobsPage />} />
             <Route path="jobs/:jobId" element={<AdminJobDetailPage />} />
@@ -144,6 +148,8 @@ function App() {
             <Route path="transactions" element={<AdminTransactionsPage />} />
             <Route path="transactions/:transactionId" element={<AdminTransactionDetailPage />} />
             <Route path="services" element={<AdminServicesPage />} />
+            <Route path="audit" element={adminLazy(<AdminAuditPage />)} />
+            <Route path="audit/:auditId" element={adminLazy(<AdminAuditDetailPage />)} />
             <Route path="reviews" element={<LegacyReviewRedirect list />} />
             <Route path="reviews/:caseType/:caseId" element={<LegacyReviewRedirect />} />
         </Route>
