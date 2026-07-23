@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { FaChevronDown, FaClock, FaImage } from 'react-icons/fa';
 import { formatDateTime } from '../utils/jobLifecycleUi';
-
-const formatStatus = (status) => String(status || 'Unknown').replaceAll('_', ' ');
+import { getParticipantStatusLabel as formatStatus } from '../../../../identity/utils/participantDisplay';
 
 const SnapshotGallery = ({ evidence, loading, onOpenImage }) => {
   if (loading) return <p className="inspection-section__status">Loading locked evidence…</p>;

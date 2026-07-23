@@ -4,13 +4,13 @@ import { toast } from 'react-toastify';
 import { FaCheckCircle, FaExclamationTriangle, FaClock, FaGoogle, FaFacebook, FaLock } from 'react-icons/fa';
 import { updateUserAddressApi, getProvincesApi, getWardsByProvinceApi } from '../../../services/profileService';
 import PasswordSecurityPanel from '../../../../identity/features/auth/components/PasswordSecurityPanel';
+import ParticipantAvatar from '../../../../identity/components/ParticipantAvatar';
 
 const BACKEND_URL = 'http://localhost:5000/api/v1';
 
-const ProfileDetails = ({ account, onOpenKycModal, onRefresh }) => {
+const ProfileDetails = ({ account, section = 'overview', onOpenKycModal, onRefresh }) => {
     const token = useSelector(state => state.identity.token);
-    const userInitials = account?.full_name?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
-    const authProviders = account?.auth_providers || [];
+    const authProviders = account?.linked_providers || [];
     const isGoogleLinked = authProviders.some(p => String(p?.provider || p).toUpperCase() === 'GOOGLE');
     const isFacebookLinked = authProviders.some(p => String(p?.provider || p).toUpperCase() === 'FACEBOOK');
 
@@ -81,13 +81,13 @@ const ProfileDetails = ({ account, onOpenKycModal, onRefresh }) => {
             {/* Left: summary card */}
             <div className="col-lg-4">
                 <div className="profile-card text-center">
-                    <div className="avatar-large">{userInitials}</div>
+                    <ParticipantAvatar name={account?.full_name} src={account?.avatar_url} role="CUSTOMER" size="large" className="avatar-large" />
                     <h4 className="fw-bold text-dark m-0">{account?.full_name}</h4>
                     <p className="text-muted small mb-0">{account?.role} • Member since 2026</p>
 
                     <div className="trust-score-box">
-                        <span className="small fw-bold text-secondary text-uppercase">Trust Score</span>
-                        <div className="score">{account?.rating_summary?.rating_status === 'AVAILABLE' ? `${account.rating_summary.bayesian_rating} / 5` : account?.rating_summary?.rating_status === 'INSUFFICIENT_PRIOR_SAMPLE' ? 'Developing' : 'No reviews'}</div>
+                        <span className="small fw-bold text-secondary text-uppercase">Average rating</span>
+                        <div className="score">{account?.rating_summary?.average_rating ? `${account.rating_summary.average_rating} / 5` : 'No reviews yet'}</div>
                         <p className="small text-muted mt-2 mb-0" style={{ fontSize: '11px' }}>{account?.rating_summary?.review_count || 0} verified Job reviews</p>
                     </div>
 
@@ -102,7 +102,7 @@ const ProfileDetails = ({ account, onOpenKycModal, onRefresh }) => {
                         </div>
                         <div>
                             <h5 className="fw-bold text-primary m-0">{account?.job_summary?.active || 0}</h5>
-                            <small className="text-muted" style={{ fontSize: '12px' }}>Rate</small>
+                            <small className="text-muted" style={{ fontSize: '12px' }}>Active Jobs</small>
                         </div>
                     </div>
                 </div>
@@ -112,6 +112,7 @@ const ProfileDetails = ({ account, onOpenKycModal, onRefresh }) => {
             <div className="col-lg-8">
                 <div className="d-flex flex-column gap-4">
 
+                    {section === 'overview' && <>
                     {/* Personal Information */}
                     <div className="profile-card">
                         <h6 className="fw-bold text-dark mb-4">Personal Information</h6>
@@ -266,6 +267,8 @@ const ProfileDetails = ({ account, onOpenKycModal, onRefresh }) => {
                         )}
                     </div>
 
+                    </>}
+                    {section === 'security' && <>
                     {/* Account Security */}
                     <div className="profile-card">
                         <h6 className="fw-bold text-dark mb-4">Account Security</h6>
@@ -292,6 +295,7 @@ const ProfileDetails = ({ account, onOpenKycModal, onRefresh }) => {
                     </div>
 
                     <PasswordSecurityPanel capability={account?.password_capability} />
+                    </>}
 
                 </div>
             </div>

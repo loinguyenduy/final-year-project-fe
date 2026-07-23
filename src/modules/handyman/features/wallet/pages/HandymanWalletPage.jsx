@@ -29,7 +29,6 @@ const HandymanWalletPage = () => {
 
     const mainWallet = wallets.find((wallet) => wallet.wallet_type === 'HANDYMAN_MAIN');
     const escrowWallet = wallets.find((wallet) => wallet.wallet_type === 'HANDYMAN_ESCROW');
-    const securityBondAmount = profile.security_bond_status === 'PAID' ? 2000000 : 0;
     const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', {
         style: 'currency',
         currency: 'VND',
@@ -86,8 +85,8 @@ const HandymanWalletPage = () => {
                         <small>Ready to withdraw or use</small>
                     </div>
                     <div className="card-bottom">
-                        <div className="stat-item"><span>Successful Incoming</span><strong>{formatCurrency(mainWallet?.ledger_summary?.successful_incoming)}</strong></div>
-                        <div className="stat-item"><span>Successful Outgoing</span><strong>{formatCurrency(mainWallet?.ledger_summary?.successful_outgoing)}</strong></div>
+                        <div className="stat-item"><span>Successful Incoming</span><strong>{formatCurrency(mainWallet?.total_incoming)}</strong></div>
+                        <div className="stat-item"><span>Successful Outgoing</span><strong>{formatCurrency(mainWallet?.total_outgoing)}</strong></div>
                     </div>
                 </div>
 
@@ -101,8 +100,8 @@ const HandymanWalletPage = () => {
                         <small>Restricted wallet for security and job guarantees</small>
                     </div>
                     <div className="card-bottom">
-                        <div className="stat-item"><span>Security Bond</span><strong>{formatCurrency(securityBondAmount)}</strong></div>
-                        <div className="stat-item"><span>Pending Entries</span><strong>{escrowWallet?.ledger_summary?.pending_count || 0}</strong></div>
+                        <div className="stat-item"><span>Security Bond</span><strong>{profile.security_bond_status || 'UNPAID'}</strong></div>
+                        <div className="stat-item"><span>Pending Entries</span><strong>{escrowWallet?.pending_transaction_count || 0}</strong></div>
                     </div>
                 </div>
             </div>

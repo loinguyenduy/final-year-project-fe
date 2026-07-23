@@ -9,6 +9,7 @@ import {
     isLifecycleWorkspaceStatus,
 } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 import '../styles/FindJob.scss';
+import '../../../../customer/features/jobs/styles/MyJobs.scss';
 import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
 
 const STATUS_TEXT = {
@@ -43,6 +44,17 @@ const HandymanMyJobsPage = () => {
     const [bids, setBids] = useState([]);
     const [pagination, setPagination] = useState(null);
     const [loading, setLoading] = useState(true);
+    const activeView = searchParams.get('view') || 'ALL';
+    const activeSort = searchParams.get('sort') || 'UPDATED_DESC';
+
+    const updateQuery = (changes) => {
+        const next = new URLSearchParams(searchParams);
+        Object.entries(changes).forEach(([key, value]) => {
+            if (value == null || value === '') next.delete(key);
+            else next.set(key, value);
+        });
+        setSearchParams(next);
+    };
 
     useEffect(() => {
         const fetchMyBids = async () => {
@@ -103,8 +115,19 @@ const HandymanMyJobsPage = () => {
                     <h2 className="title-text fw-bold m-0">My Jobs</h2>
                     <p className="subtitle-text text-muted m-0 mt-1">Track your bids and active jobs in one place</p>
                 </div>
-                <div className="d-flex gap-2 flex-wrap mb-4" aria-label="My Jobs filters">
-                    {['ALL', 'BIDDING', 'ASSIGNED', 'NEEDS_ACTION', 'CLOSED', 'CANCELLED'].map((view) => <button key={view} type="button" className={`btn btn-sm ${searchParams.get('view') === view || (!searchParams.get('view') && view === 'ALL') ? 'btn-warning' : 'btn-outline-secondary'}`} onClick={() => setSearchParams(view === 'ALL' ? {} : { view, page: '1' })}>{view.replace('_', ' ')}</button>)}
+                <div className="my-jobs-controls mb-4">
+                  <div className="custom-tabs-container">
+                    <div className="custom-tabs" aria-label="My Jobs filters">
+                      {['ALL', 'BIDDING', 'ASSIGNED', 'NEEDS_ACTION', 'CLOSED', 'CANCELLED'].map((view) => <button key={view} type="button" className={`tab-btn ${activeView === view ? 'active' : ''}`} onClick={() => updateQuery({ view: view === 'ALL' ? null : view, page: '1' })}>{{ ALL: 'All', BIDDING: 'Bidding', ASSIGNED: 'Assigned', NEEDS_ACTION: 'Needs Action', CLOSED: 'Completed', CANCELLED: 'Cancelled' }[view]}</button>)}
+                    </div>
+                  </div>
+                  <label className="my-jobs-sort">Sort
+                    <select value={activeSort} onChange={(event) => updateQuery({ sort: event.target.value === 'UPDATED_DESC' ? null : event.target.value, page: '1' })}>
+                      <option value="UPDATED_DESC">Recently updated</option>
+                      <option value="SCHEDULED_ASC">Scheduled soonest</option>
+                      <option value="CREATED_DESC">Newest</option>
+                    </select>
+                  </label>
                 </div>
 
                 {bids.length === 0 ? (
@@ -206,9 +229,9 @@ const HandymanMyJobsPage = () => {
                 )}
                 {pagination?.total_pages > 1 && (
                     <nav className="d-flex justify-content-center align-items-center gap-3 mt-4" aria-label="My Jobs pages">
-                        <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page <= 1} onClick={() => setSearchParams({ view: searchParams.get('view') || 'ALL', page: String(pagination.page - 1) })}>Previous</button>
+                        <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page <= 1} onClick={() => updateQuery({ page: String(pagination.page - 1) })}>Previous</button>
                         <span>Page {pagination.page} of {pagination.total_pages}</span>
-                        <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page >= pagination.total_pages} onClick={() => setSearchParams({ view: searchParams.get('view') || 'ALL', page: String(pagination.page + 1) })}>Next</button>
+                        <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page >= pagination.total_pages} onClick={() => updateQuery({ page: String(pagination.page + 1) })}>Next</button>
                     </nav>
                 )}
             </div>

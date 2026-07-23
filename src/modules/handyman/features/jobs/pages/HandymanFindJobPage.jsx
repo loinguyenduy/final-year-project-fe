@@ -226,7 +226,7 @@ const HandymanFindJobPage = () => {
                     <div className="d-flex flex-column gap-3">
                         {jobs.map((job) => {
                             const jobCode = `JOB-${job.id.substring(0, 4).toUpperCase()}`;
-                            const avgRating = job.Customer?.rating_summary?.bayesian_rating || null;
+                            const avgRating = job.Customer?.rating_summary?.average_rating || null;
 
                             return (
                                 <div key={job.id} className="job-list-item-card">

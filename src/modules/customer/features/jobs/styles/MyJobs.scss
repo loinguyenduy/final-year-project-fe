@@ -249,3 +249,34 @@
     text-overflow: ellipsis;
   }
 }
+.my-jobs-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.my-jobs-sort {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  color: #64748b;
+  font-size: .85rem;
+  font-weight: 650;
+  white-space: nowrap;
+  select {
+    min-height: 40px;
+    padding: .4rem 2rem .4rem .7rem;
+    border: 1px solid #cbd5e1;
+    border-radius: .55rem;
+    background: #fff;
+    color: #334155;
+  }
+}
+
+@media (max-width: 767px) {
+  .my-jobs-controls { align-items: flex-start; flex-direction: column; }
+  .custom-tabs-container { width: 100%; overflow-x: auto; scrollbar-width: thin; }
+  .custom-tabs { width: max-content; min-width: 100%; }
+}

@@ -1,22 +1,16 @@
 import React from 'react';
 import { FaAward, FaStar, FaShieldAlt, FaCheck } from 'react-icons/fa';
+import ParticipantAvatar from '../../../../identity/components/ParticipantAvatar';
 
 const ProfileSidebar = ({ account, profile }) => {
     const fullName = account?.full_name || 'N/A';
-    const wallets = account?.wallets || [];
+    const wallets = account?.wallet_summary || [];
     const level = profile?.handyman_level || 'C1';
     const rating = account?.rating_summary;
-    const bayesianScore = rating?.rating_status === 'AVAILABLE' ? rating.bayesian_rating : null;
+    const averageRating = rating?.average_rating || null;
     const totalJobs = account?.job_summary?.closed || 0;
     const isBondPaid = profile?.security_bond_status === 'PAID';
     const escrowBalance = wallets.find(w => w.wallet_type === 'HANDYMAN_ESCROW')?.available_balance || 0;
-
-    const userInitials = fullName
-        .split(' ')
-        .map(n => n[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase();
 
     const formatCurrency = (amount) =>
         new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
@@ -24,7 +18,7 @@ const ProfileSidebar = ({ account, profile }) => {
     return (
         <div className="profile-sidebar">
             <div className="avatar-wrapper">
-                {userInitials}
+                <ParticipantAvatar name={fullName} src={account?.avatar_url} role="HANDYMAN" size="large" />
                 <div className="badge-icon"><FaAward /></div>
             </div>
             <h4>{fullName}</h4>
@@ -35,9 +29,9 @@ const ProfileSidebar = ({ account, profile }) => {
             </div>
 
             <div className="rating-box">
-                <div className="title">Reputation Score</div>
-                {bayesianScore && <div className="stars"><FaStar /></div>}
-                <div className="score">{bayesianScore || (rating?.rating_status === 'INSUFFICIENT_PRIOR_SAMPLE' ? 'Developing' : 'No reviews')}</div>
+                <div className="title">Average rating</div>
+                {averageRating && <div className="stars"><FaStar /></div>}
+                <div className="score">{averageRating || 'No reviews yet'}</div>
                 <small>{rating?.review_count || 0} verified reviews</small>
             </div>
 
@@ -47,12 +41,12 @@ const ProfileSidebar = ({ account, profile }) => {
                     <span>Jobs Done</span>
                 </div>
                 <div className="stat">
-                    <strong>—</strong>
-                    <span>Success</span>
+                    <strong>{rating?.review_count || 0}</strong>
+                    <span>Reviews</span>
                 </div>
                 <div className="stat">
-                    <strong>—</strong>
-                    <span>Reviews</span>
+                    <strong>{account?.job_summary?.active || 0}</strong>
+                    <span>Active</span>
                 </div>
             </div>
 

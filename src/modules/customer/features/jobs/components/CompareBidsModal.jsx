@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { FaTimes, FaStar, FaBalanceScale, FaClock } from 'react-icons/fa';
+import { FaStar, FaClock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { compareBidsApi } from '../../../services/jobService';
+import ParticipantModal from '../../../../identity/components/ParticipantModal';
+import ParticipantAvatar from '../../../../identity/components/ParticipantAvatar';
 import '../styles/CustomerJobsComponents.scss';
 
 const CompareBidsModal = ({ jobId, selectedBidIds, onClose, onAcceptBid }) => {
@@ -57,19 +59,7 @@ const CompareBidsModal = ({ jobId, selectedBidIds, onClose, onAcceptBid }) => {
     if (!jobId || !selectedBidIds) return null;
 
     return (
-        <div className="customer-modal-overlay" onClick={onClose}>
-            <div className="customer-modal-content compare-modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                    <div className="modal-heading">
-                        <span className="modal-kicker"><FaBalanceScale /> Bid comparison</span>
-                        <h3>Choose with confidence</h3>
-                        <p>Compare price, reliability, experience, verification, and timing before hiring.</p>
-                    </div>
-                    <button className="close-btn" onClick={onClose}>
-                        <FaTimes />
-                    </button>
-                </div>
-                
+        <ParticipantModal title="Choose with confidence" description="Compare price, reliability, experience, verification, and timing before hiring." onClose={onClose} size="compare">
                 <div className="modal-body">
                     {loading ? (
                         <div className="text-center p-5">
@@ -85,13 +75,7 @@ const CompareBidsModal = ({ jobId, selectedBidIds, onClose, onAcceptBid }) => {
                                         {comparisonData.map((bid) => (
                                             <th key={bid.bid_id} className={`handyman-col ${bid.isBestChoice ? 'best-choice-col' : ''}`}>
                                                 <div className="compare-avatar-wrapper">
-                                                    {bid.handyman?.avatar_url ? (
-                                                        <img src={bid.handyman.avatar_url} alt="Avatar" className={`compare-avatar ${bid.isBestChoice ? 'best' : ''}`} />
-                                                    ) : (
-                                                        <div className={`compare-avatar-placeholder ${bid.isBestChoice ? 'best' : ''}`}>
-                                                            {bid.handyman?.full_name?.charAt(0).toUpperCase()}
-                                                        </div>
-                                                    )}
+                                                    <ParticipantAvatar name={bid.handyman?.full_name} src={bid.handyman?.avatar_url} role="HANDYMAN" />
                                                     <div className="compare-name">{bid.handyman?.full_name}</div>
                                                 </div>
                                             </th>
@@ -148,7 +132,7 @@ const CompareBidsModal = ({ jobId, selectedBidIds, onClose, onAcceptBid }) => {
                                         {comparisonData.map((bid) => (
                                             <td key={`score-${bid.bid_id}`} className={bid.isBestChoice ? 'best-choice-col' : ''}>
                                                 <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>
-                                                    <FaStar size={13} style={{ marginBottom: '3px' }}/> {bid.handyman?.rating_summary?.bayesian_rating || 'Developing'}
+                                                    <FaStar size={13} style={{ marginBottom: '3px' }}/> {bid.handyman?.rating_summary?.average_rating || 'No reviews'}
                                                 </span>
                                             </td>
                                         ))}
@@ -213,8 +197,7 @@ const CompareBidsModal = ({ jobId, selectedBidIds, onClose, onAcceptBid }) => {
                         </div>
                     )}
                 </div>
-            </div>
-        </div>
+        </ParticipantModal>
     );
 };
 

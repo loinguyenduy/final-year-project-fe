@@ -20,8 +20,8 @@ const Features = () => {
                                     <FaStar />
                                 </div>
                                 <div>
-                                    <h5>Bayesian Reputation Score</h5>
-                                    <p>Prevents score manipulation by new accounts. Emphasizes job completion rate over just star ratings.</p>
+                                    <h5>Verified Job Ratings</h5>
+                                    <p>Ratings and comments come from canonical Reviews submitted after completed Jobs.</p>
                                 </div>
                             </div>
 
@@ -54,7 +54,7 @@ const Features = () => {
                                     <div className="avatar">JD</div>
                                     <div className="info">
                                         <p className="name">John Doe (Electrician)</p>
-                                        <p className="score">★ 4.8 Bayesian Score</p>
+                                        <p className="score">Verified Job Reviews</p>
                                     </div>
                                     <div className="kyc-badge">Level 2 KYC</div>
                                 </div>

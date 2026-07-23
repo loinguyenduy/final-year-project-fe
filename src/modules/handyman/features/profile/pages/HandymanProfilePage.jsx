@@ -10,6 +10,7 @@ import SkillsAndBioCard from '../components/SkillsAndBioCard';
 import ServiceAreasCard from '../components/ServiceAreasCard';
 import WorkTimesCard from '../components/WorkTimesCard';
 import SecurityDocsTab from '../components/SecurityDocsTab';
+import ParticipantProfileReviews from '../../../../identity/components/ParticipantProfileReviews';
 import '../styles/HandymanProfile.scss';
 
 const HandymanProfilePage = () => {
@@ -64,6 +65,12 @@ const HandymanProfilePage = () => {
                                 className={`tab-btn ${activeTab === 1 ? 'active' : ''}`}
                                 onClick={() => setActiveTab(1)}
                             >
+                                Reviews
+                            </button>
+                            <button
+                                className={`tab-btn ${activeTab === 2 ? 'active' : ''}`}
+                                onClick={() => setActiveTab(2)}
+                            >
                                 <FaShieldAlt className="me-2" />Security & Docs
                             </button>
                         </div>
@@ -91,7 +98,9 @@ const HandymanProfilePage = () => {
                             </>
                         )}
 
-                        {activeTab === 1 && (
+                        {activeTab === 1 && <ParticipantProfileReviews userId={account.id} ratingSummary={account.rating_summary} />}
+
+                        {activeTab === 2 && (
                             <SecurityDocsTab account={account} />
                         )}
                     </div>

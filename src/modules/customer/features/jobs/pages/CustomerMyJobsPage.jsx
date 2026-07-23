@@ -7,13 +7,14 @@ import { getCustomerJobsApi } from '../../../services/jobService';
 import { getJobDetailsPath } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 import '../styles/MyJobs.scss';
 import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
+import ParticipantAvatar from '../../../../identity/components/ParticipantAvatar';
 
 const CustomerMyJobsPage = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const accessToken = useSelector((state) => state.identity.token);
     const [filteredJobs, setFilteredJobs] = useState([]);
-    const [activeTab, setActiveTab] = useState(searchParams.get('view') || 'ALL');
+    const activeTab = searchParams.get('view') || 'ALL';
     const [pagination, setPagination] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -43,8 +44,19 @@ const CustomerMyJobsPage = () => {
     });
 
     const selectView = (value) => {
-        setActiveTab(value);
-        setSearchParams(value === 'ALL' ? {} : { view: value, page: '1' });
+        const next = new URLSearchParams(searchParams);
+        if (value === 'ALL') next.delete('view');
+        else next.set('view', value);
+        next.set('page', '1');
+        setSearchParams(next);
+    };
+
+    const selectSort = (value) => {
+        const next = new URLSearchParams(searchParams);
+        if (value === 'UPDATED_DESC') next.delete('sort');
+        else next.set('sort', value);
+        next.set('page', '1');
+        setSearchParams(next);
     };
 
     const formatCurrency = (val) => {
@@ -111,14 +123,23 @@ const CustomerMyJobsPage = () => {
             </div>
 
             {/* Filter Tabs */}
-            <div className="custom-tabs-container mb-4">
+            <div className="my-jobs-controls mb-4">
+              <div className="custom-tabs-container">
                 <div className="custom-tabs">
                     {['ALL', 'NEEDS_ACTION', 'ACTIVE', 'CLOSED', 'CANCELLED'].map((view) => (
                         <button key={view} className={`tab-btn ${activeTab === view ? 'active' : ''}`} onClick={() => selectView(view)}>
-                            {view.replace('_', ' ')}{activeTab === view && pagination ? ` (${pagination.total_items})` : ''}
+                            {{ ALL: 'All', NEEDS_ACTION: 'Needs Action', ACTIVE: 'Active', CLOSED: 'Completed', CANCELLED: 'Cancelled' }[view]}{activeTab === view && pagination ? ` (${pagination.total_items})` : ''}
                         </button>
                     ))}
                 </div>
+              </div>
+              <label className="my-jobs-sort">Sort
+                <select value={searchParams.get('sort') || 'UPDATED_DESC'} onChange={(event) => selectSort(event.target.value)}>
+                  <option value="UPDATED_DESC">Recently updated</option>
+                  <option value="SCHEDULED_ASC">Scheduled soonest</option>
+                  <option value="CREATED_DESC">Newest</option>
+                </select>
+              </label>
             </div>
 
             {/* Jobs Grid List */}
@@ -186,19 +207,7 @@ const CustomerMyJobsPage = () => {
                                             {/* Handyman details */}
                                             {job.SelectedHandyman ? (
                                                 <div className="handyman-info d-flex align-items-center">
-                                                    <div className="handyman-avatar me-2">
-                                                        {job.SelectedHandyman.avatar_url ? (
-                                                            <img 
-                                                                src={job.SelectedHandyman.avatar_url} 
-                                                                alt={job.SelectedHandyman.full_name} 
-                                                                className="avatar-img" 
-                                                            />
-                                                        ) : (
-                                                            <span className="avatar-placeholder">
-                                                                {job.SelectedHandyman.full_name.charAt(0).toUpperCase()}
-                                                            </span>
-                                                        )}
-                                                    </div>
+                                                    <ParticipantAvatar name={job.SelectedHandyman.full_name} src={job.SelectedHandyman.avatar_url} role="HANDYMAN" size="small" className="me-2" />
                                                     <div className="handyman-meta">
                                                         <h6 className="handyman-name fw-bold m-0 text-slate-700">
                                                             {job.SelectedHandyman.full_name}
@@ -245,9 +254,9 @@ const CustomerMyJobsPage = () => {
             )}
             {pagination?.total_pages > 1 && (
                 <nav className="d-flex justify-content-center align-items-center gap-3 mt-4" aria-label="My Jobs pages">
-                    <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page <= 1} onClick={() => setSearchParams({ view: activeTab, page: String(pagination.page - 1) })}>Previous</button>
+                    <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page <= 1} onClick={() => { const next = new URLSearchParams(searchParams); next.set('page', String(pagination.page - 1)); setSearchParams(next); }}>Previous</button>
                     <span>Page {pagination.page} of {pagination.total_pages}</span>
-                    <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page >= pagination.total_pages} onClick={() => setSearchParams({ view: activeTab, page: String(pagination.page + 1) })}>Next</button>
+                    <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page >= pagination.total_pages} onClick={() => { const next = new URLSearchParams(searchParams); next.set('page', String(pagination.page + 1)); setSearchParams(next); }}>Next</button>
                 </nav>
             )}
         </div>

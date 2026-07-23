@@ -5,6 +5,7 @@ import { doFetchProfileSuccess } from '../../../../identity/redux/authAction';
 import ProfileDetails from '../components/ProfileDetails';
 import KycModal from '../components/KycModal';
 import { toast } from 'react-toastify';
+import ParticipantProfileReviews from '../../../../identity/components/ParticipantProfileReviews';
 import '../styles/ProfileKyc.scss'; 
 
 const CustomerProfilePage = () => {
@@ -12,6 +13,7 @@ const CustomerProfilePage = () => {
     const { account } = useSelector(state => state.identity);
     const [isLoading, setIsLoading] = useState(true);
     const [showKycModal, setShowKycModal] = useState(false);
+    const [activeTab, setActiveTab] = useState('overview');
 
     const syncProfile = useCallback(async () => {
         try {
@@ -40,11 +42,17 @@ const CustomerProfilePage = () => {
 
     return (
         <div className="py-2">
-            <ProfileDetails
-                account={account}
-                onOpenKycModal={() => setShowKycModal(true)}
-                onRefresh={syncProfile}
-            />
+            <div className="participant-profile-tabs" role="tablist" aria-label="Profile sections">
+                {['overview', 'reviews', 'security'].map((tab) => <button key={tab} type="button" role="tab" aria-selected={activeTab === tab} className={activeTab === tab ? 'active' : ''} onClick={() => setActiveTab(tab)}>{tab[0].toUpperCase() + tab.slice(1)}</button>)}
+            </div>
+            {activeTab === 'reviews' ? <ParticipantProfileReviews userId={account.id} ratingSummary={account.rating_summary} /> : (
+                <ProfileDetails
+                    account={account}
+                    section={activeTab}
+                    onOpenKycModal={() => setShowKycModal(true)}
+                    onRefresh={syncProfile}
+                />
+            )}
             
             <KycModal 
                 show={showKycModal} 
