@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { useLocation } from 'react-router-dom';
 import { logoutUserApi } from '../services/authService';
 import { doLogoutSuccess } from '../redux/authAction';
 import { disconnectAllAuthenticatedSockets } from '../../chat/socket/chatSocket';
@@ -10,7 +9,6 @@ const MOBILE_QUERY = '(max-width: 991px)';
 
 const useParticipantShell = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -51,19 +49,17 @@ const useParticipantShell = () => {
   const logout = useCallback(async () => {
     if (loggingOut) return;
     setLoggingOut(true);
-    let serverLogoutFailed = false;
     try {
       await logoutUserApi();
     } catch {
-      serverLogoutFailed = true;
+      // Local logout still completes when the server session cannot be reached.
     } finally {
       setDrawerOpen(false);
       disconnectAllAuthenticatedSockets();
       dispatch(doLogoutSuccess());
-      navigate('/', { replace: true });
-      if (serverLogoutFailed) toast.warn('Signed out locally. The server session could not be revoked.');
+      window.location.replace('/');
     }
-  }, [dispatch, loggingOut, navigate]);
+  }, [dispatch, loggingOut]);
 
   return {
     collapsed,

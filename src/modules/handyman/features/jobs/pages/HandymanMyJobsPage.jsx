@@ -116,7 +116,7 @@ const HandymanMyJobsPage = () => {
                     <p className="subtitle-text text-muted m-0 mt-1">Track your bids and active jobs in one place</p>
                 </div>
                 <div className="my-jobs-controls mb-4">
-                  <div className="custom-tabs-container">
+                  <div className="custom-tabs-container participant-my-jobs-tabs">
                     <div className="custom-tabs" aria-label="My Jobs filters">
                       {['ALL', 'BIDDING', 'ASSIGNED', 'NEEDS_ACTION', 'CLOSED', 'CANCELLED'].map((view) => <button key={view} type="button" className={`tab-btn ${activeView === view ? 'active' : ''}`} onClick={() => updateQuery({ view: view === 'ALL' ? null : view, page: '1' })}>{{ ALL: 'All', BIDDING: 'Bidding', ASSIGNED: 'Assigned', NEEDS_ACTION: 'Needs Action', CLOSED: 'Completed', CANCELLED: 'Cancelled' }[view]}</button>)}
                     </div>

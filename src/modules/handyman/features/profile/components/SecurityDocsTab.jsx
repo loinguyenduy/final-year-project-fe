@@ -24,7 +24,6 @@ const SecurityDocsTab = ({ account }) => {
 
     return (
         <>
-            <PasswordSecurityPanel capability={account?.password_capability} />
             <div className="content-card">
                 <h6>Account Security</h6>
                 <div className="security-row">
@@ -48,6 +47,8 @@ const SecurityDocsTab = ({ account }) => {
                     )}
                 </div>
             </div>
+
+            <PasswordSecurityPanel capability={account?.password_capability} />
 
             <div className="content-card">
                 <div className="d-flex justify-content-between align-items-center mb-3">

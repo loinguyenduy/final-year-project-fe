@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FaCheckCircle, FaExclamationTriangle, FaClock, FaGoogle, FaFacebook, FaLock } from 'react-icons/fa';
+import { FaCheckCircle, FaExclamationTriangle, FaClock, FaGoogle, FaFacebook, FaLock, FaStar } from 'react-icons/fa';
 import { updateUserAddressApi, getProvincesApi, getWardsByProvinceApi } from '../../../services/profileService';
 import PasswordSecurityPanel from '../../../../identity/features/auth/components/PasswordSecurityPanel';
 import ParticipantAvatar from '../../../../identity/components/ParticipantAvatar';
 
 const BACKEND_URL = 'http://localhost:5000/api/v1';
 
-const ProfileDetails = ({ account, section = 'overview', onOpenKycModal, onRefresh }) => {
+const ProfileDetails = ({ account, section = 'overview', onSectionChange, reviewsContent, onOpenKycModal, onRefresh }) => {
     const token = useSelector(state => state.identity.token);
     const authProviders = account?.linked_providers || [];
     const isGoogleLinked = authProviders.some(p => String(p?.provider || p).toUpperCase() === 'GOOGLE');
@@ -80,18 +80,20 @@ const ProfileDetails = ({ account, section = 'overview', onOpenKycModal, onRefre
         <div className="profile-kyc-container row g-4">
             {/* Left: summary card */}
             <div className="col-lg-4">
-                <div className="profile-card text-center">
+                <div className="profile-card profile-summary-card text-center">
                     <ParticipantAvatar name={account?.full_name} src={account?.avatar_url} role="CUSTOMER" size="large" className="avatar-large" />
                     <h4 className="fw-bold text-dark m-0">{account?.full_name}</h4>
                     <p className="text-muted small mb-0">{account?.role} • Member since 2026</p>
 
                     <div className="trust-score-box">
                         <span className="small fw-bold text-secondary text-uppercase">Average rating</span>
-                        <div className="score">{account?.rating_summary?.average_rating ? `${account.rating_summary.average_rating} / 5` : 'No reviews yet'}</div>
+                        {account?.rating_summary?.average_rating ? (
+                            <div className="score"><span>{account.rating_summary.average_rating}</span><FaStar aria-label="star" /></div>
+                        ) : <div className="score score-empty">No reviews yet</div>}
                         <p className="small text-muted mt-2 mb-0" style={{ fontSize: '11px' }}>{account?.rating_summary?.review_count || 0} verified Job reviews</p>
                     </div>
 
-                    <div className="d-flex justify-content-between mt-4 px-2">
+                    <div className="profile-summary-stats">
                         <div>
                             <h5 className="fw-bold text-dark m-0">{account?.job_summary?.total || 0}</h5>
                             <small className="text-muted" style={{ fontSize: '12px' }}>Contracts</small>
@@ -110,7 +112,14 @@ const ProfileDetails = ({ account, section = 'overview', onOpenKycModal, onRefre
 
             {/* Right: details */}
             <div className="col-lg-8">
-                <div className="d-flex flex-column gap-4">
+                <div className="profile-content-column d-flex flex-column gap-4">
+                    <div className="participant-profile-tabs" role="tablist" aria-label="Profile sections">
+                        {['overview', 'reviews', 'security'].map((tab) => (
+                            <button key={tab} type="button" role="tab" aria-selected={section === tab} className={section === tab ? 'active' : ''} onClick={() => onSectionChange?.(tab)}>
+                                {tab[0].toUpperCase() + tab.slice(1)}
+                            </button>
+                        ))}
+                    </div>
 
                     {section === 'overview' && <>
                     {/* Personal Information */}
@@ -268,6 +277,7 @@ const ProfileDetails = ({ account, section = 'overview', onOpenKycModal, onRefre
                     </div>
 
                     </>}
+                    {section === 'reviews' && reviewsContent}
                     {section === 'security' && <>
                     {/* Account Security */}
                     <div className="profile-card">

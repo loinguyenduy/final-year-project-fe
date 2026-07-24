@@ -93,7 +93,7 @@ const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) =>
 
     if (loading) {
         return (
-            <ParticipantModal title="Hire confirmation and deposit" description="Calculating the canonical deposit summary." onClose={onClose} size="deposit">
+            <ParticipantModal className="hire-confirm-modal" title="Hire confirmation and deposit" description="Calculating the canonical deposit summary." onClose={onClose} size="deposit">
                 <div className="text-center py-5">
                     <div className="spinner-border text-primary" role="status" />
                     <p className="mt-3 text-muted">Calculating deposit summary...</p>
@@ -114,6 +114,7 @@ const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) =>
             onClose={onClose}
             closeDisabled={submitting}
             size="deposit"
+            className="hire-confirm-modal"
         >
                 <div className="modal-body">
                     {/* Timer Banner */}

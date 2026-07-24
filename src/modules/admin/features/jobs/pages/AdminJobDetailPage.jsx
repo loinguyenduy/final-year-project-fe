@@ -9,6 +9,7 @@ import {
   FaMapMarkedAlt,
   FaMoneyBillWave,
   FaShieldAlt,
+  FaStar,
   FaUsers
 } from 'react-icons/fa';
 import { useNavigate, useOutletContext, useParams, useSearchParams } from 'react-router-dom';
@@ -76,7 +77,7 @@ const PersonPanel = ({ title, person }) => (
       ]} />
       {person.profile && <div className="participant-profile-strip">
         <span><strong>{person.profile.handyman_level}</strong>Level</span>
-        <span><strong>{person.profile.rating_summary?.average_rating || 'No reviews'}</strong>Average rating</span>
+        <span><strong>{person.profile.rating_summary?.average_rating || 'No reviews'} {person.profile.rating_summary?.average_rating && <FaStar color="#facc15" aria-label="star" />}</strong>Average rating</span>
         <span><strong>{person.profile.total_jobs_completed}</strong>Completed</span>
         <span><strong>{person.profile.accepted_cancellation_count}</strong>Cancellations</span>
       </div>}
@@ -364,7 +365,7 @@ const AdminJobDetailPage = () => {
     <div className="admin-job-detail-page">
       <button type="button" className="job-back-link" onClick={() => navigate('/admin/jobs')}><FaArrowLeft /> Back to Jobs</button>
       <header className="job-workspace-header">
-        <div className="job-workspace-title"><p className="admin-eyebrow">Job workspace</p><h2>{job.display_title}</h2><div><code>{job.id}</code><span>Cycle {job.acceptance_cycle || '—'}</span><span>Created {formatDate(job.created_at)}</span></div></div>
+        <div className="job-workspace-title"><p className="admin-eyebrow">Job workspace</p><h2>{job.display_title}</h2><div><span className="job-workspace-id">{job.id}</span><span>Cycle {job.acceptance_cycle || '—'}</span><span>Created {formatDate(job.created_at)}</span></div></div>
         <div className="job-workspace-state"><StatusBadge status={job.status} /><strong>{money(job.budget.final_agreed_price)}</strong><small>Final agreed price</small></div>
       </header>
 

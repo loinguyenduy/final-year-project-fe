@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { FaStar } from 'react-icons/fa';
 import { getPublicProfileApi, getPublicReviewsApi } from '../../../services/participantService';
 import { formatRating } from '../../../utils/participantDisplay';
 import { StarRatingDisplay } from '../../../components/StarRating';
@@ -28,7 +29,7 @@ const PublicProfilePage = () => {
   if (state.loading) return <main className="public-profile-state" role="status">Loading public profile…</main>;
   if (state.error || !profile) return <main className="public-profile-state"><p>{state.error}</p><Link to="/">Go back</Link></main>;
   return <main className="public-profile"><header><div className="public-profile__avatar">{profile.avatar_url ? <img src={profile.avatar_url} alt="" /> : profile.display_name?.charAt(0)}</div><div><span>{profile.role}</span><h1>{profile.display_name}</h1><p>Member since {new Date(profile.member_since).toLocaleDateString()}</p></div></header>
-    <section className="public-profile__summary"><div><span>Average rating</span><strong>{formatRating(profile.rating_summary)}</strong><small>{profile.rating_summary.review_count} verified reviews</small></div><div><span>Completed Jobs</span><strong>{profile.closed_job_count}</strong></div><div><span>Trust</span><strong>{profile.trust.kyc_status}</strong>{profile.trust.handyman_level && <small>Level {profile.trust.handyman_level}</small>}</div></section>
+    <section className="public-profile__summary"><div><span>Average rating</span><strong>{formatRating(profile.rating_summary)} {profile.rating_summary.review_count > 0 && <FaStar color="#facc15" aria-label="star" />}</strong><small>{profile.rating_summary.review_count} verified reviews</small></div><div><span>Completed Jobs</span><strong>{profile.closed_job_count}</strong></div><div><span>Trust</span><strong>{profile.trust.kyc_status}</strong>{profile.trust.handyman_level && <small>Level {profile.trust.handyman_level}</small>}</div></section>
     {profile.bio && <section><h2>About</h2><p>{profile.bio}</p></section>}
     {profile.services?.length > 0 && <section><h2>Services</h2><div className="public-profile__chips">{profile.services.map((service) => <span key={service.id}>{service.name}</span>)}</div></section>}
     <section><h2>Verified Job Reviews</h2>{reviews.length ? <div className="public-review-list">{reviews.map((review) => <article key={review.review_id}><div><strong>{review.reviewer.display_name}</strong><StarRatingDisplay value={review.rating} size="small" /></div>{review.comment && <p>{review.comment}</p>}<small>{new Date(review.created_at).toLocaleDateString()} · Verified Job Review{review.service?.name ? ` · ${review.service.name}` : ''}</small></article>)}</div> : <p>No reviews yet.</p>}{hasMore && <button onClick={loadMore}>Load more reviews</button>}</section>

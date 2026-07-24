@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { FaStar } from 'react-icons/fa';
 import { getHandymanOverviewApi } from '../../../../identity/services/participantService';
 import { formatRating, getParticipantStatusLabel } from '../../../../identity/utils/participantDisplay';
 import '../../../../customer/features/dashboard/styles/ParticipantOverview.scss';
@@ -26,7 +27,7 @@ const HandymanDashboardPage = () => {
       <article><span>Available balance</span><strong>{money(data.wallet?.available_balance, data.wallet?.currency)}</strong><Link to="/handyman/wallet">Open wallet</Link></article>
       <article><span>Active Jobs</span><strong>{data.job_summary.active}</strong><Link to="/handyman/my-jobs?view=ASSIGNED">View assignments</Link></article>
       <article><span>Active bids</span><strong>{data.active_bid_count}</strong><Link to="/handyman/my-jobs?view=BIDDING">View bids</Link></article>
-      <article><span>Rating</span><strong>{formatRating(data.rating_summary)}</strong><span>{data.rating_summary.review_count} reviews</span></article>
+      <article><span>Rating</span><strong>{formatRating(data.rating_summary)} {data.rating_summary.review_count > 0 && <FaStar color="#facc15" aria-label="star" />}</strong><span>{data.rating_summary.review_count} reviews</span></article>
     </section>
     <div className="participant-overview__columns">
       <section className="participant-overview__actions"><div className="section-heading"><h2>Action required</h2><span>{data.needs_action.length}</span></div>{data.needs_action.length ? <div className="overview-list">{data.needs_action.map((item) => <Link to={item.destination} key={`${item.job_id}-${item.action_label}`}><div><strong>{item.action_label}</strong><span>{item.service?.name || 'Service Job'} · {getParticipantStatusLabel(item.status)}</span></div><time>{new Date(item.updated_at).toLocaleDateString()}</time></Link>)}</div> : <p className="empty-copy">You are all caught up.</p>}</section>

@@ -20,7 +20,7 @@ const getParticipantStatusLabel = (status) => PARTICIPANT_STATUS_LABELS[status]
 
 const formatRating = (ratingSummary) => {
   if (!ratingSummary?.review_count || ratingSummary.average_rating == null) return 'No reviews yet';
-  return `${ratingSummary.average_rating} / 5`;
+  return String(ratingSummary.average_rating);
 };
 
 export { formatRating, getParticipantInitials, getParticipantStatusLabel };

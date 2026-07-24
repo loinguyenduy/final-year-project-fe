@@ -537,4 +537,45 @@ $border:     #e2e8f0;
       }
     }
   }
+
+  .password-security-panel {
+    background: $white;
+    border: 1px solid $border;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    form {
+      gap: .9rem !important;
+    }
+
+    label {
+      display: grid;
+      gap: .35rem;
+      color: $slate-700;
+      font-size: .82rem;
+      font-weight: 600;
+    }
+
+    .form-control {
+      min-height: 42px;
+      border: 1px solid $border;
+      border-radius: 7px;
+      background: $slate-50;
+
+      &:focus {
+        border-color: $orange;
+        background: $white;
+        box-shadow: 0 0 0 3px rgba(234, 88, 12, .12);
+      }
+    }
+
+    .btn-primary {
+      width: fit-content;
+      min-width: 150px;
+      border-color: $orange;
+      background: $orange;
+    }
+  }
 }

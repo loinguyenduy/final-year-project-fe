@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { FaStar } from 'react-icons/fa';
 import ParticipantAvatar from './ParticipantAvatar';
 import ParticipantModal from './ParticipantModal';
 import { StarRatingDisplay } from './StarRating';
@@ -70,8 +71,8 @@ const ParticipantPublicProfileModal = ({ participantId, onClose }) => {
               <p className="public-profile-modal__role">{profile.role === 'HANDYMAN' ? 'Handyman' : 'Customer'}</p>
               <h3>{profile.display_name}</h3>
               <div className="public-profile-modal__rating">
-                <StarRatingDisplay value={rating?.average_rating || 0} />
                 <strong>{formatRating(rating)}</strong>
+                {rating?.review_count > 0 && <FaStar color="#facc15" aria-label="star" />}
                 <span>{rating?.review_count || 0} verified reviews</span>
               </div>
             </div>

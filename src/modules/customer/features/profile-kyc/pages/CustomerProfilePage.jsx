@@ -41,18 +41,19 @@ const CustomerProfilePage = () => {
     }
 
     return (
-        <div className="py-2">
-            <div className="participant-profile-tabs" role="tablist" aria-label="Profile sections">
-                {['overview', 'reviews', 'security'].map((tab) => <button key={tab} type="button" role="tab" aria-selected={activeTab === tab} className={activeTab === tab ? 'active' : ''} onClick={() => setActiveTab(tab)}>{tab[0].toUpperCase() + tab.slice(1)}</button>)}
+        <div className="customer-profile-page py-2">
+            <div className="customer-profile-heading">
+                <h1>My Profile</h1>
+                <p>Manage your personal information, account security and service activity</p>
             </div>
-            {activeTab === 'reviews' ? <ParticipantProfileReviews userId={account.id} ratingSummary={account.rating_summary} /> : (
-                <ProfileDetails
-                    account={account}
-                    section={activeTab}
-                    onOpenKycModal={() => setShowKycModal(true)}
-                    onRefresh={syncProfile}
-                />
-            )}
+            <ProfileDetails
+                account={account}
+                section={activeTab}
+                onSectionChange={setActiveTab}
+                reviewsContent={<ParticipantProfileReviews userId={account.id} ratingSummary={account.rating_summary} />}
+                onOpenKycModal={() => setShowKycModal(true)}
+                onRefresh={syncProfile}
+            />
             
             <KycModal 
                 show={showKycModal} 

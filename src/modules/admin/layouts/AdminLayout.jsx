@@ -5,7 +5,6 @@ import {
   FaBars,
   FaBell,
   FaBriefcase,
-  FaFolderOpen,
   FaHome,
   FaHistory,
   FaShieldAlt,
@@ -15,7 +14,9 @@ import {
   FaUsers,
   FaWallet,
   FaExchangeAlt,
-  FaWrench
+  FaWrench,
+  FaChevronLeft,
+  FaChevronRight
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { doLogoutSuccess } from '../../identity/redux/authAction';
@@ -31,8 +32,7 @@ const MENU_ITEMS = [
   { path: '/admin/wallets', icon: FaWallet, title: 'Wallets' },
   { path: '/admin/transactions', icon: FaExchangeAlt, title: 'Transactions' },
   { path: '/admin/services', icon: FaWrench, title: 'Services' },
-  { path: '/admin/audit', icon: FaHistory, title: 'Audit Log' },
-  { icon: FaFolderOpen, title: 'Evidence Vault', disabled: true }
+  { path: '/admin/audit', icon: FaHistory, title: 'Audit Log' }
 ];
 
 const AdminLayout = () => {
@@ -42,6 +42,7 @@ const AdminLayout = () => {
   const { account } = useSelector((state) => state.identity);
   const { counts, isLoading: countsLoading, refresh: refreshQueueCounts } = useAdminQueueCounts();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const adminName = account?.full_name || 'System Admin';
@@ -93,9 +94,13 @@ const AdminLayout = () => {
   const pendingCount = counts.kyc_pending;
   const reviewCount = counts.review_pending_total;
   const allPendingCount = Number(pendingCount || 0) + Number(reviewCount || 0);
+  const toggleNavigation = () => {
+    if (window.innerWidth < 1024) setDrawerOpen((value) => !value);
+    else setSidebarCollapsed((value) => !value);
+  };
 
   return (
-    <div className="admin-layout-wrapper">
+    <div className={`admin-layout-wrapper ${sidebarCollapsed ? 'admin-sidebar-collapsed' : ''}`}>
       {drawerOpen && <button className="sidebar-backdrop" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} />}
       <aside className={`admin-sidebar ${drawerOpen ? 'open' : ''}`} aria-label="Administrator navigation">
         <div className="sidebar-header">
@@ -112,7 +117,7 @@ const AdminLayout = () => {
             const Icon = item.icon;
             if (item.disabled) {
               return (
-                <button key={item.title} type="button" className="nav-item disabled" disabled>
+                <button key={item.title} type="button" className="nav-item disabled" title={item.title} disabled>
                   <span className="nav-left"><Icon /><span>{item.title}</span></span>
                   <span className="coming-soon">Coming soon</span>
                 </button>
@@ -122,6 +127,7 @@ const AdminLayout = () => {
               <NavLink
                 key={item.path}
                 to={item.path}
+                title={item.title}
                 onClick={() => setDrawerOpen(false)}
                 className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
               >
@@ -133,7 +139,7 @@ const AdminLayout = () => {
         </nav>
         <div className="sidebar-footer">
           <button className="logout-btn" onClick={handleLogout} disabled={loggingOut}>
-            <FaSignOutAlt /> {loggingOut ? 'Signing out...' : 'Logout'}
+            <FaSignOutAlt /><span>{loggingOut ? 'Signing out...' : 'Logout'}</span>
           </button>
         </div>
       </aside>
@@ -141,7 +147,14 @@ const AdminLayout = () => {
       <main className="admin-main">
         <header className="admin-header">
           <div className="header-heading">
-            <button className="menu-toggle" aria-label="Open navigation" onClick={() => setDrawerOpen(true)}><FaBars /></button>
+            <button
+              className="menu-toggle"
+              aria-label={window.innerWidth < 1024 ? 'Toggle navigation' : sidebarCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+              onClick={toggleNavigation}
+            >
+              <span className="desktop-toggle-icon">{sidebarCollapsed ? <FaChevronRight /> : <FaChevronLeft />}</span>
+              <span className="mobile-toggle-icon"><FaBars /></span>
+            </button>
             <h1>{currentTitle}</h1>
           </div>
           <div className="header-actions">

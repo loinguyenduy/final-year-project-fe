@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FaStar } from 'react-icons/fa';
 import { getPublicReviewsApi } from '../services/participantService';
 import { formatRating } from '../utils/participantDisplay';
 import { StarRatingDisplay } from './StarRating';
@@ -34,8 +35,7 @@ const ParticipantProfileReviews = ({ userId, ratingSummary }) => {
   return (
     <section className="participant-profile-reviews" aria-labelledby="profile-reviews-title">
       <header>
-        <div><p>Verified Job rating</p><h2 id="profile-reviews-title">{formatRating(ratingSummary)}</h2><span>{ratingSummary?.review_count || 0} reviews</span></div>
-        <StarRatingDisplay value={ratingSummary?.average_rating || 0} size="large" />
+        <div><p>Verified Job rating</p><h2 id="profile-reviews-title">{formatRating(ratingSummary)} {ratingSummary?.review_count > 0 && <FaStar color="#facc15" aria-label="star" />}</h2><span>{ratingSummary?.review_count || 0} reviews</span></div>
       </header>
       <div className="participant-profile-reviews__distribution">
         {[5, 4, 3, 2, 1].map((star) => {
