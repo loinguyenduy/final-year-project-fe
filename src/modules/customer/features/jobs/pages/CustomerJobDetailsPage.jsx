@@ -17,6 +17,7 @@ import JobProgressStepper from '../../../../matchmaking/components/JobProgressSt
 import { resolveEffectiveJobProgressStatus } from '../../../../matchmaking/utils/jobProgress';
 import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
 import ParticipantAvatar from '../../../../identity/components/ParticipantAvatar';
+import AiPriceGuidanceCard from '../../../../ai/components/AiPriceGuidanceCard';
 import {
     getLifecycleWorkspacePath,
     isLifecycleWorkspaceStatus,
@@ -273,6 +274,11 @@ const CustomerJobDetailsPage = () => {
 
                 <h5 className="section-title">Description</h5>
                 <div className="description-text">{job.issue_description}</div>
+                <AiPriceGuidanceCard
+                    guidance={job.ai_price_guidance}
+                    tone="customer"
+                    className="job-details-ai-guidance"
+                />
 
                 {job.images && job.images.length > 0 && (
                     <>

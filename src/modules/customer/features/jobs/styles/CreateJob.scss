@@ -3,6 +3,10 @@
   max-width: 800px;
   margin: 0 auto;
 
+  &--embedded {
+    padding-top: 0 !important;
+  }
+
   .kyc-warning-banner {
     display: flex;
     align-items: center;
@@ -235,6 +239,37 @@
         background-color: #1d4ed8;
       }
     }
+
+    .ai-form-link-warning,
+    .ai-form-link-error {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: .75rem;
+      padding: .8rem .9rem;
+      border: 1px solid #fcd34d;
+      border-radius: 9px;
+      background: #fffbeb;
+      color: #78350f;
+      font-size: .82rem;
+
+      strong,
+      span { display: block; }
+
+      > div:last-child {
+        display: flex;
+        flex: 0 0 auto;
+        gap: .5rem;
+      }
+    }
+
+    .ai-form-link-error {
+      margin: 0 0 1rem;
+      border-color: #fecaca;
+      background: #fff7f7;
+      color: #991b1b;
+    }
   }
 }
 
@@ -250,6 +285,19 @@
       .location-summary {
         align-items: stretch;
         flex-direction: column;
+      }
+    }
+
+    .job-post-card {
+      .ai-form-link-warning,
+      .ai-form-link-error {
+        align-items: stretch;
+        flex-direction: column;
+
+        > div:last-child {
+          width: 100%;
+          flex-wrap: wrap;
+        }
       }
     }
   }

@@ -18,6 +18,7 @@ import {
 import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
 import ParticipantAvatar from '../../../../identity/components/ParticipantAvatar';
 import ParticipantPublicProfileModal from '../../../../identity/components/ParticipantPublicProfileModal';
+import AiPriceGuidanceCard from '../../../../ai/components/AiPriceGuidanceCard';
 
 const STATUS_TEXT = {
     POSTED: 'Looking for Handyman',
@@ -530,6 +531,11 @@ const HandymanJobDetailsPage = () => {
 
                     {/* ── Right Column — Bid Panel ── */}
                     <div className="col-12 col-lg-4">
+                        <AiPriceGuidanceCard
+                            guidance={job.ai_price_guidance}
+                            tone="handyman"
+                            className="mb-3"
+                        />
                         {renderBidPanel()}
                     </div>
                 </div>

@@ -5,6 +5,7 @@ import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaClipboardList, FaSortAmountD
 import { getAvailableJobsApi, getServicesApi } from '../../../services/jobService';
 import { getCachedLocation, setCachedLocation } from '../../../../../core/utils/locationCache';
 import { getJobDetailsPath } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
+import AiPriceGuidanceHint from '../../../../ai/components/AiPriceGuidanceHint';
 import '../styles/FindJob.scss';
 
 const HandymanFindJobPage = () => {
@@ -277,6 +278,7 @@ const HandymanFindJobPage = () => {
                                                     <span className="no-rating">No ratings yet</span>
                                                 )}
                                             </div>
+                                            <AiPriceGuidanceHint guidance={job.ai_price_guidance} />
                                         </div>
 
                                         {/* Right: Budget + Action */}

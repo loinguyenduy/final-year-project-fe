@@ -26,6 +26,7 @@ import CustomerDashboardPage from "./modules/customer/features/dashboard/pages/C
 import CustomerProfilePage from "./modules/customer/features/profile-kyc/pages/CustomerProfilePage";
 import CustomerWalletPage from "./modules/customer/features/wallet/pages/CustomerWalletPage";
 import CustomerCreateJobPage from "./modules/customer/features/jobs/pages/CustomerCreateJobPage";
+import AiJobAssistantPage from "./modules/ai/pages/AiJobAssistantPage";
 import CustomerMyJobsPage from "./modules/customer/features/jobs/pages/CustomerMyJobsPage";
 import CustomerJobDetailsPage from "./modules/customer/features/jobs/pages/CustomerJobDetailsPage";
 import PaymentResultPage from "./core/features/payment/pages/PaymentResultPage";
@@ -114,7 +115,7 @@ function App() {
             <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
             <Route path="/customer/profile" element={<CustomerProfilePage />} />
             <Route path="/customer/wallet" element={<CustomerWalletPage />} />
-            <Route path="/customer/ai-diagnosis" element={<CustomerCreateJobPage />} />
+            <Route path="/customer/ai-diagnosis" element={<AiJobAssistantPage />} />
             <Route path="/customer/my-jobs" element={<CustomerMyJobsPage />} />
             <Route path="/customer/my-jobs/:id" element={<CustomerJobDetailsPage />} />
             <Route path="/customer/my-jobs/:id/edit" element={<CustomerCreateJobPage />} />
