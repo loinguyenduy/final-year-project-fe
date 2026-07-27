@@ -269,6 +269,9 @@ const HandymanFindJobPage = () => {
                                             </div>
 
                                             <div className="customer-meta d-flex align-items-center gap-2">
+                                                <span className="customer-name">
+                                                    {job.Customer?.full_name || 'Customer'}
+                                                </span>
                                                 {avgRating ? (
                                                     <div className="d-flex align-items-center gap-1">
                                                         <FaStar className="star-icon" size={13} />

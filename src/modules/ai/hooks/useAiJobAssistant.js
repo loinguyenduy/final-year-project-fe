@@ -13,8 +13,9 @@ import {
   getAiErrorCode,
   getAiErrorMessage,
   getAiCopy,
-  getConversationLanguage,
 } from '../utils/aiJobAssistantPresentation';
+
+const UI_LANGUAGE = 'EN';
 
 const useAiJobAssistant = ({
   enabled,
@@ -65,7 +66,7 @@ const useAiJobAssistant = ({
     } catch (error) {
       if (error?.name === 'CanceledError' || error?.code === 'ERR_CANCELED') return null;
       if (requestId === readRequestRef.current && mountedRef.current) {
-        setPageError(getAiErrorMessage(error, getConversationLanguage(sessionRef.current)));
+        setPageError(getAiErrorMessage(error, UI_LANGUAGE));
       }
       return null;
     }
@@ -87,7 +88,7 @@ const useAiJobAssistant = ({
       return nextSession;
     } catch (error) {
       if (error?.name !== 'CanceledError' && error?.code !== 'ERR_CANCELED' && mountedRef.current) {
-        setPageError(getAiErrorMessage(error, getConversationLanguage(sessionRef.current)));
+        setPageError(getAiErrorMessage(error, UI_LANGUAGE));
       }
       return null;
     } finally {
@@ -139,7 +140,7 @@ const useAiJobAssistant = ({
     } catch (error) {
       await reconcileAfterError(error, current.session_id);
       if (mountedRef.current) {
-        setComposerError(getAiErrorMessage(error, getConversationLanguage(sessionRef.current)));
+        setComposerError(getAiErrorMessage(error, UI_LANGUAGE));
       }
       return {
         ok: false,
@@ -173,7 +174,7 @@ const useAiJobAssistant = ({
       if (mountedRef.current) {
         setDiagnosisError(getAiErrorMessage(
           error,
-          getConversationLanguage(sessionRef.current),
+          UI_LANGUAGE,
         ));
       }
       return false;
@@ -212,7 +213,7 @@ const useAiJobAssistant = ({
     } catch (error) {
       await reconcileAfterError(error, current.session_id);
       if (mountedRef.current) {
-        setDecisionError(getAiErrorMessage(error, getConversationLanguage(sessionRef.current)));
+        setDecisionError(getAiErrorMessage(error, UI_LANGUAGE));
       }
       return false;
     } finally {
@@ -242,7 +243,7 @@ const useAiJobAssistant = ({
   const startOver = useCallback(async () => {
     const current = sessionRef.current;
     if (current && !await abandonCurrent()) {
-      setPageError(getAiCopy(getConversationLanguage(current)).sessionCloseFailed);
+      setPageError(getAiCopy(UI_LANGUAGE).sessionCloseFailed);
       return false;
     }
     sessionRef.current = null;

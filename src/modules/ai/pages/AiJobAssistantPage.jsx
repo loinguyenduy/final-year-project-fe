@@ -5,11 +5,10 @@ import CustomerCreateJobPage from '../../customer/features/jobs/pages/CustomerCr
 import AiConversationPanel from '../components/AiConversationPanel';
 import AiJobDraftPanel from '../components/AiJobDraftPanel';
 import useAiJobAssistant from '../hooks/useAiJobAssistant';
-import {
-  getAiCopy,
-  getConversationLanguage,
-} from '../utils/aiJobAssistantPresentation';
+import { getAiCopy } from '../utils/aiJobAssistantPresentation';
 import '../styles/AiJobAssistant.scss';
+
+const UI_LANGUAGE = 'EN';
 
 const AiJobAssistantPage = () => {
   const navigate = useNavigate();
@@ -33,8 +32,7 @@ const AiJobAssistantPage = () => {
     sessionId,
     onSessionIdChange: updateSessionId,
   });
-  const language = getConversationLanguage(assistant.session);
-  const copy = getAiCopy(language);
+  const copy = getAiCopy(UI_LANGUAGE);
 
   const setMode = (nextMode) => {
     setSearchParams((current) => {
@@ -152,14 +150,14 @@ const AiJobAssistantPage = () => {
                 onSend={send}
                 onRetry={assistant.retryMessage}
                 onStartOver={handleStartOver}
-                language={language}
+                language={UI_LANGUAGE}
                 focusComposerSignal={focusComposerSignal}
               />
               <AiJobDraftPanel
                 session={assistant.session}
                 decisionError={assistant.decisionError}
                 diagnosisError={assistant.diagnosisError}
-                language={language}
+                language={UI_LANGUAGE}
                 submittingDiagnosis={assistant.submittingDiagnosis}
                 submittingDecision={assistant.submittingDecision}
                 onDiagnosisAction={handleDiagnosisAction}

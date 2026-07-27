@@ -245,9 +245,10 @@ const formatVndAmount = (value, fallback = 'Not available') => {
     return fallback;
   }
   const normalized = String(value).trim();
-  if (!/^\d+$/.test(normalized)) return fallback;
+  const match = normalized.match(/^(\d+)(?:\.0+)?$/);
+  if (!match) return fallback;
   try {
-    return `${new Intl.NumberFormat('en-US').format(BigInt(normalized))} VND`;
+    return `${new Intl.NumberFormat('en-US').format(BigInt(match[1]))} VND`;
   } catch {
     return fallback;
   }
