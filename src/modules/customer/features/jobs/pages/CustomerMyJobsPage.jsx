@@ -1,27 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FaCalendarAlt, FaMapMarkerAlt, FaUserCheck, FaDollarSign, FaInfoCircle, FaClipboardList, FaPlus } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaClipboardList, FaPlus } from 'react-icons/fa';
 import { getCustomerJobsApi } from '../../../services/jobService';
 import { getJobDetailsPath } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 import '../styles/MyJobs.scss';
 import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
+import ParticipantAvatar from '../../../../identity/components/ParticipantAvatar';
 
 const CustomerMyJobsPage = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const accessToken = useSelector((state) => state.identity.token);
-    const [jobs, setJobs] = useState([]);
     const [filteredJobs, setFilteredJobs] = useState([]);
-    const [activeTab, setActiveTab] = useState('ALL');
+    const activeTab = searchParams.get('view') || 'ALL';
+    const [pagination, setPagination] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const fetchJobs = async () => {
+    const fetchJobs = useCallback(async () => {
         try {
-            const res = await getCustomerJobsApi();
+            const res = await getCustomerJobsApi({ view: activeTab, sort: searchParams.get('sort') || 'UPDATED_DESC', page: searchParams.get('page') || 1, page_size: 20 });
             if (res && res.EC === 0) {
-                setJobs(res.DT);
-                setFilteredJobs(res.DT);
+                const items = res.DT?.items || [];
+                setFilteredJobs(items);
+                setPagination(res.DT?.pagination || null);
             } else {
                 toast.error(res.EM || "Failed to load jobs");
             }
@@ -31,41 +34,30 @@ const CustomerMyJobsPage = () => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [activeTab, searchParams]);
 
-    useEffect(() => {
-        fetchJobs();
-    }, []);
+    useEffect(() => { fetchJobs(); }, [fetchJobs]);
 
     usePreLifecycleRealtime({
         accessToken,
         onInvalidate: () => fetchJobs(),
     });
 
-    // Filter jobs based on active tab
-    useEffect(() => {
-        if (activeTab === 'ALL') {
-            setFilteredJobs(jobs);
-        } else if (activeTab === 'ACTIVE') {
-            const activeStatuses = [
-                'POSTED',
-                'BIDDING',
-                'PENDING_DEPOSIT',
-                'ACCEPTED',
-                'EN_ROUTE',
-                'ARRIVED',
-                'CANCELLATION_REVIEW',
-                'QUOTE_PENDING',
-                'PAYMENT_PENDING',
-                'IN_PROGRESS',
-            ];
-            setFilteredJobs(jobs.filter(job => activeStatuses.includes(job.current_status)));
-        } else if (activeTab === 'WARRANTY') {
-            setFilteredJobs(jobs.filter(job => job.current_status === 'WARRANTY'));
-        } else if (activeTab === 'COMPLETED') {
-            setFilteredJobs(jobs.filter(job => job.current_status === 'CLOSED'));
-        }
-    }, [activeTab, jobs]);
+    const selectView = (value) => {
+        const next = new URLSearchParams(searchParams);
+        if (value === 'ALL') next.delete('view');
+        else next.set('view', value);
+        next.set('page', '1');
+        setSearchParams(next);
+    };
+
+    const selectSort = (value) => {
+        const next = new URLSearchParams(searchParams);
+        if (value === 'UPDATED_DESC') next.delete('sort');
+        else next.set('sort', value);
+        next.set('page', '1');
+        setSearchParams(next);
+    };
 
     const formatCurrency = (val) => {
         if (!val) return '';
@@ -131,44 +123,23 @@ const CustomerMyJobsPage = () => {
             </div>
 
             {/* Filter Tabs */}
-            <div className="custom-tabs-container mb-4">
+            <div className="my-jobs-controls mb-4">
+              <div className="custom-tabs-container">
                 <div className="custom-tabs">
-                    <button 
-                        className={`tab-btn ${activeTab === 'ALL' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('ALL')}
-                    >
-                        All ({jobs.length})
-                    </button>
-                    <button 
-                        className={`tab-btn ${activeTab === 'ACTIVE' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('ACTIVE')}
-                    >
-                        Active ({jobs.filter(j => [
-                            'POSTED',
-                            'BIDDING',
-                            'PENDING_DEPOSIT',
-                            'ACCEPTED',
-                            'EN_ROUTE',
-                            'ARRIVED',
-                            'CANCELLATION_REVIEW',
-                            'QUOTE_PENDING',
-                            'PAYMENT_PENDING',
-                            'IN_PROGRESS',
-                        ].includes(j.current_status)).length})
-                    </button>
-                    <button 
-                        className={`tab-btn ${activeTab === 'WARRANTY' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('WARRANTY')}
-                    >
-                        Warranty ({jobs.filter(j => j.current_status === 'WARRANTY').length})
-                    </button>
-                    <button 
-                        className={`tab-btn ${activeTab === 'COMPLETED' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('COMPLETED')}
-                    >
-                        Completed ({jobs.filter(j => j.current_status === 'CLOSED').length})
-                    </button>
+                    {['ALL', 'NEEDS_ACTION', 'ACTIVE', 'CLOSED', 'CANCELLED'].map((view) => (
+                        <button key={view} className={`tab-btn ${activeTab === view ? 'active' : ''}`} onClick={() => selectView(view)}>
+                            {{ ALL: 'All', NEEDS_ACTION: 'Needs Action', ACTIVE: 'Active', CLOSED: 'Completed', CANCELLED: 'Cancelled' }[view]}{activeTab === view && pagination ? ` (${pagination.total_items})` : ''}
+                        </button>
+                    ))}
                 </div>
+              </div>
+              <label className="my-jobs-sort">Sort
+                <select value={searchParams.get('sort') || 'UPDATED_DESC'} onChange={(event) => selectSort(event.target.value)}>
+                  <option value="UPDATED_DESC">Recently updated</option>
+                  <option value="SCHEDULED_ASC">Scheduled soonest</option>
+                  <option value="CREATED_DESC">Newest</option>
+                </select>
+              </label>
             </div>
 
             {/* Jobs Grid List */}
@@ -236,19 +207,7 @@ const CustomerMyJobsPage = () => {
                                             {/* Handyman details */}
                                             {job.SelectedHandyman ? (
                                                 <div className="handyman-info d-flex align-items-center">
-                                                    <div className="handyman-avatar me-2">
-                                                        {job.SelectedHandyman.avatar_url ? (
-                                                            <img 
-                                                                src={job.SelectedHandyman.avatar_url} 
-                                                                alt={job.SelectedHandyman.full_name} 
-                                                                className="avatar-img" 
-                                                            />
-                                                        ) : (
-                                                            <span className="avatar-placeholder">
-                                                                {job.SelectedHandyman.full_name.charAt(0).toUpperCase()}
-                                                            </span>
-                                                        )}
-                                                    </div>
+                                                    <ParticipantAvatar name={job.SelectedHandyman.full_name} src={job.SelectedHandyman.avatar_url} role="HANDYMAN" size="small" className="me-2" />
                                                     <div className="handyman-meta">
                                                         <h6 className="handyman-name fw-bold m-0 text-slate-700">
                                                             {job.SelectedHandyman.full_name}
@@ -292,6 +251,13 @@ const CustomerMyJobsPage = () => {
                         );
                     })}
                 </div>
+            )}
+            {pagination?.total_pages > 1 && (
+                <nav className="d-flex justify-content-center align-items-center gap-3 mt-4" aria-label="My Jobs pages">
+                    <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page <= 1} onClick={() => { const next = new URLSearchParams(searchParams); next.set('page', String(pagination.page - 1)); setSearchParams(next); }}>Previous</button>
+                    <span>Page {pagination.page} of {pagination.total_pages}</span>
+                    <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page >= pagination.total_pages} onClick={() => { const next = new URLSearchParams(searchParams); next.set('page', String(pagination.page + 1)); setSearchParams(next); }}>Next</button>
+                </nav>
             )}
         </div>
     );

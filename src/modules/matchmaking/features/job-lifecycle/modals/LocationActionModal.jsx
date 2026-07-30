@@ -77,7 +77,6 @@ const LocationActionModal = ({
     >
       <p>{description}</p>
       <div className="lifecycle-inline-notice lifecycle-inline-notice--neutral">
-        <FaLocationArrow aria-hidden="true" />
         <span>Your browser will request fresh location permission. Raw coordinates are not displayed in the workspace.</span>
       </div>
       {locationError && (

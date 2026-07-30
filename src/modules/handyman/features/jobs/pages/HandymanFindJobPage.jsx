@@ -5,6 +5,7 @@ import { FaSearch, FaMapMarkerAlt, FaCalendarAlt, FaClipboardList, FaSortAmountD
 import { getAvailableJobsApi, getServicesApi } from '../../../services/jobService';
 import { getCachedLocation, setCachedLocation } from '../../../../../core/utils/locationCache';
 import { getJobDetailsPath } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
+import AiPriceGuidanceHint from '../../../../ai/components/AiPriceGuidanceHint';
 import '../styles/FindJob.scss';
 
 const HandymanFindJobPage = () => {
@@ -226,7 +227,7 @@ const HandymanFindJobPage = () => {
                     <div className="d-flex flex-column gap-3">
                         {jobs.map((job) => {
                             const jobCode = `JOB-${job.id.substring(0, 4).toUpperCase()}`;
-                            const avgRating = parseFloat(job.Customer?.avg_rating) || 0;
+                            const avgRating = job.Customer?.rating_summary?.average_rating || null;
 
                             return (
                                 <div key={job.id} className="job-list-item-card">
@@ -268,15 +269,19 @@ const HandymanFindJobPage = () => {
                                             </div>
 
                                             <div className="customer-meta d-flex align-items-center gap-2">
-                                                {avgRating > 0 ? (
+                                                <span className="customer-name">
+                                                    {job.Customer?.full_name || 'Customer'}
+                                                </span>
+                                                {avgRating ? (
                                                     <div className="d-flex align-items-center gap-1">
                                                         <FaStar className="star-icon" size={13} />
-                                                        <span className="star-value">{avgRating.toFixed(1)}</span>
+                                                        <span className="star-value">{avgRating}</span>
                                                     </div>
                                                 ) : (
                                                     <span className="no-rating">No ratings yet</span>
                                                 )}
                                             </div>
+                                            <AiPriceGuidanceHint guidance={job.ai_price_guidance} />
                                         </div>
 
                                         {/* Right: Budget + Action */}

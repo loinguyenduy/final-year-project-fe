@@ -256,6 +256,16 @@
         .customer-meta {
             margin-top: 0.5rem;
 
+            .customer-name {
+                max-width: 16rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: 0.85rem;
+                font-weight: 600;
+                color: #334155;
+            }
+
             .star-icon {
                 color: #f59e0b;
             }

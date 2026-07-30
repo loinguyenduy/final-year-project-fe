@@ -16,6 +16,8 @@ import PreAcceptanceCancellationModal from '../components/PreAcceptanceCancellat
 import JobProgressStepper from '../../../../matchmaking/components/JobProgressStepper';
 import { resolveEffectiveJobProgressStatus } from '../../../../matchmaking/utils/jobProgress';
 import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
+import ParticipantAvatar from '../../../../identity/components/ParticipantAvatar';
+import AiPriceGuidanceCard from '../../../../ai/components/AiPriceGuidanceCard';
 import {
     getLifecycleWorkspacePath,
     isLifecycleWorkspaceStatus,
@@ -272,6 +274,11 @@ const CustomerJobDetailsPage = () => {
 
                 <h5 className="section-title">Description</h5>
                 <div className="description-text">{job.issue_description}</div>
+                <AiPriceGuidanceCard
+                    guidance={job.ai_price_guidance}
+                    tone="customer"
+                    className="job-details-ai-guidance"
+                />
 
                 {job.images && job.images.length > 0 && (
                     <>
@@ -290,13 +297,7 @@ const CustomerJobDetailsPage = () => {
                     <>
                         <h5 className="section-title">Assigned Handyman</h5>
                         <div className="handyman-card" onClick={() => setProfileModalHandymanId(job.SelectedHandyman.id)} style={{cursor: 'pointer'}}>
-                            {job.SelectedHandyman.avatar_url ? (
-                                <img src={job.SelectedHandyman.avatar_url} alt="Handyman" className="avatar" />
-                            ) : (
-                                <div className="placeholder-avatar">
-                                    {job.SelectedHandyman.full_name.charAt(0).toUpperCase()}
-                                </div>
-                            )}
+                            <ParticipantAvatar name={job.SelectedHandyman.full_name} src={job.SelectedHandyman.avatar_url} role="HANDYMAN" />
                             <div className="user-details">
                                 <span className="name">{job.SelectedHandyman.full_name}</span>
                                 <span className="role-tag">Verified Handyman</span>
@@ -333,13 +334,15 @@ const CustomerJobDetailsPage = () => {
                         <div className="bids-list">
                             {pendingBids.map((bid) => {
                                 const handyman = bid.User;
-                                const profile = handyman?.Handyman_Profile;
-                                const rating = parseFloat(profile?.bayesian_score) || 0;
+                                const profile = handyman?.profile;
+                                const rating = profile?.rating_summary?.average_rating
+                                    ? parseFloat(profile.rating_summary.average_rating)
+                                    : null;
                                 const isAccepting = selectedBidForConfirm?.bidId === bid.id;
                                 const isSelected = selectedBids.includes(bid.id);
 
                                 const metaItems = [
-                                    rating > 0 && (
+                                    rating !== null && (
                                         <span key="rating" className="bid-meta__rating">
                                             <FaStar size={11} /> {rating.toFixed(1)}
                                         </span>
@@ -377,13 +380,7 @@ const CustomerJobDetailsPage = () => {
                                                     className="bid-card__avatar-wrapper"
                                                     onClick={() => setProfileModalHandymanId(handyman.id)}
                                                 >
-                                                    {handyman?.avatar_url ? (
-                                                        <img src={handyman.avatar_url} alt="Handyman" className="bid-card__avatar" />
-                                                    ) : (
-                                                        <div className="bid-card__avatar-placeholder">
-                                                            {handyman?.full_name?.charAt(0).toUpperCase() || '?'}
-                                                        </div>
-                                                    )}
+                                                    <ParticipantAvatar name={handyman?.full_name} src={handyman?.avatar_url} role="HANDYMAN" />
                                                 </div>
 
                                                 {/* Name + stats */}

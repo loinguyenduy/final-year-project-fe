@@ -7,7 +7,7 @@ import ImageLightbox from '../../../../../core/components/ImageLightbox';
 import { toast } from 'react-toastify';
 import {
     FaArrowLeft, FaMapMarkerAlt, FaCalendarAlt, FaMoneyBillWave, FaClock,
-    FaPhone, FaStar, FaLocationArrow, FaTag, FaUsers, FaEdit, FaTimesCircle,
+    FaPhone, FaStar, FaLocationArrow, FaUsers, FaEdit, FaTimesCircle,
     FaCheckCircle, FaPaperPlane
 } from 'react-icons/fa';
 import '../styles/FindJob.scss';
@@ -16,6 +16,9 @@ import {
     isLifecycleWorkspaceStatus,
 } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
+import ParticipantAvatar from '../../../../identity/components/ParticipantAvatar';
+import ParticipantPublicProfileModal from '../../../../identity/components/ParticipantPublicProfileModal';
+import AiPriceGuidanceCard from '../../../../ai/components/AiPriceGuidanceCard';
 
 const STATUS_TEXT = {
     POSTED: 'Looking for Handyman',
@@ -51,6 +54,7 @@ const HandymanJobDetailsPage = () => {
     const [submitting, setSubmitting] = useState(false);
     const [withdrawing, setWithdrawing] = useState(false);
     const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
 
     const fetchJob = async () => {
         const coords = getCachedLocation();
@@ -179,7 +183,7 @@ const HandymanJobDetailsPage = () => {
 
     const formatDateTime = (dateStr) => {
         if (!dateStr) return null;
-        return new Date(dateStr).toLocaleString('vi-VN', {
+        return new Date(dateStr).toLocaleString('en-US', {
             year: 'numeric', month: 'long', day: 'numeric',
             hour: '2-digit', minute: '2-digit'
         });
@@ -203,7 +207,7 @@ const HandymanJobDetailsPage = () => {
     const budgetDisplay = job.estimated_budget_min && job.estimated_budget_max
         ? `${formatCurrency(job.estimated_budget_min)} – ${formatCurrency(job.estimated_budget_max)}`
         : job.estimated_budget_max ? formatCurrency(job.estimated_budget_max) : 'Negotiable';
-    const avgRating = parseFloat(job.Customer?.avg_rating) || 0;
+    const avgRating = job.Customer?.rating_summary?.average_rating || null;
     const canSeePhone = !['POSTED', 'BIDDING'].includes(job.current_status);
 
     if (isLifecycleWorkspaceStatus(job.current_status)
@@ -498,24 +502,14 @@ const HandymanJobDetailsPage = () => {
                         {job.Customer && (
                             <div className="bg-white rounded-3 shadow-sm border p-4">
                                 <h6 className="fw-bold mb-3" style={{ color: '#1e293b' }}>Customer</h6>
-                                <div className="d-flex align-items-center gap-3">
-                                    {job.Customer.avatar_url ? (
-                                        <img src={job.Customer.avatar_url} alt="Customer"
-                                            className="rounded-circle flex-shrink-0"
-                                            style={{ width: '48px', height: '48px', objectFit: 'cover' }}
-                                        />
-                                    ) : (
-                                        <div className="rounded-circle text-white d-flex justify-content-center align-items-center fw-bold flex-shrink-0"
-                                            style={{ width: '48px', height: '48px', fontSize: '18px', backgroundColor: '#f97316' }}>
-                                            {job.Customer.full_name?.charAt(0).toUpperCase()}
-                                        </div>
-                                    )}
+                                <button type="button" className="d-flex align-items-center gap-3 border-0 bg-transparent p-0 text-start" onClick={() => setProfileOpen(true)} aria-label={`Open ${job.Customer.full_name} public profile`}>
+                                    <ParticipantAvatar name={job.Customer.full_name} src={job.Customer.avatar_url} role="CUSTOMER" />
                                     <div>
                                         <div className="fw-semibold mb-1" style={{ color: '#1e293b' }}>{job.Customer.full_name}</div>
                                         <div className="d-flex align-items-center gap-2 small text-secondary">
-                                            {avgRating > 0 ? (
+                                            {avgRating ? (
                                                 <span className="d-flex align-items-center gap-1" style={{ color: '#f59e0b', fontWeight: 600 }}>
-                                                    <FaStar size={12} /> {avgRating.toFixed(1)}
+                                                    <FaStar size={12} /> {avgRating}
                                                 </span>
                                             ) : (
                                                 <span className="fst-italic text-muted">No ratings yet</span>
@@ -530,13 +524,18 @@ const HandymanJobDetailsPage = () => {
                                             </span>
                                         </div>
                                     </div>
-                                </div>
+                                </button>
                             </div>
                         )}
                     </div>
 
                     {/* ── Right Column — Bid Panel ── */}
                     <div className="col-12 col-lg-4">
+                        <AiPriceGuidanceCard
+                            guidance={job.ai_price_guidance}
+                            tone="handyman"
+                            className="mb-3"
+                        />
                         {renderBidPanel()}
                     </div>
                 </div>
@@ -544,6 +543,7 @@ const HandymanJobDetailsPage = () => {
         </div>
 
         <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
+        {profileOpen && <ParticipantPublicProfileModal participantId={job.Customer?.id} onClose={() => setProfileOpen(false)} />}
         </>
     );
 };

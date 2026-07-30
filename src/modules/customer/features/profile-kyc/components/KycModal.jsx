@@ -4,8 +4,6 @@ import { toast } from 'react-toastify';
 import { submitCustomerKycApi } from '../../../services/customerKycService'; 
 
 const KycModal = ({ show, onClose, onSuccess }) => {
-    if (!show) return null;
-
     const [isLoading, setIsLoading] = useState(false);
     const [files, setFiles] = useState({ cccd_front: null, cccd_back: null, portrait: null });
     const [previews, setPreviews] = useState({ cccd_front: "", cccd_back: "", portrait: "" });
@@ -13,6 +11,10 @@ const KycModal = ({ show, onClose, onSuccess }) => {
     const handleFileChange = (e, fieldName) => {
         const file = e.target.files[0];
         if (file) {
+            if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                toast.error('Only JPEG and PNG images are supported.');
+                return;
+            }
             if (file.size > 5 * 1024 * 1024) {
                 toast.error("File size cannot exceed 5MB.");
                 return;
@@ -21,6 +23,8 @@ const KycModal = ({ show, onClose, onSuccess }) => {
             setPreviews(prev => ({ ...prev, [fieldName]: URL.createObjectURL(file) }));
         }
     };
+
+    if (!show) return null;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -79,7 +83,7 @@ const KycModal = ({ show, onClose, onSuccess }) => {
                                         <div className="small text-muted">Click or drag image</div>
                                     </>
                                 )}
-                                <input type="file" accept="image/*" className="position-absolute top-0 start-0 w-100 h-100 opacity-0" style={{ cursor: 'pointer' }} onChange={(e) => handleFileChange(e, 'cccd_front')} />
+                                <input type="file" accept="image/jpeg,image/png" className="position-absolute top-0 start-0 w-100 h-100 opacity-0" style={{ cursor: 'pointer' }} onChange={(e) => handleFileChange(e, 'cccd_front')} />
                             </div>
                         </div>
 
@@ -95,7 +99,7 @@ const KycModal = ({ show, onClose, onSuccess }) => {
                                         <div className="small text-muted">Click or drag image</div>
                                     </>
                                 )}
-                                <input type="file" accept="image/*" className="position-absolute top-0 start-0 w-100 h-100 opacity-0" style={{ cursor: 'pointer' }} onChange={(e) => handleFileChange(e, 'cccd_back')} />
+                                <input type="file" accept="image/jpeg,image/png" className="position-absolute top-0 start-0 w-100 h-100 opacity-0" style={{ cursor: 'pointer' }} onChange={(e) => handleFileChange(e, 'cccd_back')} />
                             </div>
                         </div>
 
@@ -111,7 +115,7 @@ const KycModal = ({ show, onClose, onSuccess }) => {
                                         <div className="small text-muted">Upload a clear selfie showing your face</div>
                                     </>
                                 )}
-                                <input type="file" accept="image/*" className="position-absolute top-0 start-0 w-100 h-100 opacity-0" style={{ cursor: 'pointer' }} onChange={(e) => handleFileChange(e, 'portrait')} />
+                                <input type="file" accept="image/jpeg,image/png" className="position-absolute top-0 start-0 w-100 h-100 opacity-0" style={{ cursor: 'pointer' }} onChange={(e) => handleFileChange(e, 'portrait')} />
                             </div>
                         </div>
                     </div>

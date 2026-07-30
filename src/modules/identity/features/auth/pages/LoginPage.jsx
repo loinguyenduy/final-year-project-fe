@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
@@ -6,6 +6,8 @@ import AuthLayout from '../components/AuthLayout';
 import { doLoginSuccess } from '../../../redux/authAction';
 import '../styles/Auth.scss';
 import {loginUserApi} from '../../../services/authService'
+
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1').replace(/\/$/, '');
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -15,6 +17,15 @@ const LoginPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        const errorCode = new URLSearchParams(location.search).get('error');
+        if (errorCode === 'admin_portal_required') {
+            toast.warning('Administrator accounts must sign in through the Admin Portal.');
+        } else if (errorCode) {
+            toast.error('Social sign-in could not be completed. Please try again.');
+        }
+    }, [location.search]);
 
     const handleLogin = async (e) => {
         e.preventDefault(); 
@@ -61,7 +72,7 @@ const LoginPage = () => {
     };
 
     const handleSocialLogin = (provider) => {
-        window.location.href = `http://localhost:5000/api/v1/auth/${provider}`;
+        window.location.href = `${API_BASE_URL}/auth/${provider}`;
     };
 
     return (

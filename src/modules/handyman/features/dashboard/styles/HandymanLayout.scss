@@ -5,6 +5,7 @@
 
   .sidebar {
     width: 260px;
+    flex: 0 0 260px;
     position: sticky;
     top: 0;
     height: 100vh;
@@ -153,6 +154,7 @@
       position: sticky;
       top: 0;
       z-index: 10;
+      .topbar__start { display: flex; align-items: center; gap: .75rem; min-width: 0; }
 
       .page-title { margin: 0; font-weight: 700; color: #475569; font-size: 1.25rem; }
 
@@ -161,39 +163,6 @@
         align-items: center;
         gap: 1rem;
 
-        .btn-bell {
-          background-color: #f8fafc;
-          position: relative;
-          padding: 0.5rem;
-          border-radius: 50%;
-          border: none;
-          color: #64748b;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          .badge {
-            position: absolute;
-            top: 0;
-            right: 0;
-            transform: translate(30%, -30%);
-            border: 2px solid #ffffff;
-            font-size: 0.65rem;
-          }
-        }
-
-        .avatar-small {
-          background-color: #0f172a;
-          color: #ffffff;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 600;
-          width: 35px;
-          height: 35px;
-          font-size: 0.875rem;
-        }
       }
     }
 
@@ -202,27 +171,42 @@
       flex-grow: 1;
     }
   }
+
+  .participant-shell__toggle {
+    width: 40px; height: 40px; display: grid; place-items: center;
+    border: 1px solid #e2e8f0; border-radius: 9px; background: #fff; color: #475569;
+    &:hover { background: #f1f5f9; }
+    &:focus-visible { outline: 3px solid rgba(234,88,12,.25); outline-offset: 2px; }
+  }
+
+  &.participant-shell--collapsed {
+    .sidebar {
+      width: 72px; flex-basis: 72px;
+      .brand-header { justify-content: center; padding: 1rem .5rem; }
+      .brand-name, .mini-profile .info, .menu-content span, .btn-logout span { display: none; }
+      .mini-profile { justify-content: center; margin: .75rem .4rem; padding: .45rem; }
+      .menu-nav { padding: 0 .4rem; }
+      .menu-btn, .logout-section .btn-logout { justify-content: center; padding: .75rem; }
+      .menu-content { gap: 0; }
+      .logout-section { padding: .6rem; }
+    }
+  }
 }
 
 @media (max-width: 991px) {
   .handyman-layout {
     .sidebar {
-      width: 76px;
-
-      .brand-header { justify-content: center; padding: 1rem 0.75rem; }
-      .brand-name,
-      .mini-profile .info,
-      .menu-nav .menu-btn .menu-content span,
-      .menu-nav .menu-btn > .badge,
-      .logout-section .btn-logout span { display: none; }
-      .mini-profile { justify-content: center; margin: 0.75rem 0.4rem; padding: 0.5rem; }
-      .menu-nav { padding: 0 0.4rem; }
-      .menu-nav .menu-btn,
-      .logout-section .btn-logout { justify-content: center; padding: 0.75rem; }
-      .menu-nav .menu-btn .menu-content { gap: 0; }
-      .logout-section { padding: 0.6rem; }
+      position: fixed; z-index: 1200; left: 0; top: 0; width: min(290px, 86vw); height: 100dvh;
+      transform: translateX(-105%); transition: transform .2s ease; box-shadow: 18px 0 45px rgba(15,23,42,.18);
     }
-
+    &.participant-shell--drawer-open .sidebar { transform: translateX(0); }
+    &.participant-shell--collapsed .sidebar {
+      width: min(290px, 86vw); flex-basis: auto;
+      .brand-name, .mini-profile .info, .menu-content span, .btn-logout span { display: initial; }
+      .brand-header, .mini-profile, .menu-btn, .logout-section .btn-logout { justify-content: flex-start; }
+      .menu-content { gap: .75rem; }
+    }
+    .participant-shell__backdrop { position: fixed; z-index: 1190; inset: 0; border: 0; background: rgba(15,23,42,.55); }
     .main-content { min-width: 0; }
     .main-content .content-area { min-width: 0; padding: 1rem; }
   }
@@ -230,10 +214,6 @@
 
 @media (max-width: 575px) {
   .handyman-layout {
-    .sidebar { width: 58px; }
-    .sidebar .brand-header { padding: 0.75rem 0.4rem; }
-    .sidebar .brand-icon { padding: 0.4rem; }
-    .sidebar .mini-profile { display: none; }
     .main-content .topbar { padding: 0.8rem 1rem; }
     .main-content .topbar .page-title { font-size: 1rem; }
     .main-content .content-area { padding: 0.75rem; overflow-x: hidden; }

@@ -16,6 +16,7 @@ const INITIAL_STATE = {
     avatar_url: "",
     is_email_verified: false,
     kyc_status: "UNVERIFIED", 
+    kyc_rejection: null,
     wallets: [],
     auth_providers: [], 
     kyc_requests: [],
@@ -23,7 +24,7 @@ const INITIAL_STATE = {
       handyman_level: "C0",
       security_bond_status: "UNPAID",
       total_jobs_completed: 0,
-      bayesian_score: 5.00
+      rating_summary: null
     },
   },
   isAuthenticated: false,
@@ -44,10 +45,13 @@ const authReducer = (state = INITIAL_STATE, action) => {
           avatar_url: action.payload.user.avatar_url || "",
           is_email_verified: action.payload.user.is_email_verified,
           kyc_status: action.payload.user.kyc_status || "UNVERIFIED",
-          wallets: action.payload.user.Wallets || [],
-          auth_providers: action.payload.user.AuthProviders || action.payload.user.Auth_Providers || [],
-          kyc_requests: action.payload.user.KycDocuments || [],
-          handyman_profile: action.payload.user.Handyman_Profile || INITIAL_STATE.account.handyman_profile
+          kyc_rejection: action.payload.user.kyc_rejection || null,
+          wallets: action.payload.user.wallet_summary || [],
+          auth_providers: action.payload.user.linked_providers || [],
+          kyc_requests: action.payload.user.kyc_submissions || [],
+          handyman_profile: action.payload.user.profile || INITIAL_STATE.account.handyman_profile,
+          rating_summary: action.payload.user.rating_summary || null,
+          password_capability: action.payload.user.password_capability || null
         },
         isAuthenticated: true,
         token: action.payload.access_token,
@@ -75,10 +79,12 @@ const authReducer = (state = INITIAL_STATE, action) => {
         account: {
           ...state.account,
           ...action.payload,
-          wallets: action.payload.Wallets || [], 
-          auth_providers: action.payload.AuthProviders || action.payload.Auth_Providers || state.account.auth_providers,
-          kyc_requests: action.payload.KycDocuments || state.account.kyc_requests,
-          handyman_profile: action.payload.Handyman_Profile || state.account.handyman_profile
+          wallets: action.payload.wallet_summary || state.account.wallets,
+          auth_providers: action.payload.linked_providers || state.account.auth_providers,
+          kyc_requests: action.payload.kyc_submissions || state.account.kyc_requests,
+          handyman_profile: action.payload.profile || state.account.handyman_profile,
+          rating_summary: action.payload.rating_summary || state.account.rating_summary,
+          password_capability: action.payload.password_capability || state.account.password_capability
         }
       };
 

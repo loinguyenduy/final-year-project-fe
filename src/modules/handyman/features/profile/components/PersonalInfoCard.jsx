@@ -20,7 +20,7 @@ const PersonalInfoCard = ({ account, addresses, onRefresh }) => {
                 if (res && res.EC === 0) setProvinces(res.DT || []);
             }).catch(() => {});
         }
-    }, [editingAddress]);
+    }, [editingAddress, provinces.length]);
 
     useEffect(() => {
         if (selectedProvince) {

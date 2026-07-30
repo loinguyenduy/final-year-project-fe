@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { FaAward, FaShieldAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -10,6 +10,7 @@ import SkillsAndBioCard from '../components/SkillsAndBioCard';
 import ServiceAreasCard from '../components/ServiceAreasCard';
 import WorkTimesCard from '../components/WorkTimesCard';
 import SecurityDocsTab from '../components/SecurityDocsTab';
+import ParticipantProfileReviews from '../../../../identity/components/ParticipantProfileReviews';
 import '../styles/HandymanProfile.scss';
 
 const HandymanProfilePage = () => {
@@ -18,11 +19,11 @@ const HandymanProfilePage = () => {
     const [activeTab, setActiveTab] = useState(0);
 
     const profile = account?.handyman_profile || {};
-    const services = account?.Handyman_Services || [];
-    const areas = account?.Handyman_Service_Areas || [];
-    const addresses = account?.User_Addresses || [];
+    const services = account?.services || [];
+    const areas = account?.service_areas || [];
+    const addresses = account?.saved_addresses || [];
 
-    const refreshProfile = async () => {
+    const refreshProfile = useCallback(async () => {
         try {
             const res = await fetchProfileApi();
             if (res && res.EC === 0) {
@@ -31,11 +32,11 @@ const HandymanProfilePage = () => {
         } catch {
             toast.error("Failed to refresh profile data.");
         }
-    };
+    }, [dispatch]);
 
     useEffect(() => {
         refreshProfile();
-    }, []);
+    }, [refreshProfile]);
 
     return (
         <div className="handyman-profile-page">
@@ -64,6 +65,12 @@ const HandymanProfilePage = () => {
                                 className={`tab-btn ${activeTab === 1 ? 'active' : ''}`}
                                 onClick={() => setActiveTab(1)}
                             >
+                                Reviews
+                            </button>
+                            <button
+                                className={`tab-btn ${activeTab === 2 ? 'active' : ''}`}
+                                onClick={() => setActiveTab(2)}
+                            >
                                 <FaShieldAlt className="me-2" />Security & Docs
                             </button>
                         </div>
@@ -85,13 +92,15 @@ const HandymanProfilePage = () => {
                                     onRefresh={refreshProfile}
                                 />
                                 <WorkTimesCard
-                                    workTimes={profile.preferred_work_times || []}
+                                    workTimes={account?.work_times || profile.preferred_work_times || []}
                                     onRefresh={refreshProfile}
                                 />
                             </>
                         )}
 
-                        {activeTab === 1 && (
+                        {activeTab === 1 && <ParticipantProfileReviews userId={account.id} ratingSummary={account.rating_summary} />}
+
+                        {activeTab === 2 && (
                             <SecurityDocsTab account={account} />
                         )}
                     </div>

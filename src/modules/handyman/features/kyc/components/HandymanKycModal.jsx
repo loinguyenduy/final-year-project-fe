@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { FaCloudUploadAlt, FaTimes, FaShieldAlt, FaFilePdf } from 'react-icons/fa';
+import { FaCloudUploadAlt, FaTimes, FaShieldAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { submitHandymanKycApi } from '../../../services/handymanKycService';
 import '../styles/HandymanKycModal.scss';
@@ -17,8 +17,6 @@ const schema = yup.object().shape({
 });
 
 const HandymanKycModal = ({ show, onClose, onSuccess }) => {
-    if (!show) return null;
-
     const [isLoading, setIsLoading] = useState(false);
     
     // State tĩnh chỉ dùng để render UI xem trước (Preview)
@@ -27,7 +25,7 @@ const HandymanKycModal = ({ show, onClose, onSuccess }) => {
     });
 
     // 2. Khởi tạo react-hook-form
-    const { register, handleSubmit, formState: { errors }, setValue, trigger } = useForm({
+    const { handleSubmit, formState: { errors }, setValue, trigger } = useForm({
         resolver: yupResolver(schema)
     });
 
@@ -35,6 +33,10 @@ const HandymanKycModal = ({ show, onClose, onSuccess }) => {
     const handleFileChange = (e, fieldName) => {
         const file = e.target.files[0];
         if (file) {
+            if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                toast.error('Only JPEG and PNG images are supported.');
+                return;
+            }
             // Giới hạn 5MB
             if (file.size > 5 * 1024 * 1024) {
                 toast.error("File size cannot exceed 5MB.");
@@ -47,12 +49,7 @@ const HandymanKycModal = ({ show, onClose, onSuccess }) => {
             trigger(fieldName);
 
             // Cập nhật UI xem trước
-            if (file.type.includes('image')) {
-                setPreviews(prev => ({ ...prev, [fieldName]: URL.createObjectURL(file) }));
-            } else {
-                // Nếu là file PDF, hiển thị icon thay vì ảnh
-                setPreviews(prev => ({ ...prev, [fieldName]: 'PDF_DOC' }));
-            }
+            setPreviews(prev => ({ ...prev, [fieldName]: URL.createObjectURL(file) }));
         }
     };
 
@@ -82,6 +79,8 @@ const HandymanKycModal = ({ show, onClose, onSuccess }) => {
         }
         setIsLoading(false);
     };
+
+    if (!show) return null;
 
     return (
         <div className="handyman-kyc-modal">
@@ -125,7 +124,7 @@ const HandymanKycModal = ({ show, onClose, onSuccess }) => {
                                             </>
                                         )}
                                         {/* Input file bị đè lên trên và làm mờ hoàn toàn */}
-                                        <input type="file" accept="image/*" className="position-absolute top-0 start-0 w-100 h-100 opacity-0" 
+                                        <input type="file" accept="image/jpeg,image/png" className="position-absolute top-0 start-0 w-100 h-100 opacity-0"
                                             style={{ cursor: 'pointer' }} 
                                             onChange={(e) => handleFileChange(e, 'cccd_front')} 
                                         />
@@ -145,7 +144,7 @@ const HandymanKycModal = ({ show, onClose, onSuccess }) => {
                                                 <div className="small text-muted">Upload Back</div>
                                             </>
                                         )}
-                                        <input type="file" accept="image/*" className="position-absolute top-0 start-0 w-100 h-100 opacity-0" 
+                                        <input type="file" accept="image/jpeg,image/png" className="position-absolute top-0 start-0 w-100 h-100 opacity-0"
                                             style={{ cursor: 'pointer' }} 
                                             onChange={(e) => handleFileChange(e, 'cccd_back')} 
                                         />
@@ -165,7 +164,7 @@ const HandymanKycModal = ({ show, onClose, onSuccess }) => {
                                                 <div className="small text-muted">Clear Face Photo</div>
                                             </>
                                         )}
-                                        <input type="file" accept="image/*" className="position-absolute top-0 start-0 w-100 h-100 opacity-0" 
+                                        <input type="file" accept="image/jpeg,image/png" className="position-absolute top-0 start-0 w-100 h-100 opacity-0"
                                             style={{ cursor: 'pointer' }} 
                                             onChange={(e) => handleFileChange(e, 'portrait')} 
                                         />
@@ -185,16 +184,16 @@ const HandymanKycModal = ({ show, onClose, onSuccess }) => {
                                     <div className={`upload-box ${errors.cv ? 'has-error' : ''}`}>
                                         {previews.cv ? (
                                             <div className="doc-preview d-flex flex-column align-items-center justify-content-center bg-light">
-                                                {previews.cv === 'PDF_DOC' ? <FaFilePdf size={40} color="#dc2626"/> : <img src={previews.cv} alt="CV"/>}
+                                                <img src={previews.cv} alt="CV"/>
                                                 <small className="mt-2 text-success fw-bold">Attached</small>
                                             </div>
                                         ) : (
                                             <>
                                                 <FaCloudUploadAlt size={28} className="icon-cam mb-2" />
-                                                <div className="small text-muted">Upload CV (PDF/Image)</div>
+                                                <div className="small text-muted">Upload CV image</div>
                                             </>
                                         )}
-                                        <input type="file" accept=".pdf, image/*" className="position-absolute top-0 start-0 w-100 h-100 opacity-0" 
+                                        <input type="file" accept="image/jpeg,image/png" className="position-absolute top-0 start-0 w-100 h-100 opacity-0"
                                             style={{ cursor: 'pointer' }} 
                                             onChange={(e) => handleFileChange(e, 'cv')} 
                                         />
@@ -208,16 +207,16 @@ const HandymanKycModal = ({ show, onClose, onSuccess }) => {
                                     <div className={`upload-box ${errors.certificate ? 'has-error' : ''}`}>
                                         {previews.certificate ? (
                                             <div className="doc-preview d-flex flex-column align-items-center justify-content-center bg-light">
-                                                {previews.certificate === 'PDF_DOC' ? <FaFilePdf size={40} color="#dc2626"/> : <img src={previews.certificate} alt="Certificate"/>}
+                                                <img src={previews.certificate} alt="Certificate"/>
                                                 <small className="mt-2 text-success fw-bold">Attached</small>
                                             </div>
                                         ) : (
                                             <>
                                                 <FaCloudUploadAlt size={28} className="icon-cam mb-2" />
-                                                <div className="small text-muted">Upload Certificate (PDF/Image)</div>
+                                                <div className="small text-muted">Upload certificate image</div>
                                             </>
                                         )}
-                                        <input type="file" accept=".pdf, image/*" className="position-absolute top-0 start-0 w-100 h-100 opacity-0" 
+                                        <input type="file" accept="image/jpeg,image/png" className="position-absolute top-0 start-0 w-100 h-100 opacity-0"
                                             style={{ cursor: 'pointer' }} 
                                             onChange={(e) => handleFileChange(e, 'certificate')} 
                                         />

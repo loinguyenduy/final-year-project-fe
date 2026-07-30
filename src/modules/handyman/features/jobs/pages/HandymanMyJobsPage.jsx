@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getMyBidsApi } from '../../../services/jobService';
 import { toast } from 'react-toastify';
-import { FaArrowRight, FaClipboardList, FaCalendarAlt, FaMapMarkerAlt, FaMoneyBillWave } from 'react-icons/fa';
+import { FaArrowRight, FaClipboardList, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import {
     getJobDetailsPath,
     isLifecycleWorkspaceStatus,
 } from '../../../../matchmaking/features/job-lifecycle/utils/jobLifecycleNavigation';
 import '../styles/FindJob.scss';
+import '../../../../customer/features/jobs/styles/MyJobs.scss';
 import usePreLifecycleRealtime from '../../../../matchmaking/hooks/usePreLifecycleRealtime';
 
 const STATUS_TEXT = {
@@ -38,16 +39,30 @@ const BID_STATUS_CONFIG = {
 
 const HandymanMyJobsPage = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const accessToken = useSelector((state) => state.identity.token);
     const [bids, setBids] = useState([]);
+    const [pagination, setPagination] = useState(null);
     const [loading, setLoading] = useState(true);
+    const activeView = searchParams.get('view') || 'ALL';
+    const activeSort = searchParams.get('sort') || 'UPDATED_DESC';
+
+    const updateQuery = (changes) => {
+        const next = new URLSearchParams(searchParams);
+        Object.entries(changes).forEach(([key, value]) => {
+            if (value == null || value === '') next.delete(key);
+            else next.set(key, value);
+        });
+        setSearchParams(next);
+    };
 
     useEffect(() => {
         const fetchMyBids = async () => {
             try {
-                const res = await getMyBidsApi();
+                const res = await getMyBidsApi({ view: searchParams.get('view') || 'ALL', sort: searchParams.get('sort') || 'UPDATED_DESC', page: searchParams.get('page') || 1, page_size: 20 });
                 if (res?.EC === 0) {
-                    setBids(res.DT);
+                    setBids(res.DT?.items || []);
+                    setPagination(res.DT?.pagination || null);
                 } else {
                     toast.error(res?.EM || "Failed to load your bids.");
                 }
@@ -58,14 +73,17 @@ const HandymanMyJobsPage = () => {
             }
         };
         fetchMyBids();
-    }, []);
+    }, [searchParams]);
 
     usePreLifecycleRealtime({
         accessToken,
         onInvalidate: async () => {
             try {
-                const res = await getMyBidsApi();
-                if (res?.EC === 0) setBids(res.DT);
+                const res = await getMyBidsApi({ view: searchParams.get('view') || 'ALL', sort: searchParams.get('sort') || 'UPDATED_DESC', page: searchParams.get('page') || 1, page_size: 20 });
+                if (res?.EC === 0) {
+                    setBids(res.DT?.items || []);
+                    setPagination(res.DT?.pagination || null);
+                }
             } catch {
                 // Keep the last canonical list visible until the next reconnect or manual visit.
             }
@@ -96,6 +114,20 @@ const HandymanMyJobsPage = () => {
                 <div className="mb-4">
                     <h2 className="title-text fw-bold m-0">My Jobs</h2>
                     <p className="subtitle-text text-muted m-0 mt-1">Track your bids and active jobs in one place</p>
+                </div>
+                <div className="my-jobs-controls mb-4">
+                  <div className="custom-tabs-container participant-my-jobs-tabs">
+                    <div className="custom-tabs" aria-label="My Jobs filters">
+                      {['ALL', 'BIDDING', 'ASSIGNED', 'NEEDS_ACTION', 'CLOSED', 'CANCELLED'].map((view) => <button key={view} type="button" className={`tab-btn ${activeView === view ? 'active' : ''}`} onClick={() => updateQuery({ view: view === 'ALL' ? null : view, page: '1' })}>{{ ALL: 'All', BIDDING: 'Bidding', ASSIGNED: 'Assigned', NEEDS_ACTION: 'Needs Action', CLOSED: 'Completed', CANCELLED: 'Cancelled' }[view]}</button>)}
+                    </div>
+                  </div>
+                  <label className="my-jobs-sort">Sort
+                    <select value={activeSort} onChange={(event) => updateQuery({ sort: event.target.value === 'UPDATED_DESC' ? null : event.target.value, page: '1' })}>
+                      <option value="UPDATED_DESC">Recently updated</option>
+                      <option value="SCHEDULED_ASC">Scheduled soonest</option>
+                      <option value="CREATED_DESC">Newest</option>
+                    </select>
+                  </label>
                 </div>
 
                 {bids.length === 0 ? (
@@ -194,6 +226,13 @@ const HandymanMyJobsPage = () => {
                             );
                         })}
                     </div>
+                )}
+                {pagination?.total_pages > 1 && (
+                    <nav className="d-flex justify-content-center align-items-center gap-3 mt-4" aria-label="My Jobs pages">
+                        <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page <= 1} onClick={() => updateQuery({ page: String(pagination.page - 1) })}>Previous</button>
+                        <span>Page {pagination.page} of {pagination.total_pages}</span>
+                        <button className="btn btn-outline-secondary btn-sm" disabled={pagination.page >= pagination.total_pages} onClick={() => updateQuery({ page: String(pagination.page + 1) })}>Next</button>
+                    </nav>
                 )}
             </div>
         </div>

@@ -73,5 +73,4 @@ const AuthSessionGate = ({ children }) => {
     return children;
 };
 
-export { hasUsableAccessToken };
 export default AuthSessionGate;

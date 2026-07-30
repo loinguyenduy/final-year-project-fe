@@ -110,6 +110,7 @@ const SOCKET_TOASTS = Object.freeze({
   JOB_WARRANTY_REWORK_REJECTED: 'Warranty rework was rejected.',
   JOB_WARRANTY_RELEASED: 'The warranty lifecycle and payment are complete.',
   JOB_COMPLETED: 'The job is complete.',
+  REVIEW_CASE_UPDATED: 'An administrator reviewed this case. The latest status has been loaded.',
 });
 
 const getMutationSuccessMessage = (action, response) => {

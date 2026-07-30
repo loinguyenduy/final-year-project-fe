@@ -35,6 +35,9 @@
   }
 }
 
+.job-review-panel { margin-top:1.25rem; padding:1.25rem; border:1px solid #fed7aa; border-radius:.85rem; background:#fffaf5;
+  h3{margin:.2rem 0 .35rem} p{color:#64748b} form{display:grid;gap:.75rem} label{font-weight:650} textarea{width:100%;border:1px solid #cbd5e1;border-radius:.6rem;padding:.7rem;resize:vertical}&__footer{display:flex;justify-content:space-between;align-items:center;button{border:0;border-radius:.55rem;background:#ea580c;color:white;padding:.65rem 1rem;font-weight:700}button:disabled{opacity:.6}}}
+
 .job-lifecycle__container {
   width: min(1180px, 100%);
   margin: 0 auto;
@@ -562,6 +565,19 @@
     color: var(--lifecycle-muted);
     font-size: 13px;
   }
+}
+
+.lifecycle-partner__identity-button {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 10px;
+  &:hover h2 { color: var(--lifecycle-accent); }
+  &:focus-visible { outline: 3px solid rgba(234, 88, 12, .28); outline-offset: 5px; }
+  &:disabled { cursor: default; }
 }
 
 .lifecycle-partner__avatar {

@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {getUserProfileApi} from '../../../services/profileService';
 import { doFetchProfileSuccess } from '../../../../identity/redux/authAction';
 import ProfileDetails from '../components/ProfileDetails';
 import KycModal from '../components/KycModal';
 import { toast } from 'react-toastify';
+import ParticipantProfileReviews from '../../../../identity/components/ParticipantProfileReviews';
 import '../styles/ProfileKyc.scss'; 
 
 const CustomerProfilePage = () => {
@@ -12,8 +13,9 @@ const CustomerProfilePage = () => {
     const { account } = useSelector(state => state.identity);
     const [isLoading, setIsLoading] = useState(true);
     const [showKycModal, setShowKycModal] = useState(false);
+    const [activeTab, setActiveTab] = useState('overview');
 
-    const syncProfile = async () => {
+    const syncProfile = useCallback(async () => {
         try {
             let res = await getUserProfileApi();
             if (res && res.EC === 0) {
@@ -24,19 +26,11 @@ const CustomerProfilePage = () => {
             toast.error("Cannot sync profile data.");
         }
         setIsLoading(false);
-    };
+    }, [dispatch]);
 
     useEffect(() => {
         syncProfile();
-    }, [dispatch]);
-
-    // Mock Data for English UI
-    const mockMetrics = {
-        trustScoreStars: 4.2,
-        totalContracts: 18,
-        completedContracts: 17,
-        completionRate: "94%"
-    };
+    }, [syncProfile]);
 
     if (isLoading) {
         return (
@@ -47,10 +41,16 @@ const CustomerProfilePage = () => {
     }
 
     return (
-        <div className="py-2">
+        <div className="customer-profile-page py-2">
+            <div className="customer-profile-heading">
+                <h1>My Profile</h1>
+                <p>Manage your personal information, account security and service activity</p>
+            </div>
             <ProfileDetails
                 account={account}
-                metrics={mockMetrics}
+                section={activeTab}
+                onSectionChange={setActiveTab}
+                reviewsContent={<ParticipantProfileReviews userId={account.id} ratingSummary={account.rating_summary} />}
                 onOpenKycModal={() => setShowKycModal(true)}
                 onRefresh={syncProfile}
             />

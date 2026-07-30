@@ -2,16 +2,17 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { FaFileAlt, FaCheck, FaTimes, FaClock, FaGoogle, FaFacebook } from 'react-icons/fa';
 import moment from 'moment';
+import PasswordSecurityPanel from '../../../../identity/features/auth/components/PasswordSecurityPanel';
 
 const BACKEND_URL = 'http://localhost:5000/api/v1';
 
 const SecurityDocsTab = ({ account }) => {
     const token = useSelector(state => state.identity.token);
-    const authProviders = account?.auth_providers || account?.Auth_Providers || account?.AuthProviders || [];
-    const kycRequests = account?.kyc_requests || [];
+    const authProviders = account?.linked_providers || [];
+    const kycSubmissions = account?.kyc_submissions || [];
 
-    const isGoogleLinked = authProviders.some(p => p.provider?.toUpperCase() === 'GOOGLE');
-    const isFacebookLinked = authProviders.some(p => p.provider?.toUpperCase() === 'FACEBOOK');
+    const isGoogleLinked = authProviders.some(p => String(p?.provider || p).toUpperCase() === 'GOOGLE');
+    const isFacebookLinked = authProviders.some(p => String(p?.provider || p).toUpperCase() === 'FACEBOOK');
 
     const linkGoogle = () => {
         window.location.href = `${BACKEND_URL}/auth/google/link?token=${token}`;
@@ -47,34 +48,34 @@ const SecurityDocsTab = ({ account }) => {
                 </div>
             </div>
 
+            <PasswordSecurityPanel capability={account?.password_capability} />
+
             <div className="content-card">
                 <div className="d-flex justify-content-between align-items-center mb-3">
                     <h6 className="m-0">KYC Documents</h6>
                     <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
-                        {kycRequests.length} File{kycRequests.length !== 1 ? 's' : ''}
+                        {kycSubmissions.length} Submission{kycSubmissions.length !== 1 ? 's' : ''}
                     </span>
                 </div>
 
-                {kycRequests.length > 0 ? (
+                {kycSubmissions.length > 0 ? (
                     <div className="doc-list">
-                        {kycRequests.map(doc => (
-                            <div className={`doc-item status-${doc.status}`} key={doc.id}>
+                        {kycSubmissions.map(submission => (
+                            <div className={`doc-item status-${submission.status}`} key={submission.submission_id}>
                                 <div>
                                     <div className="doc-name">
                                         <FaFileAlt className="me-2" />
-                                        {doc.document_type?.replace(/_/g, ' ')}
+                                        KYC submission #{submission.submission_sequence}
                                     </div>
                                     <div className="doc-date">
-                                        {doc.status === 'APPROVED' && doc.reviewed_at
-                                            ? `Approved: ${moment(doc.reviewed_at).format('DD/MM/YYYY HH:mm')}`
-                                            : `Submitted: ${moment(doc.createdAt).format('DD/MM/YYYY')}`}
+                                        {submission.document_count || 0} documents · Submitted: {moment(submission.submitted_at).format('DD/MM/YYYY')}
                                     </div>
                                 </div>
                                 <div className="status">
-                                    {doc.status === 'APPROVED' && <FaCheck className="me-1" />}
-                                    {doc.status === 'PENDING' && <FaClock className="me-1" />}
-                                    {doc.status === 'REJECTED' && <FaTimes className="me-1" />}
-                                    {doc.status}
+                                    {submission.status === 'APPROVED' && <FaCheck className="me-1" />}
+                                    {submission.status === 'PENDING' && <FaClock className="me-1" />}
+                                    {submission.status === 'REJECTED' && <FaTimes className="me-1" />}
+                                    {submission.status}
                                 </div>
                             </div>
                         ))}

@@ -37,8 +37,8 @@ const withdrawBidApi = (jobId, bidId) => {
     return axios.delete(`/matchmaking/jobs/${jobId}/bids/${bidId}`);
 };
 
-const getMyBidsApi = () => {
-    return axios.get('/matchmaking/handyman/my-bids');
+const getMyBidsApi = (params = {}) => {
+    return axios.get('/matchmaking/handyman/my-bids', { params });
 };
 
 export { getAvailableJobsApi, getServicesApi, getJobDetailsApi, submitBidApi, updateBidApi, withdrawBidApi, getMyBidsApi };

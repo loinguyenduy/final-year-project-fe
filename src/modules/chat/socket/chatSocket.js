@@ -73,6 +73,11 @@ const acquireAuthenticatedSocket = async (accessToken) => {
 
 const acquireChatSocket = (accessToken) => acquireAuthenticatedSocket(accessToken);
 
+const disconnectAllAuthenticatedSockets = () => {
+  socketEntries.forEach((entry) => entry.socket?.disconnect());
+  socketEntries.clear();
+};
+
 const emitWithAcknowledgement = (
   socket,
   eventName,
@@ -102,6 +107,7 @@ const emitWithAcknowledgement = (
 export {
   acquireAuthenticatedSocket,
   acquireChatSocket,
+  disconnectAllAuthenticatedSockets,
   emitWithAcknowledgement,
   resolveSocketServerUrl,
 };

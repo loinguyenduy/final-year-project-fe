@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaPhoneAlt, FaStar } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getRoleLabel } from '../utils/jobLifecycleUi';
+import ParticipantAvatar from '../../../../identity/components/ParticipantAvatar';
+import ParticipantPublicProfileModal from '../../../../identity/components/ParticipantPublicProfileModal';
+import { formatRating } from '../../../../identity/utils/participantDisplay';
 
 const LifecyclePartnerSection = ({ children, partner }) => {
+  const [profileOpen, setProfileOpen] = useState(false);
   const copyPhone = async () => {
     if (!partner?.phone_number) return;
     try {
@@ -17,26 +21,16 @@ const LifecyclePartnerSection = ({ children, partner }) => {
   return (
     <section className="lifecycle-partner" aria-labelledby="lifecycle-partner-title">
       <span className="lifecycle-context-label">Job partner</span>
-      <div className="lifecycle-partner__identity">
-        {partner?.avatar_url ? (
-          <img
-            src={partner.avatar_url}
-            alt={`${partner.full_name || 'Job partner'} avatar`}
-            className="lifecycle-partner__avatar"
-          />
-        ) : (
-          <span className="lifecycle-partner__avatar lifecycle-partner__avatar--placeholder" aria-hidden="true">
-            {partner?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-          </span>
-        )}
+      <button type="button" className="lifecycle-partner__identity lifecycle-partner__identity-button" onClick={() => setProfileOpen(true)} disabled={!partner?.id} aria-label={`Open ${partner?.full_name || 'participant'} public profile`}>
+        <ParticipantAvatar name={partner?.full_name} src={partner?.avatar_url} role={partner?.role} />
         <div>
           <h2 id="lifecycle-partner-title">{partner?.full_name || 'Job partner'}</h2>
           <p>{getRoleLabel(partner?.role)}</p>
         </div>
-      </div>
+      </button>
 
       <div className="lifecycle-partner__metrics">
-        <span><FaStar aria-hidden="true" /> {partner?.rating || 'New'}</span>
+        <span><FaStar aria-hidden="true" /> {formatRating(partner?.rating_summary)}</span>
         <span>{partner?.review_count || 0} reviews</span>
         {partner?.completion_rate != null && <span>{partner.completion_rate}% completion</span>}
       </div>
@@ -54,6 +48,7 @@ const LifecyclePartnerSection = ({ children, partner }) => {
           </button>
         )}
       </div>
+      {profileOpen && <ParticipantPublicProfileModal participantId={partner.id} onClose={() => setProfileOpen(false)} />}
     </section>
   );
 };

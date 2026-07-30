@@ -7,6 +7,7 @@ const PRE_LIFECYCLE_EVENTS = Object.freeze([
   'JOB_BID_WITHDRAWN',
   'JOB_ACCEPTED',
   'JOB_CANCELLED',
+  'JOB_REVIEW_SUBMITTED',
 ]);
 
 const usePreLifecycleRealtime = ({ accessToken, jobId = null, onInvalidate }) => {

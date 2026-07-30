@@ -38,7 +38,7 @@ const SocialCallback = () => {
                 } else {
                     navigate('/');
                 }
-            } catch (err) {
+            } catch {
                 toast.error("Invalid token received from server.");
                 navigate('/login');
             }

@@ -1,0 +1,13 @@
+.participant-overview { padding: clamp(1rem,3vw,2rem); max-width: 1320px; margin: 0 auto; color:#1e293b;
+  > header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1.5rem; h1{font-size:clamp(1.55rem,3vw,2.25rem);margin:.15rem 0} p{margin:0;color:#64748b} button{border:1px solid #cbd5e1;background:white;border-radius:.6rem;padding:.65rem 1rem;font-weight:650} }
+  .eyebrow{text-transform:uppercase;letter-spacing:.09em;color:#ea580c!important;font-size:.72rem;font-weight:800}
+  &__metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem;margin-bottom:1.25rem;article{background:white;border:1px solid #e2e8f0;border-radius:.8rem;padding:1rem;display:grid;gap:.35rem;span{color:#64748b;font-size:.82rem}strong{font-size:1.25rem;overflow-wrap:anywhere}a{font-size:.82rem;color:#c2410c}}}
+  &__columns{display:grid;grid-template-columns:1fr 1fr;gap:1rem;>section{background:white;border:1px solid #e2e8f0;border-radius:.8rem;padding:1rem;min-width:0}}
+  &__columns > &__actions{border-color:#fdba74;box-shadow:0 8px 24px rgba(234,88,12,.08)}
+  .section-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;h2{font-size:1.05rem;margin:0}span{background:#fff7ed;color:#c2410c;padding:.18rem .5rem;border-radius:999px;font-weight:700}}
+  .overview-list{display:grid;a{display:flex;justify-content:space-between;gap:1rem;padding:.8rem .15rem;border-top:1px solid #f1f5f9;text-decoration:none;color:inherit}div{display:grid;min-width:0}span,time{color:#64748b;font-size:.8rem}strong{overflow-wrap:anywhere}}
+  &__trust{background:#fff7ed;border:1px solid #fed7aa;padding:1rem;border-radius:.8rem;margin-bottom:1rem;p{margin:.3rem 0;color:#7c2d12}}
+  &__state{min-height:45vh;display:grid;place-items:center;color:#64748b}&__state--error{align-content:center;gap:.75rem}&__inline-error{background:#fef2f2;color:#b91c1c;padding:.7rem;border-radius:.5rem}.empty-copy{color:#64748b;padding:1rem 0}
+}
+@media(max-width:900px){.participant-overview{&__metrics{grid-template-columns:repeat(2,minmax(0,1fr))}&__columns{grid-template-columns:1fr}}}
+@media(max-width:520px){.participant-overview{>header{flex-direction:column}&__metrics{grid-template-columns:1fr}.overview-list a{flex-direction:column;gap:.25rem}}}

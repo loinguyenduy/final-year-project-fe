@@ -54,7 +54,13 @@ const toDateTimeLocalValue = (value) => {
     return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 };
 
-const CustomerCreateJobPage = () => {
+const CustomerCreateJobPage = ({
+    embedded = false,
+    initialAiDraft = null,
+    aiSessionId = null,
+    onAiSessionDetached,
+    onJobCreated
+}) => {
     const navigate = useNavigate();
     const { id: editJobId } = useParams();
     const isEditMode = Boolean(editJobId);
@@ -63,6 +69,7 @@ const CustomerCreateJobPage = () => {
     const addressOptionRef = useRef(1);
     const locationRequestRef = useRef(0);
     const imagePreviewsRef = useRef([]);
+    const appliedAiDraftRef = useRef(null);
 
     const [services, setServices] = useState([]);
     const [provinces, setProvinces] = useState([]);
@@ -98,6 +105,7 @@ const CustomerCreateJobPage = () => {
     const [currentServiceAddress, setCurrentServiceAddress] = useState('');
     const [isLoadingServices, setIsLoadingServices] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [aiSubmitError, setAiSubmitError] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -111,7 +119,7 @@ const CustomerCreateJobPage = () => {
                 if (servicesRes?.EC === 0) setServices(servicesRes.DT || []);
                 if (provincesRes?.EC === 0) setProvinces(provincesRes.DT || []);
                 if (profileRes?.EC === 0) {
-                    const addresses = profileRes.DT?.User_Addresses || [];
+                    const addresses = profileRes.DT?.saved_addresses || [];
                     setDefaultAddress(addresses.find(item => item.is_default) || null);
                 }
                 if (isEditMode) {
@@ -171,6 +179,17 @@ const CustomerCreateJobPage = () => {
             setSelectedWard('');
         }
     }, [selectedProvince]);
+
+    useEffect(() => {
+        if (isEditMode || !aiSessionId || !initialAiDraft) return;
+        if (appliedAiDraftRef.current === aiSessionId) return;
+        appliedAiDraftRef.current = aiSessionId;
+        setSelectedService(initialAiDraft.service_id || '');
+        setDescription(initialAiDraft.issue_description || '');
+        setBudgetMin(initialAiDraft.estimated_budget_min || '');
+        setBudgetMax(initialAiDraft.estimated_budget_max || '');
+        setAiSubmitError('');
+    }, [aiSessionId, initialAiDraft, isEditMode]);
 
     useEffect(() => {
         if (addressOption !== 2 || !defaultAddress) return;
@@ -433,6 +452,22 @@ const CustomerCreateJobPage = () => {
         ? true
         : locationSource === LOCATION_SOURCES.ADDRESS_ONLY
         || (hasCoordinates(gpsLat, gpsLong) && locationConfirmed);
+    const aiServiceMismatch = Boolean(
+        !isEditMode
+        && aiSessionId
+        && initialAiDraft?.service_id
+        && String(selectedService) !== String(initialAiDraft.service_id)
+    );
+
+    const restoreAiService = () => {
+        setSelectedService(initialAiDraft?.service_id || '');
+        setAiSubmitError('');
+    };
+
+    const detachAiSession = () => {
+        setAiSubmitError('');
+        onAiSessionDetached?.();
+    };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -443,6 +478,10 @@ const CustomerCreateJobPage = () => {
         }
         if (!selectedService || !description.trim() || !scheduleTime) {
             toast.error('Please fill in all required fields.');
+            return;
+        }
+        if (aiServiceMismatch) {
+            setAiSubmitError('Choose the AI-detected Service again or remove the AI link before posting.');
             return;
         }
         if ((!isEditMode || locationChanged)
@@ -480,6 +519,9 @@ const CustomerCreateJobPage = () => {
 
             if (budgetMin) formData.append('estimated_budget_min', budgetMin);
             if (budgetMax) formData.append('estimated_budget_max', budgetMax);
+            if (!isEditMode && aiSessionId && !aiServiceMismatch) {
+                formData.append('ai_assistant_session_id', aiSessionId);
+            }
             if (!isEditMode || locationChanged) {
                 formData.append('address_option', addressOption);
                 formData.append('location_source', locationSource);
@@ -511,19 +553,34 @@ const CustomerCreateJobPage = () => {
                 } else {
                     toast.success(res.EM || `Job ${isEditMode ? 'updated' : 'posted'} successfully!`);
                 }
-                navigate(isEditMode ? `/customer/my-jobs/${editJobId}` : '/customer/my-jobs');
+                if (!isEditMode && onJobCreated) {
+                    onJobCreated(res.DT?.id || null);
+                } else {
+                    navigate(isEditMode ? `/customer/my-jobs/${editJobId}` : '/customer/my-jobs');
+                }
             } else {
                 toast.error(res?.EM || 'Failed to post job.');
             }
         } catch (error) {
-            toast.error(error?.EM || error?.response?.data?.EM || `Something went wrong while ${isEditMode ? 'updating' : 'posting'} the Job.`);
+            const code = error?.code || error?.response?.data?.code;
+            const details = error?.DT || error?.response?.data?.DT;
+            if (code === 'AI_SESSION_ALREADY_APPLIED' && details?.applied_job_id) {
+                toast.info('This AI draft was already used. Opening the existing Job.');
+                navigate(`/customer/my-jobs/${details.applied_job_id}`, { replace: true });
+            } else if (code === 'AI_SESSION_SERVICE_MISMATCH') {
+                setAiSubmitError('The selected Service differs from the AI draft. Restore it or remove the AI link to post manually.');
+            } else if (['AI_SESSION_EXPIRED', 'AI_SESSION_NOT_DRAFT_READY', 'AI_SESSION_NOT_FOUND'].includes(code)) {
+                setAiSubmitError('The AI draft can no longer be attached. Remove the AI link to keep these form values and post manually.');
+            } else {
+                toast.error(error?.EM || error?.response?.data?.EM || `Something went wrong while ${isEditMode ? 'updating' : 'posting'} the Job.`);
+            }
         } finally {
             setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="create-job-container py-4">
+        <div className={`create-job-container py-4 ${embedded ? 'create-job-container--embedded' : ''}`}>
             {!isVerified && (
                 <div className="alert alert-warning d-flex align-items-center mb-4 shadow-sm border-warning">
                     <span className="fs-3 me-3">⚠️</span>
@@ -557,7 +614,10 @@ const CustomerCreateJobPage = () => {
                                 <select
                                     className="form-select form-select-lg shadow-sm"
                                     value={selectedService}
-                                    onChange={event => setSelectedService(event.target.value)}
+                                    onChange={event => {
+                                        setSelectedService(event.target.value);
+                                        setAiSubmitError('');
+                                    }}
                                     required
                                 >
                                     <option value="">-- Choose a Category --</option>
@@ -565,6 +625,22 @@ const CustomerCreateJobPage = () => {
                                         <option key={service.id} value={service.id}>{service.name}</option>
                                     ))}
                                 </select>
+                            )}
+                            {aiServiceMismatch && (
+                                <div className="ai-form-link-warning" role="alert">
+                                    <div>
+                                        <strong>The selected Service differs from the AI draft.</strong>
+                                        <span>The AI price guidance cannot be attached to this Job.</span>
+                                    </div>
+                                    <div>
+                                        <button type="button" className="btn btn-sm btn-outline-primary" onClick={restoreAiService}>
+                                            Use AI Service
+                                        </button>
+                                        <button type="button" className="btn btn-sm btn-outline-secondary" onClick={detachAiSession}>
+                                            Continue manually
+                                        </button>
+                                    </div>
+                                </div>
                             )}
                         </div>
 
@@ -868,10 +944,21 @@ const CustomerCreateJobPage = () => {
                             </div>
                         </div>
 
+                        {aiSubmitError && (
+                            <div className="ai-form-link-error" role="alert">
+                                <span>{aiSubmitError}</span>
+                                {aiSessionId && (
+                                    <button type="button" className="btn btn-sm btn-outline-danger" onClick={detachAiSession}>
+                                        Remove AI link
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
                         <button
                             type="submit"
                             className="btn btn-primary w-100 fw-bold py-3 fs-5 shadow"
-                            disabled={isSubmitting || !isVerified || !locationReady}
+                            disabled={isSubmitting || !isVerified || !locationReady || aiServiceMismatch}
                         >
                             {isSubmitting
                                 ? <><span className="spinner-border spinner-border-sm me-2" />{isEditMode ? 'Updating Job...' : 'Posting Job...'}</>

@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaTimes, FaWallet, FaClock, FaCheckCircle, FaExclamationTriangle, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaClock, FaCheckCircle, FaExclamationTriangle, FaExternalLinkAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getDepositSummaryApi, acceptBidWithWalletDepositApi } from '../../../services/jobService';
+import ParticipantModal from '../../../../identity/components/ParticipantModal';
 
 const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) => {
-    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [summary, setSummary] = useState(null);
@@ -24,7 +23,7 @@ const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) =>
                     toast.error(res.EM || "Failed to retrieve deposit details.");
                     onClose();
                 }
-            } catch (error) {
+            } catch {
                 toast.error("Error loading deposit summary.");
                 onClose();
             } finally {
@@ -85,7 +84,7 @@ const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) =>
             } else {
                 toast.error(res.EM || "Payment failed. Please try again.");
             }
-        } catch (error) {
+        } catch {
             toast.error("An error occurred during payment.");
         } finally {
             setSubmitting(false);
@@ -94,14 +93,12 @@ const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) =>
 
     if (loading) {
         return (
-            <div className="customer-modal-overlay">
-                <div className="customer-modal-content hire-confirm-modal loading-state">
-                    <div className="modal-body text-center py-5">
-                        <div className="spinner-border text-primary" role="status" />
-                        <p className="mt-3 text-muted">Calculating deposit summary...</p>
-                    </div>
+            <ParticipantModal className="hire-confirm-modal" title="Hire confirmation and deposit" description="Calculating the canonical deposit summary." onClose={onClose} size="deposit">
+                <div className="text-center py-5">
+                    <div className="spinner-border text-primary" role="status" />
+                    <p className="mt-3 text-muted">Calculating deposit summary...</p>
                 </div>
-            </div>
+            </ParticipantModal>
         );
     }
 
@@ -111,24 +108,14 @@ const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) =>
     const missingAmount = summary.missing_amount;
 
     return (
-        <div className="customer-modal-overlay" onClick={onClose}>
-            <div className="customer-modal-content hire-confirm-modal" onClick={e => e.stopPropagation()}>
-                
-                {/* Modal Header */}
-                <div className="modal-header">
-                    <div className="modal-heading">
-                        <span className="modal-kicker">
-                            <FaWallet /> Hire Confirmation & Deposit
-                        </span>
-                        <h3>{canPay ? "Secure Selection Deposit" : "Insufficient Wallet Balance"}</h3>
-                        <p>Complete your handyman selection by paying a 10% deposit into escrow.</p>
-                    </div>
-                    <button className="close-btn" onClick={onClose} disabled={submitting}>
-                        <FaTimes />
-                    </button>
-                </div>
-
-                {/* Modal Body */}
+        <ParticipantModal
+            title={canPay ? "Secure selection deposit" : "Insufficient Wallet balance"}
+            description={`Select ${handymanName || 'this handyman'} by placing the required deposit into protected escrow.`}
+            onClose={onClose}
+            closeDisabled={submitting}
+            size="deposit"
+            className="hire-confirm-modal"
+        >
                 <div className="modal-body">
                     {/* Timer Banner */}
                     <div className="timer-banner-wrapper mb-4">
@@ -159,7 +146,7 @@ const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) =>
                                     <span className="summary-value font-medium">{formatCurrency(summary.proposed_price)}</span>
                                 </div>
                                 <div className="summary-row highlight-row">
-                                    <span className="summary-label">Deposit Amount (10%):</span>
+                                    <span className="summary-label">Deposit Amount ({summary.deposit_rate_percent}%):</span>
                                     <span className="summary-value text-primary font-bold">{formatCurrency(summary.deposit_amount)}</span>
                                 </div>
                                 <hr className="summary-divider" />
@@ -219,7 +206,7 @@ const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) =>
                                     <span className="summary-value">{formatCurrency(summary.proposed_price)}</span>
                                 </div>
                                 <div className="summary-row">
-                                    <span className="summary-label">Deposit Amount (10%):</span>
+                                    <span className="summary-label">Deposit Amount ({summary.deposit_rate_percent}%):</span>
                                     <span className="summary-value font-medium">{formatCurrency(summary.deposit_amount)}</span>
                                 </div>
                                 <div className="summary-row">
@@ -254,8 +241,7 @@ const HireConfirmModal = ({ jobId, bidId, handymanName, onClose, onSuccess }) =>
                         </div>
                     )}
                 </div>
-            </div>
-        </div>
+        </ParticipantModal>
     );
 };
 

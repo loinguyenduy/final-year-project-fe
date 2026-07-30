@@ -126,8 +126,8 @@ const LocationPickerMap = ({
             <div
                 ref={containerRef}
                 className="location-picker-map__canvas"
-                role="application"
-                aria-label="Interactive service location map"
+                role={readOnly ? 'img' : 'application'}
+                aria-label={readOnly ? 'Read-only service location map' : 'Interactive service location map'}
             />
             {!readOnly && (
                 <p className="location-picker-map__hint mb-0">
