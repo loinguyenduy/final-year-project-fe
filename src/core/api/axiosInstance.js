@@ -1,10 +1,11 @@
 import axios from "axios";
 import store from "../../redux/store.js";
 import { doLogoutSuccess, doUpdateAccessToken } from "../../modules/identity/redux/authAction";
+import { API_BASE_URL } from "../config/runtimeUrls.js";
 
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1",
+  baseURL: API_BASE_URL,
   withCredentials: true, // automatically send cookies (Refresh Token) in requests to the backend
 });
 

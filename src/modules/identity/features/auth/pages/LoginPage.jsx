@@ -6,8 +6,7 @@ import AuthLayout from '../components/AuthLayout';
 import { doLoginSuccess } from '../../../redux/authAction';
 import '../styles/Auth.scss';
 import {loginUserApi} from '../../../services/authService'
-
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1').replace(/\/$/, '');
+import { buildApiUrl } from '../../../../../core/config/runtimeUrls';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -25,7 +24,8 @@ const LoginPage = () => {
         } else if (errorCode) {
             toast.error('Social sign-in could not be completed. Please try again.');
         }
-    }, [location.search]);
+        if (errorCode) navigate('/login', { replace: true });
+    }, [location.search, navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault(); 
@@ -72,7 +72,7 @@ const LoginPage = () => {
     };
 
     const handleSocialLogin = (provider) => {
-        window.location.href = `${API_BASE_URL}/auth/${provider}`;
+        window.location.assign(buildApiUrl(`/auth/${provider}`));
     };
 
     return (

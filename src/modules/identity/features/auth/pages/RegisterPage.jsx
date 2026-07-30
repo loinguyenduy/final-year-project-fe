@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import AuthLayout from '../components/AuthLayout';
 import { registerUserApi } from '../../../services/authService';
 import '../styles/Auth.scss';
+import { buildApiUrl } from '../../../../../core/config/runtimeUrls';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
@@ -47,13 +48,18 @@ const RegisterPage = () => {
                 toast.error(res.EM);
             }
         } catch (error) {
-            toast.error(error?.EM || "An error occurred on the server.");
+            if (error?.code === 'VERIFICATION_EMAIL_DELIVERY_FAILED') {
+                toast.warning('Account created, but the verification email could not be delivered. Please use resend.');
+                navigate('/check-email', { state: { email: email } });
+            } else {
+                toast.error(error?.EM || "An error occurred on the server.");
+            }
         }
         setIsLoading(false);
     };
 
     const handleSocialLogin = (provider) => {
-        window.location.href = `http://localhost:5000/api/v1/auth/${provider}`;
+        window.location.assign(buildApiUrl(`/auth/${provider}`));
     };
 
     return (

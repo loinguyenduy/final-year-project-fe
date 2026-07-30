@@ -14,11 +14,11 @@ const SocialLinkCallback = () => {
     useEffect(() => {
         const linked = searchParams.get('linked');
         const error = searchParams.get('error');
+        window.history.replaceState(null, document.title, window.location.pathname);
 
         const handleCallback = async () => {
             if (error) {
-                const errorMsg = decodeURIComponent(error).replace(/_/g, ' ');
-                toast.error(`Failed to link account: ${errorMsg}`);
+                toast.error('Failed to link the social account. Please try again.');
             } else if (linked) {
                 try {
                     const res = await axiosInstance.get('/identity/profile');

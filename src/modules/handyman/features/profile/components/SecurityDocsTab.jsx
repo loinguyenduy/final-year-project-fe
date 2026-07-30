@@ -1,26 +1,22 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import { FaFileAlt, FaCheck, FaTimes, FaClock, FaGoogle, FaFacebook } from 'react-icons/fa';
 import moment from 'moment';
 import PasswordSecurityPanel from '../../../../identity/features/auth/components/PasswordSecurityPanel';
-
-const BACKEND_URL = 'http://localhost:5000/api/v1';
+import { beginSocialLink } from '../../../../identity/services/authService';
 
 const SecurityDocsTab = ({ account }) => {
-    const token = useSelector(state => state.identity.token);
     const authProviders = account?.linked_providers || [];
     const kycSubmissions = account?.kyc_submissions || [];
 
     const isGoogleLinked = authProviders.some(p => String(p?.provider || p).toUpperCase() === 'GOOGLE');
     const isFacebookLinked = authProviders.some(p => String(p?.provider || p).toUpperCase() === 'FACEBOOK');
 
-    const linkGoogle = () => {
-        window.location.href = `${BACKEND_URL}/auth/google/link?token=${token}`;
-    };
+    const linkGoogle = () => beginSocialLink('google')
+        .catch(() => toast.error('Unable to start Google account linking.'));
 
-    const linkFacebook = () => {
-        window.location.href = `${BACKEND_URL}/auth/facebook/link?token=${token}`;
-    };
+    const linkFacebook = () => beginSocialLink('facebook')
+        .catch(() => toast.error('Unable to start Facebook account linking.'));
 
     return (
         <>

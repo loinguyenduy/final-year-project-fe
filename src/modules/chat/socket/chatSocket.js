@@ -1,14 +1,10 @@
-import axios from '../../../core/api/axiosInstance';
 import { SOCKET_ACK_TIMEOUT_MS } from '../constants/chat.constants';
+import { SOCKET_SERVER_URL } from '../../../core/config/runtimeUrls';
 
 const socketEntries = new Map();
 
 const resolveSocketServerUrl = () => {
-  const configuredUrl = import.meta.env.VITE_SOCKET_URL;
-  if (configuredUrl) return configuredUrl;
-
-  const apiBaseUrl = axios.defaults.baseURL || '/api/v1';
-  return new URL(apiBaseUrl, window.location.origin).origin;
+  return SOCKET_SERVER_URL;
 };
 
 const createSocketEntry = (accessToken) => {

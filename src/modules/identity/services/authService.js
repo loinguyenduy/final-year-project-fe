@@ -1,4 +1,5 @@
 import axios from '../../../core/api/axiosInstance';
+import { buildApiUrl } from '../../../core/config/runtimeUrls';
 
 const loginUserApi = (email, password) => {
     return axios.post('/auth/login', { valueLogin: email, password });
@@ -28,8 +29,26 @@ const validateSetPasswordApi = (token) => axios.post('/auth/set-password/validat
 const completeSetPasswordApi = (payload) => axios.post('/auth/set-password/complete', payload);
 const changePasswordApi = (payload) => axios.post('/auth/change-password', payload);
 
+const beginSocialLink = async (provider) => {
+    const normalizedProvider = String(provider || '').toLowerCase();
+    if (!['google', 'facebook'].includes(normalizedProvider)) {
+        throw new Error('Unsupported social provider.');
+    }
+
+    const response = await axios.post(`/auth/${normalizedProvider}/link-state`);
+    const state = response?.DT?.state;
+    if (response?.EC !== 0 || typeof state !== 'string' || !state) {
+        throw new Error('Unable to start social account linking.');
+    }
+
+    const linkUrl = new URL(buildApiUrl(`/auth/${normalizedProvider}/link`));
+    linkUrl.searchParams.set('state', state);
+    window.location.assign(linkUrl.toString());
+};
+
 
 export { 
+    beginSocialLink,
     loginUserApi, 
     registerUserApi, 
     logoutUserApi, 
