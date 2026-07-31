@@ -10,6 +10,7 @@ import SkillsAndBioCard from '../components/SkillsAndBioCard';
 import ServiceAreasCard from '../components/ServiceAreasCard';
 import WorkTimesCard from '../components/WorkTimesCard';
 import SecurityDocsTab from '../components/SecurityDocsTab';
+import HandymanKycModal from '../../kyc/components/HandymanKycModal';
 import ParticipantProfileReviews from '../../../../identity/components/ParticipantProfileReviews';
 import '../styles/HandymanProfile.scss';
 
@@ -17,11 +18,13 @@ const HandymanProfilePage = () => {
     const dispatch = useDispatch();
     const { account } = useSelector(state => state.identity);
     const [activeTab, setActiveTab] = useState(0);
+    const [showKycModal, setShowKycModal] = useState(false);
 
     const profile = account?.handyman_profile || {};
     const services = account?.services || [];
     const areas = account?.service_areas || [];
     const addresses = account?.saved_addresses || [];
+    const canSubmitKyc = ['UNVERIFIED', 'REJECTED'].includes(account?.kyc_status);
 
     const refreshProfile = useCallback(async () => {
         try {
@@ -45,6 +48,15 @@ const HandymanProfilePage = () => {
                     <h3>My Profile</h3>
                     <p>Manage your professional identity, skills and work preferences</p>
                 </div>
+                {canSubmitKyc && (
+                    <button
+                        type="button"
+                        className="btn btn-primary fw-bold"
+                        onClick={() => setShowKycModal(true)}
+                    >
+                        {account?.kyc_status === 'REJECTED' ? 'Resubmit KYC' : 'Upload KYC'}
+                    </button>
+                )}
             </div>
 
             <div className="row g-4">
@@ -106,6 +118,12 @@ const HandymanProfilePage = () => {
                     </div>
                 </div>
             </div>
+
+            <HandymanKycModal
+                show={showKycModal}
+                onClose={() => setShowKycModal(false)}
+                onSuccess={refreshProfile}
+            />
         </div>
     );
 };
