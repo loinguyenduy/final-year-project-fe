@@ -45,6 +45,8 @@ const HandymanJobDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { token: accessToken, account } = useSelector((state) => state.identity);
+    const isOfficialPartner = account?.handyman_profile?.handyman_level === 'C3'
+        && account?.handyman_profile?.security_bond_status === 'PAID';
 
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -307,7 +309,7 @@ const HandymanJobDetailsPage = () => {
                 );
             }
 
-            if (isEditing) {
+            if (isEditing && isOfficialPartner) {
                 return (
                     <div className="bid-panel">
                         <h6 className="bid-panel__title">Edit Your Bid</h6>
@@ -332,6 +334,12 @@ const HandymanJobDetailsPage = () => {
                         <h6 className="bid-panel__title mb-0">Your Bid</h6>
                         <span className="bid-status-badge bid-status-badge--pending">Pending</span>
                     </div>
+
+                    {!isOfficialPartner && (
+                        <div className="alert alert-warning small py-2">
+                            This existing bid cannot be edited or accepted until you complete the security bond and reach Level C3.
+                        </div>
+                    )}
 
                     <div className="bid-panel__info-row">
                         <span>Proposed price</span>
@@ -364,9 +372,11 @@ const HandymanJobDetailsPage = () => {
                     )}
 
                     <div className="d-flex gap-2 mt-3">
-                        <button className="btn bid-panel__edit-btn flex-fill" onClick={startEditing}>
-                            <FaEdit size={13} className="me-1" /> Edit
-                        </button>
+                        {isOfficialPartner && (
+                            <button className="btn bid-panel__edit-btn flex-fill" onClick={startEditing}>
+                                <FaEdit size={13} className="me-1" /> Edit
+                            </button>
+                        )}
                         <button className="btn bid-panel__withdraw-btn flex-fill"
                             onClick={() => setShowWithdrawConfirm(true)}>
                             <FaTimesCircle size={13} className="me-1" /> Withdraw
@@ -393,6 +403,20 @@ const HandymanJobDetailsPage = () => {
         }
 
         // No bid yet — show submit form
+        if (!isOfficialPartner) {
+            return (
+                <div className="bid-panel">
+                    <h6 className="bid-panel__title">Official partner status required</h6>
+                    <p className="bid-panel__desc text-muted small mb-3">
+                        Complete the 2,000,000 VND security bond to reach Level C3 before submitting bids for new Jobs.
+                    </p>
+                    <button type="button" className="btn bid-panel__submit-btn w-100" onClick={() => navigate('/handyman/wallet')}>
+                        Open security bond wallet
+                    </button>
+                </div>
+            );
+        }
+
         return (
             <div className="bid-panel">
                 <h6 className="bid-panel__title">Submit Your Bid</h6>

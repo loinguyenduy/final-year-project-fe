@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { FaLock, FaUnlockAlt, FaWallet } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getMyWalletsApi, topUpWalletApi } from '../../../services/walletService';
+import { fetchProfileApi } from '../../../services/profileService';
+import { doFetchProfileSuccess } from '../../../../identity/redux/authAction';
 import ParticipantTransactionHistory from '../../../../fintech/components/ParticipantTransactionHistory';
 import '../styles/HandymanWallet.scss';
 
 const HandymanWalletPage = () => {
+    const dispatch = useDispatch();
     const { account } = useSelector((state) => state.identity);
     const profile = account?.handyman_profile || {};
     const [wallets, setWallets] = useState([]);
@@ -17,15 +20,19 @@ const HandymanWalletPage = () => {
 
     useEffect(() => {
         let active = true;
-        getMyWalletsApi()
-            .then((response) => {
-                if (active && response?.EC === 0) setWallets(response.DT?.wallets || []);
-            })
-            .catch(() => {
-                if (active) setWalletError('Wallet balances could not be loaded.');
-            });
+        Promise.allSettled([getMyWalletsApi(), fetchProfileApi()]).then(([walletResult, profileResult]) => {
+            if (!active) return;
+            if (walletResult.status === 'fulfilled' && walletResult.value?.EC === 0) {
+                setWallets(walletResult.value.DT?.wallets || []);
+            } else {
+                setWalletError('Wallet balances could not be loaded.');
+            }
+            if (profileResult.status === 'fulfilled' && profileResult.value?.EC === 0) {
+                dispatch(doFetchProfileSuccess(profileResult.value.DT));
+            }
+        });
         return () => { active = false; };
-    }, []);
+    }, [dispatch]);
 
     const mainWallet = wallets.find((wallet) => wallet.wallet_type === 'HANDYMAN_MAIN');
     const escrowWallet = wallets.find((wallet) => wallet.wallet_type === 'HANDYMAN_ESCROW');

@@ -31,6 +31,8 @@ const HandymanLayout = () => {
 
   // Lấy level hiện tại của thợ (Mặc định C0 nếu chưa có)
   const currentLevel = account?.handyman_profile?.handyman_level || "C0";
+  const securityBondStatus = account?.handyman_profile?.security_bond_status || "UNPAID";
+  const isOfficialPartner = currentLevel === "C3" && securityBondStatus === "PAID";
 
   // Bảng quy đổi level ra trọng số để dễ so sánh
   const levelWeights = { C0: 0, C1: 1, C2: 2, C3: 3 };
@@ -48,7 +50,8 @@ const HandymanLayout = () => {
       name: "Find Jobs",
       path: "/handyman/find-jobs",
       icon: <FaBriefcase />,
-      requiredLevel: "C2",
+      requiredLevel: "C3",
+      requiresOfficialPartner: true,
     },
     {
       name: "My Jobs",
@@ -70,11 +73,17 @@ const HandymanLayout = () => {
     },
   ];
 
+  const isMenuLocked = (menu) => menu.requiresOfficialPartner
+    ? !isOfficialPartner
+    : levelWeights[menu.requiredLevel] > currentWeight;
+
   const handleNavigation = (menu) => {
-    const isLocked = levelWeights[menu.requiredLevel] > currentWeight;
+    const isLocked = isMenuLocked(menu);
     if (isLocked) {
       toast.warning(
-        `Complete level ${menu.requiredLevel} requirements to unlock this feature!`,
+        menu.requiresOfficialPartner && currentWeight >= levelWeights.C2
+          ? 'Complete the 2,000,000 VND security bond to become a C3 official partner and unlock new Jobs.'
+          : `Complete level ${menu.requiredLevel} requirements to unlock this feature!`,
       );
       return;
     }
@@ -107,7 +116,7 @@ const HandymanLayout = () => {
             {sideMenu.map((menu, index) => {
               const isActive = location.pathname === menu.path
                 || (isLifecycleWorkspace && menu.path === '/handyman/my-jobs');
-              const isLocked = levelWeights[menu.requiredLevel] > currentWeight;
+              const isLocked = isMenuLocked(menu);
 
               return (
                 <button
@@ -155,7 +164,21 @@ const HandymanLayout = () => {
         </div>
 
         <div className="content-area">
-          <Outlet />
+          {location.pathname === '/handyman/find-jobs' && !isOfficialPartner ? (
+            <section className="alert alert-warning border-0 shadow-sm" role="status">
+              <h4 className="alert-heading">Become an official Handyman partner</h4>
+              <p>
+                Complete KYC and the 2,000,000 VND security bond to reach Level C3 before finding and receiving new Jobs.
+              </p>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => navigate(currentWeight >= levelWeights.C2 ? '/handyman/wallet' : '/handyman/profile')}
+              >
+                {currentWeight >= levelWeights.C2 ? 'Open security bond wallet' : 'Complete profile & KYC'}
+              </button>
+            </section>
+          ) : <Outlet />}
         </div>
       </div>
     </div>
