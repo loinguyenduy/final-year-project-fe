@@ -8,6 +8,10 @@ import {
     updateHandymanBioApi
 } from '../../../services/profileService';
 
+const getSkillServiceId = (skill) => skill?.service_id || skill?.Service?.id || skill?.id;
+const getSkillName = (skill) => skill?.Service?.name || skill?.name || 'Unknown';
+const getSkillKey = (skill) => skill?.association_id || skill?.id || skill?.service_id;
+
 const SkillsAndBioCard = ({ services, bio, onRefresh }) => {
     const [allServices, setAllServices] = useState([]);
     const [showAddSelect, setShowAddSelect] = useState(false);
@@ -25,7 +29,7 @@ const SkillsAndBioCard = ({ services, bio, onRefresh }) => {
         }).catch(() => {});
     }, []);
 
-    const addedServiceIds = services.map(s => s.service_id);
+    const addedServiceIds = services.map(getSkillServiceId).filter(Boolean);
     const availableServices = allServices.filter(s => s.is_active && !addedServiceIds.includes(s.id));
 
     const handleAddService = async () => {
@@ -106,19 +110,22 @@ const SkillsAndBioCard = ({ services, bio, onRefresh }) => {
                 {services.length === 0 && (
                     <span className="text-muted small">No skills added yet.</span>
                 )}
-                {services.map(s => (
-                    <span key={s.id} className="tag tag-removable">
-                        {s.Service?.name || 'Unknown'}
-                        <button
-                            className="tag-remove-btn"
-                            onClick={() => handleRemoveService(s.service_id)}
-                            disabled={removingId === s.service_id}
-                            title="Remove"
-                        >
-                            <FaTimes />
-                        </button>
-                    </span>
-                ))}
+                {services.map(s => {
+                    const serviceId = getSkillServiceId(s);
+                    return (
+                        <span key={getSkillKey(s)} className="tag tag-removable">
+                            {getSkillName(s)}
+                            <button
+                                className="tag-remove-btn"
+                                onClick={() => handleRemoveService(serviceId)}
+                                disabled={!serviceId || removingId === serviceId}
+                                title="Remove"
+                            >
+                                <FaTimes />
+                            </button>
+                        </span>
+                    );
+                })}
             </div>
 
             {showAddSelect && (

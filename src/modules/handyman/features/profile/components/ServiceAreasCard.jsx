@@ -178,7 +178,7 @@ const ServiceAreasCard = ({ areas, onRefresh }) => {
                 <span className="hint-icon">💡</span>
                 {areas.length === 0
                     ? 'Leave empty to receive job notifications from all areas.'
-                    : 'You will be prioritized for jobs within the selected areas.'}
+                    : 'Only jobs matching the selected service areas will be shown.'}
             </p>
         </div>
     );

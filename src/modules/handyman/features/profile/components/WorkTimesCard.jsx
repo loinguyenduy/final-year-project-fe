@@ -4,9 +4,9 @@ import { toast } from 'react-toastify';
 import { updateHandymanWorkTimesApi } from '../../../services/profileService';
 
 const WORK_TIME_OPTIONS = [
-    { value: 'MORNING', label: 'Morning', desc: '7:00 – 12:00' },
-    { value: 'AFTERNOON', label: 'Afternoon', desc: '13:00 – 18:00' },
-    { value: 'EVENING', label: 'Evening', desc: '18:00 – 21:00' },
+    { value: 'MORNING', label: 'Morning', desc: '06:00 - 12:00' },
+    { value: 'AFTERNOON', label: 'Afternoon', desc: '12:00 - 18:00' },
+    { value: 'EVENING', label: 'Evening', desc: '18:00 - 22:00' },
     { value: 'WEEKEND', label: 'Weekend', desc: 'Sat & Sun' },
 ];
 
@@ -68,7 +68,7 @@ const WorkTimesCard = ({ workTimes, onRefresh }) => {
 
             <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
                 <p className="hint-text mb-0">
-                    <span className="hint-icon">💡</span>
+                    <span className="hint-icon" aria-hidden="true">💡</span>
                     Leave unchecked to be available at all times.
                 </p>
                 <button className="btn-save-sm" onClick={handleSave} disabled={loading}>
