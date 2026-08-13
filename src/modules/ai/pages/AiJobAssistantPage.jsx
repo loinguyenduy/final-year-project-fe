@@ -19,6 +19,7 @@ const AiJobAssistantPage = () => {
   const [focusComposerSignal, setFocusComposerSignal] = useState(0);
 
   const updateSessionId = useCallback((nextSessionId) => {
+    // Cập nhật sessionId trong URL
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
       if (nextSessionId) next.set('session', nextSessionId);
@@ -28,12 +29,14 @@ const AiJobAssistantPage = () => {
   }, [setSearchParams]);
 
   const assistant = useAiJobAssistant({
+    // Kích hoạt AI session if mode là 'ai' hoặc nếu có sessionId trong URL
     enabled: mode === 'ai' || Boolean(sessionId),
     sessionId,
     onSessionIdChange: updateSessionId,
   });
-  const copy = getAiCopy(UI_LANGUAGE);
+  const copy = getAiCopy(UI_LANGUAGE); 
 
+  // Cập nhật mode trong URL
   const setMode = (nextMode) => {
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
@@ -43,6 +46,7 @@ const AiJobAssistantPage = () => {
     }, { replace: true });
   };
 
+  // Xử lý khi người dùng muốn bắt đầu lại cuộc trò chuyện với AI
   const handleStartOver = async () => {
     const hasConversation = Boolean(assistant.session?.messages?.length);
     if (hasConversation && !window.confirm(copy.startOverConfirm)) {
@@ -52,11 +56,13 @@ const AiJobAssistantPage = () => {
     await assistant.startOver();
   };
 
+  // Xử lý khi người dùng muốn tiếp tục với form thủ công sau khi AI đã đưa ra đề xuất
   const handleContinue = () => {
     setAiDetached(false);
     setMode('manual');
   };
 
+  // Xử lý khi người dùng đưa ra quyết định về chẩn đoán từ AI
   const handleDiagnosisAction = async (action) => {
     const saved = await assistant.submitDiagnosisDecision(action);
     if (saved && action === 'CORRECT_DIAGNOSIS') {
@@ -65,12 +71,14 @@ const AiJobAssistantPage = () => {
     return saved;
   };
 
+  // Xử lý khi người dùng muốn tách cuộc trò chuyện AI ra khỏi form
   const handleDetachAi = () => {
     setAiDetached(true);
     void assistant.abandonCurrent();
     updateSessionId(null);
   };
 
+  // Xác định session AI hiện tại nếu nó ở trạng thái "DRAFT_READY"
   const readySession = assistant.session?.status === 'DRAFT_READY'
     ? assistant.session
     : null;

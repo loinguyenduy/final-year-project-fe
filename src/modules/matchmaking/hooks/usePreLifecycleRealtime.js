@@ -10,6 +10,9 @@ const PRE_LIFECYCLE_EVENTS = Object.freeze([
   'JOB_REVIEW_SUBMITTED',
 ]);
 
+// Hàm được sử dụng để lắng nghe các sự kiện realtime trước khi vòng đời của một công việc kết thúc. Nó nhận vào accessToken, jobId 
+//  và một callback onInvalidate để xử lý khi có sự kiện xảy ra. Khi có sự kiện phù hợp, nó sẽ gọi callback 
+// sau một khoảng thời gian ngắn để tránh gọi quá nhiều lần trong thời gian ngắn.
 const usePreLifecycleRealtime = ({ accessToken, jobId = null, onInvalidate }) => {
   const callbackRef = useRef(onInvalidate);
   callbackRef.current = onInvalidate;

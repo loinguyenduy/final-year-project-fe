@@ -180,6 +180,7 @@ const CustomerCreateJobPage = ({
         }
     }, [selectedProvince]);
 
+    // Nếu không phải chế độ chỉnh sửa và có phiên AI, áp dụng bản nháp AI vào form
     useEffect(() => {
         if (isEditMode || !aiSessionId || !initialAiDraft) return;
         if (appliedAiDraftRef.current === aiSessionId) return;
@@ -469,6 +470,7 @@ const CustomerCreateJobPage = ({
         onAiSessionDetached?.();
     };
 
+    // Xử lý khi người dùng muốn tiếp tục với form thủ công sau khi AI đã đưa ra đề xuất
     const handleSubmit = async (event) => {
         event.preventDefault();
 

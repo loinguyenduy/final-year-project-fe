@@ -37,10 +37,12 @@ const AiConversationPanel = ({
     composerRef.current?.focus();
   }, [canSend, focusComposerSignal]);
 
+  
   const submit = async () => {
     const message = composer.trim();
     if (!message || !canSend) return;
-    const result = await onSend(message);
+    // Gửi tin nhắn đến AI và nhận phản hồi
+    const result = await onSend(message); //
     if (result?.ok || result?.recorded) setComposer('');
   };
 

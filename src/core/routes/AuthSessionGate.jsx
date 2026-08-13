@@ -9,6 +9,7 @@ import {
 
 const ACCESS_TOKEN_CLOCK_SKEW_MS = 5000;
 
+// Kiểm tra xem token truy cập có hợp lệ và chưa hết hạn hay không
 const hasUsableAccessToken = (token) => {
     if (!token) return false;
 
@@ -21,6 +22,11 @@ const hasUsableAccessToken = (token) => {
     }
 };
 
+/*
+Hàm AuthSessionGate là một component React được sử dụng để kiểm tra và quản lý phiên đăng nhập của người dùng. 
+Nó đảm bảo rằng người dùng có một token truy cập hợp lệ trước khi cho phép truy cập vào các thành phần con (children) 
+của nó. 
+*/
 const AuthSessionGate = ({ children }) => {
     const dispatch = useDispatch();
     const { isAuthenticated, token } = useSelector(state => state.identity);

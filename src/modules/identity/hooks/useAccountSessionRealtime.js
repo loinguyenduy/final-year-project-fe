@@ -4,6 +4,12 @@ import { toast } from 'react-toastify';
 import { doLogoutSuccess } from '../redux/authAction';
 import { acquireAuthenticatedSocket, disconnectAllAuthenticatedSockets } from '../../chat/socket/chatSocket';
 
+/*
+Hook dùng để lắng nghe các sự kiện liên quan đến phiên đăng nhập của người dùng, bao gồm việc tài khoản bị 
+vô hiệu hóa hoặc phiên bị thu hồi. Khi phát hiện các sự kiện này, hook sẽ thực hiện các hành động 
+như đăng xuất người dùng, hiển thị thông báo cảnh báo và 
+chuyển hướng người dùng đến trang đăng nhập.
+*/
 const useAccountSessionRealtime = () => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.identity.token);

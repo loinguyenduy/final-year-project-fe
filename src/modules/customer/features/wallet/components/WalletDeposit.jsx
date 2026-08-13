@@ -38,6 +38,7 @@ const WalletDeposit = () => {
         setAmount(rawValue);
     };
 
+    // Function to handle the deposit action
     const handleDeposit = async () => {
         if (!amount || parseInt(amount) <= 0) {
             toast.error('Please enter a valid amount');

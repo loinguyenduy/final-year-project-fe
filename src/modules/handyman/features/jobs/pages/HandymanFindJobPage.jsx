@@ -20,6 +20,9 @@ const HandymanFindJobPage = () => {
     const [gpsCoords, setGpsCoords] = useState({ lat: null, long: null });
     const [gpsEnabled, setGpsEnabled] = useState(false);
 
+    // Hook này được sử dụng để lấy vị trí GPS của người dùng khi component được mount. 
+    // Nó sẽ kiểm tra xem có tọa độ đã được lưu trong bộ nhớ cache hay không và áp dụng chúng ngay lập tức.
+    //  Sau đó, nó sẽ yêu cầu vị trí GPS mới từ trình duyệt và cập nhật trạng thái cũng như bộ nhớ cache nếu thành công.
     useEffect(() => {
         // Apply cached coords immediately (zero-latency for returning users)
         const cached = getCachedLocation();
@@ -28,7 +31,7 @@ const HandymanFindJobPage = () => {
             setGpsEnabled(true);
         }
 
-        // Always request fresh GPS in the background to keep the cache current
+        // Luôn yêu cầu vị trí GPS mới từ trình duyệt để đảm bảo dữ liệu luôn cập nhật.
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
@@ -47,12 +50,13 @@ const HandymanFindJobPage = () => {
         }
     }, []);
 
-    // Debounce: wait 350ms after user stops typing before triggering search
+    // Debounce: set time khi người dùng nhập vào ô tìm kiếm để tránh gọi API quá nhiều lần.
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(searchQuery), 350);
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
+    // Lấy danh sách dịch vụ từ API và lưu vào state.
     const fetchServices = async () => {
         try {
             const res = await getServicesApi();

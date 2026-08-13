@@ -325,6 +325,10 @@ const chatReducer = (state, action) => {
   }
 };
 
+// quản lý trạng thái và logic liên quan đến chat.
+//  Nó nhận vào các tham số như jobId, currentUserId, accessToken, historyOnlyExpected và isOpen. 
+// Hook này sử dụng useReducer để quản lý trạng thái chat, useState để theo dõi thời gian hiện tại,
+//  và useRef để giữ các tham chiếu đến socket, trạng thái hiện tại, trạng thái mở của chat, và các thông tin khác.
 const useJobChat = ({
   jobId,
   currentUserId,
@@ -423,6 +427,10 @@ const useJobChat = ({
     }
   }, [applyAccessError]);
 
+  // Hàm được sử dụng để mở cuộc trò chuyện. Nó sẽ kiểm tra xem có cuộc trò chuyện hiện tại hay không, 
+  // nếu không có, nó sẽ cố gắng tạo hoặc lấy cuộc trò chuyện từ API. 
+  // Nếu cuộc trò chuyện đã đóng và chỉ có lịch sử, nó sẽ thông báo rằng không có lịch sử trò chuyện.
+  //  Nếu mọi thứ ổn, nó sẽ tải lịch sử tin nhắn mới nhất.
   const openConversation = useCallback(async () => {
     discoveryRequestRef.current += 1;
     dispatch({ type: 'OPEN_START' });
@@ -513,6 +521,8 @@ const useJobChat = ({
     }
   }, [applyAccessError]);
 
+  // Hàm được sử dụng để tham gia vào socket chat hiện tại. 
+  // Nó sẽ kiểm tra xem socket có kết nối hay không và có ID cuộc trò chuyện hay không.
   const joinActiveSocket = useCallback(async () => {
     const socket = socketRef.current;
     const conversationId = stateRef.current.conversation?.id;
@@ -658,6 +668,8 @@ const useJobChat = ({
     }
   }, [applyAccessError, joinActiveSocket]);
 
+  // Hàm được sử dụng để gửi tin nhắn. 
+  // Nó sẽ chuẩn hóa nội dung tin nhắn, kiểm tra trạng thái cuộc trò chuyện và trạng thái truy cập,
   const sendMessage = useCallback(async (rawContent) => {
     const normalized = normalizeMessageContent(rawContent);
     if (normalized.error) {

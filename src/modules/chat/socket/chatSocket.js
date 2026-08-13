@@ -7,6 +7,13 @@ const resolveSocketServerUrl = () => {
   return SOCKET_SERVER_URL;
 };
 
+/*
+Tạo một entry socket mới cho accessToken được cung cấp. Entry này bao gồm:
+- accessToken: token truy cập được sử dụng để xác thực kết nối socket.
+- references: số lượng tham chiếu hiện tại đến entry này.
+- socket: đối tượng socket.io-client được tạo ra.
+- promise: một Promise đại diện cho quá trình tạo socket.
+*/
 const createSocketEntry = (accessToken) => {
   const entry = {
     accessToken,
@@ -21,7 +28,7 @@ const createSocketEntry = (accessToken) => {
         auth: { token: accessToken },
         autoConnect: false,
         reconnection: true,
-        reconnectionAttempts: Infinity,
+        reconnectionAttempts: Infinity, // tiếp tục thử connect
         reconnectionDelay: 500,
         reconnectionDelayMax: 5000,
         timeout: SOCKET_ACK_TIMEOUT_MS,
@@ -38,6 +45,12 @@ const createSocketEntry = (accessToken) => {
   return entry;
 };
 
+/*
+Hàm để lấy một socket đã xác thực dựa trên accessToken. 
+Nếu socket chưa tồn tại, nó sẽ được tạo ra. Hàm trả về một đối tượng chứa socket và một hàm release để giảm 
+số lượng tham chiếu và ngắt kết nối nếu không còn tham chiếu nào.
+Nếu có sockets đã được tạo ra cho accessToken này, nó sẽ tăng số lượng reference và trả về socket hiện tại.
+*/
 const acquireAuthenticatedSocket = async (accessToken) => {
   if (!accessToken) throw new Error('An access token is required for realtime features.');
 
