@@ -18,6 +18,7 @@ out/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.example
 
 # Logs
 *.log
@@ -46,3 +47,4 @@ Thumbs.db
 
 docs/
 dist/
+.gitignore
