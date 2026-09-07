@@ -20,9 +20,9 @@ The application brings together verified-provider workflows, a shared service li
 
 | Role | Email | Password | Login |
 | --- | --- | --- | --- |
-| Customer | `Confirm approved demo email before publishing` | `123456` | [Customer login](https://trusted-handyman.vercel.app/login) |
-| Handyman | `Confirm approved demo email before publishing` | `123456` | [Handyman login](https://trusted-handyman.vercel.app/login) |
-| Admin | `Confirm approved demo email before publishing` | `123456` | [Admin login](https://trusted-handyman.vercel.app/admin/login) |
+| Customer | `customer.demo@gmail.com` | `123456` | [Customer login](https://trusted-handyman.vercel.app/login) |
+| Handyman | `handyman.demo@gmail.com` | `123456` | [Handyman login](https://trusted-handyman.vercel.app/login) |
+| Admin | `admin.demo@gmail.com` | `123456` | [Admin login](https://trusted-handyman.vercel.app/admin/login) |
 
 > These accounts are provided for evaluation purposes and use demo data. Demo data may be reset or changed without notice.
 
