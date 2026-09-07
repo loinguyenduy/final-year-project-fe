@@ -1,39 +1,35 @@
-import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { getUserProfileApi } from '../../../services/profileService';
-import { FETCH_PROFILE_SUCCESS } from '../../../../identity/redux/authAction';
+import React, { useEffect, useState } from 'react';
+import { getMyWalletsApi } from '../../../services/walletService';
 import WalletOverview from '../components/WalletOverview';
 import WalletDeposit from '../components/WalletDeposit';
-import TransactionHistory from '../components/TransactionHistory';
+import ParticipantTransactionHistory from '../../../../fintech/components/ParticipantTransactionHistory';
 import '../styles/CustomerWallet.scss';
 
 const CustomerWalletPage = () => {
-    const dispatch = useDispatch();
+    const [wallets, setWallets] = useState([]);
 
     useEffect(() => {
         const syncProfile = async () => {
             try {
-                const res = await getUserProfileApi();
-                if (res && res.EC === 0) {
-                    dispatch({ type: FETCH_PROFILE_SUCCESS, payload: res.DT });
-                }
+                const res = await getMyWalletsApi();
+                if (res && res.EC === 0) setWallets(res.DT.wallets || []);
             } catch (error) {
                 console.error("Failed to sync profile in wallet page", error);
             }
         };
         syncProfile();
-    }, [dispatch]);
+    }, []);
 
     return (
         <div className="customer-wallet-container py-2">
-            <WalletOverview />
-            
+            <WalletOverview wallets={wallets} />
+
             <div className="row g-4">
                 <div className="col-lg-5">
                     <WalletDeposit />
                 </div>
                 <div className="col-lg-7">
-                    <TransactionHistory />
+                    <ParticipantTransactionHistory />
                 </div>
             </div>
         </div>

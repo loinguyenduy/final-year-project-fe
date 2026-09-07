@@ -28,7 +28,7 @@ const HowItWorks = () => {
                                 <FaBolt />
                             </div>
                             <h4>2. Review Quotes</h4>
-                            <p>Receive competitive bids from professionals. Compare them based on their Bayesian Trust Score, price, and KYC verification level.</p>
+                            <p>Receive competitive bids from professionals. Compare them based on verified Job ratings, price, and KYC verification level.</p>
                         </div>
                     </div>
 

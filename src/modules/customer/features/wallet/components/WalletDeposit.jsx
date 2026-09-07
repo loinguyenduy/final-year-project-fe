@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
-import { FaCreditCard, FaQrcode, FaCheckCircle } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { FaQrcode } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { topUpWalletApi } from '../../../services/walletService';
 
 const WalletDeposit = () => {
     const [activeTab, setActiveTab] = useState('deposit');
     const [amount, setAmount] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('vnpay');
     const [isLoading, setIsLoading] = useState(false);
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const amtParam = params.get('amount');
+        if (amtParam) {
+            setAmount(amtParam);
+        }
+    }, [location]);
 
     const quickAmounts = [100000, 200000, 500000, 1000000];
 
@@ -17,7 +26,9 @@ const WalletDeposit = () => {
 
     const formatCurrency = (val) => {
         if (!val) return '';
-        const number = parseInt(val.replace(/[^0-9]/g, ''), 10);
+        // If it's already a number, convert to string
+        const strVal = val.toString();
+        const number = parseInt(strVal.replace(/[^0-9]/g, ''), 10);
         if (isNaN(number)) return '';
         return new Intl.NumberFormat('vi-VN').format(number);
     };
@@ -27,6 +38,7 @@ const WalletDeposit = () => {
         setAmount(rawValue);
     };
 
+    // Function to handle the deposit action
     const handleDeposit = async () => {
         if (!amount || parseInt(amount) <= 0) {
             toast.error('Please enter a valid amount');
@@ -37,7 +49,7 @@ const WalletDeposit = () => {
         try {
             const data = {
                 amount: parseInt(amount),
-                payment_method: paymentMethod.toUpperCase()
+                payment_method: 'PAYOS'
             };
             
             const res = await topUpWalletApi(data);
@@ -104,30 +116,7 @@ const WalletDeposit = () => {
                     <div className="form-group mb-4">
                         <label className="fw-bold mb-2">Payment Method</label>
                         <div className="payment-methods">
-                            {/* VNPay */}
-                            <div 
-                                className={`method-item ${paymentMethod === 'vnpay' ? 'selected' : ''}`}
-                                onClick={() => setPaymentMethod('vnpay')}
-                            >
-                                <div className="d-flex align-items-center">
-                                    <div className="method-icon bg-light text-primary">
-                                        <FaCreditCard />
-                                    </div>
-                                    <div className="ms-3">
-                                        <h6 className="m-0 fw-bold">VNPay</h6>
-                                        <small className="text-muted">Online Gateway</small>
-                                    </div>
-                                </div>
-                                <div className="radio-circle">
-                                    {paymentMethod === 'vnpay' && <div className="inner-circle" />}
-                                </div>
-                            </div>
-
-                            {/* PayOS */}
-                            <div 
-                                className={`method-item ${paymentMethod === 'payos' ? 'selected' : ''}`}
-                                onClick={() => setPaymentMethod('payos')}
-                            >
+                            <div className="method-item selected">
                                 <div className="d-flex align-items-center">
                                     <div className="method-icon bg-light text-primary">
                                         <FaQrcode />
@@ -138,7 +127,7 @@ const WalletDeposit = () => {
                                     </div>
                                 </div>
                                 <div className="radio-circle">
-                                    {paymentMethod === 'payos' && <div className="inner-circle" />}
+                                    <div className="inner-circle" />
                                 </div>
                             </div>
                         </div>

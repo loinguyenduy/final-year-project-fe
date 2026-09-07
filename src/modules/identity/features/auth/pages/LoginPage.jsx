@@ -1,19 +1,31 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import AuthLayout from '../components/AuthLayout';
 import { doLoginSuccess } from '../../../redux/authAction';
 import '../styles/Auth.scss';
 import {loginUserApi} from '../../../services/authService'
+import { buildApiUrl } from '../../../../../core/config/runtimeUrls';
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const dispatch = useDispatch();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        const errorCode = new URLSearchParams(location.search).get('error');
+        if (errorCode === 'admin_portal_required') {
+            toast.warning('Administrator accounts must sign in through the Admin Portal.');
+        } else if (errorCode) {
+            toast.error('Social sign-in could not be completed. Please try again.');
+        }
+        if (errorCode) navigate('/login', { replace: true });
+    }, [location.search, navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault(); 
@@ -35,10 +47,19 @@ const LoginPage = () => {
                 } else {
                     toast.success("Login successful!");
                     const userRole = res.DT.user.role?.toUpperCase();
-                    if (userRole === 'CUSTOMER') {
-                        navigate('/customer/dashboard');
+                    const from = location.state?.from;
+                    const requestedPath = from?.pathname
+                        ? `${from.pathname}${from.search || ''}${from.hash || ''}`
+                        : null;
+
+                    if (requestedPath) {
+                        navigate(requestedPath, { replace: true });
+                    } else if (userRole === 'CUSTOMER') {
+                        navigate('/customer/dashboard', { replace: true });
+                    } else if (userRole === 'HANDYMAN') {
+                        navigate('/handyman/dashboard', { replace: true });
                     } else {
-                        navigate('/');
+                        navigate('/', { replace: true });
                     }
                 }
             } else {
@@ -51,7 +72,7 @@ const LoginPage = () => {
     };
 
     const handleSocialLogin = (provider) => {
-        window.location.href = `http://localhost:5000/api/v1/auth/${provider}`;
+        window.location.assign(buildApiUrl(`/auth/${provider}`));
     };
 
     return (

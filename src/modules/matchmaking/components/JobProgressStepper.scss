@@ -1,0 +1,235 @@
+.job-progress-stepper {
+  --stepper-accent: #2563eb;
+  --stepper-accent-soft: #dbeafe;
+  --stepper-completed: #22c55e;
+  --stepper-completed-dark: #15803d;
+  --stepper-border: #cbd5e1;
+  --stepper-muted: #94a3b8;
+  position: relative;
+  width: 100%;
+
+  &__list {
+    display: none;
+    grid-template-columns: repeat(var(--stepper-columns, 10), minmax(0, 1fr));
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__item {
+    min-width: 0;
+    color: var(--stepper-muted);
+    text-align: center;
+  }
+
+  &__track {
+    position: relative;
+    display: flex;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__connector {
+    position: absolute;
+    z-index: 0;
+    top: 50%;
+    right: 50%;
+    left: -50%;
+    height: 2px;
+    background: #e2e8f0;
+    transform: translateY(-50%);
+
+    &--completed {
+      background: var(--stepper-completed);
+    }
+  }
+
+  &__circle {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--stepper-border);
+    border-radius: 50%;
+    background: #f8fafc;
+    color: var(--stepper-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  &__label {
+    display: block;
+    max-width: 100%;
+    margin-top: 8px;
+    padding: 0 4px;
+    color: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+  }
+
+  &__item--completed {
+    color: var(--stepper-completed-dark);
+
+    .job-progress-stepper__circle {
+      border-color: var(--stepper-completed);
+      background: var(--stepper-completed);
+      color: #fff;
+    }
+  }
+
+  &__item--current {
+    color: var(--stepper-accent);
+
+    .job-progress-stepper__circle {
+      border-color: var(--stepper-accent);
+      background: #fff;
+      color: var(--stepper-accent);
+      box-shadow: 0 0 0 3px var(--stepper-accent-soft);
+    }
+
+    .job-progress-stepper__label {
+      font-weight: 700;
+    }
+  }
+
+  &__compact-summary {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+
+    p {
+      margin: 0;
+      color: var(--stepper-muted);
+      font-size: 0.875rem;
+      font-weight: 700;
+      text-align: center;
+    }
+  }
+
+  &__compact-meta,
+  &__compact-neighbours {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__compact-meta {
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 700;
+
+    strong {
+      color: var(--stepper-accent);
+      font-size: 0.95rem;
+    }
+  }
+
+  &__compact-bar {
+    height: 6px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e2e8f0;
+
+    span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--stepper-accent);
+    }
+  }
+
+  &__compact-neighbours {
+    color: #64748b;
+    font-size: 0.75rem;
+    line-height: 1.35;
+
+    span:last-child {
+      text-align: right;
+    }
+  }
+
+  &__measure {
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    display: inline-grid;
+    grid-auto-columns: max-content;
+    grid-auto-flow: column;
+    margin: 0;
+    padding: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    li {
+      display: grid;
+      min-width: max-content;
+      justify-items: center;
+      padding: 0 18px;
+    }
+
+    .job-progress-stepper__label {
+      white-space: nowrap;
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    margin-left: 8px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.7rem;
+    font-weight: 800;
+    white-space: nowrap;
+
+    &--full {
+      margin-top: 10px;
+      margin-left: 0;
+    }
+  }
+}
+
+.job-progress-stepper--full {
+  .job-progress-stepper__list {
+    display: grid;
+  }
+
+  .job-progress-stepper__compact-summary {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .job-progress-stepper {
+    &__compact-meta,
+    &__compact-neighbours {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    &__compact-neighbours span:last-child {
+      text-align: left;
+    }
+  }
+}

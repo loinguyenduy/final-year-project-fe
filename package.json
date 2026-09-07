@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "test:runtime-urls": "node test/runtimeUrls.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
     "axios": "^1.16.0",
     "bootstrap": "^5.3.8",
     "jwt-decode": "^4.0.0",
+    "leaflet": "^1.9.4",
     "moment": "^2.30.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
@@ -24,8 +26,10 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
     "react-toastify": "^11.1.0",
+    "recharts": "^3.10.0",
     "redux-persist": "^6.0.0",
     "sass": "^1.83.4",
+    "socket.io-client": "^4.8.3",
     "sweetalert2": "^11.26.24",
     "yup": "^1.7.1"
   },

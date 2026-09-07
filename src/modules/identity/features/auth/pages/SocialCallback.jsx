@@ -1,51 +1,47 @@
 import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
 import { doLoginSuccess } from '../../../redux/authAction';
-import { jwtDecode } from "jwt-decode";
+import axiosInstance from '../../../../../core/api/axiosInstance';
 
 const SocialCallback = () => {
-    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     useEffect(() => {
-        const token = searchParams.get('token');
-        const error = searchParams.get('error');
+        let active = true;
+        window.history.replaceState(null, document.title, window.location.pathname);
 
-        if (error) {
-            toast.error("Social login failed. Please try again.");
-            navigate('/login');
-            return;
-        }
-
-        if (token) {
+        const restoreSocialSession = async () => {
             try {
-                const decodedUser = jwtDecode(token);
-                
-                const payload = {
-                    access_token: token,
-                    user: decodedUser
-                };
-
-                dispatch(doLoginSuccess(payload));
-                toast.success("Login successful!");
-                
-                const userRole = decodedUser.role?.toUpperCase();
-                if (userRole === 'CUSTOMER') {
-                    navigate('/customer/dashboard');
-                } else {
-                    navigate('/');
+                const response = await axiosInstance.post('/auth/refresh');
+                if (!active || response?.EC !== 0 || !response?.DT?.access_token || !response?.DT?.user) {
+                    throw new Error('Social session could not be restored.');
                 }
-            } catch (err) {
-                toast.error("Invalid token received from server.");
-                navigate('/login');
+
+                dispatch(doLoginSuccess(response.DT));
+                toast.success("Login successful!");
+                const userRole = response.DT.user.role?.toUpperCase();
+                if (userRole === 'CUSTOMER') {
+                    navigate('/customer/dashboard', { replace: true });
+                } else if (userRole === 'HANDYMAN') {
+                    navigate('/handyman/dashboard', { replace: true });
+                } else {
+                    navigate('/', { replace: true });
+                }
+            } catch {
+                if (!active) return;
+                toast.error("Social login failed. Please try again.");
+                navigate('/login', { replace: true });
             }
-        } else {
-            navigate('/login');
-        }
-    }, [searchParams, navigate, dispatch]);
+        };
+
+        void restoreSocialSession();
+        return () => {
+            active = false;
+        };
+    }, [navigate, dispatch]);
 
     return (
         <div className="d-flex justify-content-center align-items-center vh-100">
